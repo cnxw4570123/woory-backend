@@ -1,7 +1,7 @@
 ---
 name: Feature Template
 about: 기능 추가 이슈 템플릿입니다.
-title: ''
+title: "[FEATURE]"
 labels: ''
 assignees: ''
 
