@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/woory-backend
+file_exists_behavior: OVERWRITE
+
+permissions:
+  - object: /home/woory-backend
+    owner: ec2-user
+    group: ec2-user
+    mode: 755
+
+hooks:
+  AfterInstall:
+    - location: script/deploy-woory.sh
+      timeout: 2000
+      runas: root
