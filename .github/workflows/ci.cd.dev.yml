@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # github에서 fetch해옴
       - uses: actions/checkout@v4.1.7
 
       - name: Gradle 캐싱
@@ -34,7 +35,7 @@ jobs:
       - name: application-dev.yml 생성
         shell: bash
         run: |
-          mkdir woory-backend/src/main/resources
+          mkdir -p woory-backend/src/main/resources
           cd woory-backend/src/main/resources
           touch ./application-dev.yml
           touch ./applciation-secret.yml
