@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-REPOSITORY=/home/ec2-user/woory-backend
+REPOSITORY=/home/ubuntu/woory-backend
 LOG_FILE=$REPOSITORY/log.txt
 
 echo "deploy-woory.sh 시작 " | sudo tee -a $LOG_FILE
