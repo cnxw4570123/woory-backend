@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     if: github.event.pull_request.merged == true
-    runs-on: ubuntu_latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4.1.7
@@ -52,7 +52,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3:${{ secrets.S3_BUCKET_NAME }}/${{ secrets.S3_BUCK_DIR_NAME }}/$GITHUB_SHA.zip
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://${{ secrets.S3_BUCKET_NAME }}/${{ secrets.S3_BUCK_DIR_NAME }}/$GITHUB_SHA.zip
 
       - name: Deploy to EC2 with CodeDeploy
         run: aws deploy create-deployment
