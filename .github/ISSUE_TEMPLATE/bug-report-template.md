@@ -1,7 +1,7 @@
 ---
 name: Bug Report Template
 about: 버그가 발생했을 때 사용하는 템플릿입니다.
-title: ''
+title: "[BUG]"
 labels: ''
 assignees: ''
 
