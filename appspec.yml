@@ -15,4 +15,4 @@ hooks:
   AfterInstall:
     - location: script/deploy-woory.sh
       timeout: 2000
-      runas: root
+      runas: ubuntu
