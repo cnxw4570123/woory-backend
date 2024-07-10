@@ -1,15 +1,13 @@
 package com.woory.backend.service;
 
-import com.woory.backend.Repository.UserRepository;
 import com.woory.backend.dto.CustomOAuth2User;
 import com.woory.backend.dto.KakaoResponse;
 import com.woory.backend.dto.NaverResponse;
 import com.woory.backend.dto.OAuth2Response;
-import com.woory.backend.entity.UserEntity;
-import jakarta.persistence.Entity;
+import com.woory.backend.entity.User;
+import com.woory.backend.repository2.UserRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -25,12 +23,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        System.out.println("\"================================================");
-        System.out.println("userRequest = " + userRequest);
-        System.out.println("userRequest.getAccessToken() = " + userRequest.getAccessToken());
-        System.out.println("userRequest.getAdditionalParameters() = " + userRequest.getAdditionalParameters());
-        System.out.println("userRequest.getClientRegistration() = " + userRequest.getClientRegistration());
-        System.out.println("\"================================================");
         OAuth2User oAuth2User = super.loadUser(userRequest);
         System.out.println("oAuth2User = " + oAuth2User.getAttributes());
 
@@ -48,9 +40,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String role = null;
         //구현
         String username = oAuth2Response.getProvider()+" "+oAuth2Response.getProviderId();
-        UserEntity existData = userRepository.findByUsername(username);
+        User existData = userRepository.findByUsername(username);
         if (existData == null) {
-            UserEntity userEntity = new UserEntity();
+            User userEntity = new User();
             userEntity.setUsername(username);
             userEntity.setEmail(oAuth2Response.getEmail());
             userEntity.setProfileImage(oAuth2Response.getProfileImage());
@@ -68,4 +60,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         return new CustomOAuth2User(oAuth2Response , role);
     }
+
+
+
 }

@@ -1,36 +1,25 @@
-package com.woory.backend.entity;
+package com.woory.backend.dto;
 
-import jakarta.persistence.*;
+import com.woory.backend.entity.GroupStatus;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "group_table") // 테이블 이름을 지정해줍니다.
-public class GroupEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class GroupDto {
     private Long groupId;
-
-    @Column(nullable = false)
     private String email;
-
-    @Column(nullable = false)
     private String groupName;
-
-    @Enumerated(EnumType.ORDINAL)
-    @Column(nullable = false)
     private GroupStatus status;
-
-    @Column(nullable = false, updatable = false)
     private LocalDateTime regDate;
-
-    @Column(nullable = false)
     private LocalDateTime lastUpdatedDate;
 
-
     // Getters and setters
+    public Long getGroupId() {
+        return groupId;
+    }
 
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
 
     public String getEmail() {
         return email;
@@ -38,14 +27,6 @@ public class GroupEntity {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public Long getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(Long groupId) {
-        this.groupId = groupId;
     }
 
     public String getGroupName() {
@@ -56,12 +37,12 @@ public class GroupEntity {
         this.groupName = groupName;
     }
 
-    public void setStatus(GroupStatus status) {
-        this.status = status;
-    }
-
     public GroupStatus getStatus() {
         return status;
+    }
+
+    public void setStatus(GroupStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getRegDate() {
@@ -78,16 +59,5 @@ public class GroupEntity {
 
     public void setLastUpdatedDate(LocalDateTime lastUpdatedDate) {
         this.lastUpdatedDate = lastUpdatedDate;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        regDate = LocalDateTime.now();
-        lastUpdatedDate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        lastUpdatedDate = LocalDateTime.now();
     }
 }
