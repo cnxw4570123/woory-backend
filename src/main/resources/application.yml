@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: woory
+
+  profiles:
+    default: prod
+    include:
+      - secret
+    group:
+      prod:
+        - prod
+      local:
+        - local
+      dev:
+        - dev
