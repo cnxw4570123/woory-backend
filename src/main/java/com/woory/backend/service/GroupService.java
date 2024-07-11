@@ -34,15 +34,19 @@ public class GroupService {
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
         // 이메일 속성 가져오기
-        String email = customOAuth2User.getEmail();
+        String userName = customOAuth2User.getUsername();
+        User byUsername = userRepository.findByUsername(userName);
+        Long id = byUsername.getId();
 
-        if (email == null) {
-            throw new IllegalStateException("User email cannot be null");
+        if (id == null) {
+            throw new IllegalStateException("User id cannot be null");
         }
-        long cnt = groupRepository.countByEmail(email);
+        long cnt = groupRepository.countByUserId(id);
         if (cnt < 5){
-            User user = (User) userRepository.findByEmail(email);
-            group.setEmail(user.getEmail());
+
+            
+            group.setEmail(byUsername.getEmail());
+            group.setUserId(byUsername.getId());
             group.setGroupName(groupName);
             group.setStatus(GroupStatus.GROUP_LEADER);
             group.setRegDate(LocalDateTime.now());
@@ -53,10 +57,6 @@ public class GroupService {
             throw new IllegalStateException("User have 5 groups");
         }
 
-
-
-
     }
-
 
 }

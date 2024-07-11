@@ -40,7 +40,7 @@ dependencies {
 
     // 데이터베이스
     runtimeOnly 'com.mysql:mysql-connector-j' // RDS
-    runtimeOnly 'com.h2database:h2' // 로컬 환경
+//    runtimeOnly 'com.h2database:h2' // 로컬 환경
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

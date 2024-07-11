@@ -27,7 +27,7 @@ public class MyController {
     }
 
     @GetMapping("/my")
-    public Group myPage(HttpServletRequest request) {
+    public String myPage(HttpServletRequest request) {
 //        // 현재 인증된 사용자 정보 가져오기
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //
@@ -43,7 +43,7 @@ public class MyController {
 //            return "Email not found";
 //        }
         String newgroup = "newgroup";
-
-        return groupService.createGroup(newgroup);
+        groupService.createGroup(newgroup);
+        return newgroup;
     }
 }
