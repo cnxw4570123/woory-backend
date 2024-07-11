@@ -44,6 +44,7 @@ public class MyController {
 //        }
         String newgroup = "newgroup";
         groupService.createGroup(newgroup);
+        groupService.leaveGroup(1L);
         return newgroup;
     }
 }
