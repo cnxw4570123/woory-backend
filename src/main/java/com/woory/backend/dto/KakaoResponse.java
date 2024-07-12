@@ -24,17 +24,20 @@ public class KakaoResponse implements OAuth2Response {
 
 	@Override
 	public String getEmail() {
-		return attributes.get("email").toString();
+		return getProfile().get("email").toString();
 	}
 
 	@Override
 	public String getName() {
-		Map<String, Object> profile = (Map<String, Object>)attributes.get("profile");
-		return profile.get("nickname").toString();
+		return getProfile().get("nickname").toString();
+	}
+
+	private Map<String, Object> getProfile() {
+		return (Map<String, Object>)attributes.get("profile");
 	}
 
 	public String getProfileImage() {
-		Map<String, Object> profile = (Map<String, Object>)attributes.get("profile");
+		Map<String, Object> profile = getProfile();
 		return profile.get("profile_image_url").toString();
 	}
 }
