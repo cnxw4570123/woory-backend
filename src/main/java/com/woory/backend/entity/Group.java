@@ -1,55 +1,34 @@
 package com.woory.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 
 @Entity
-@Table(name = "group_table") // 테이블 이름을 지정해줍니다.
+@Table(name = "group_table")
 public class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "groupId")
     private Long groupId;
 
-    @Column(nullable = false)
-    private Long userId;
-
-    @Column(nullable = false)
-    private String email;
-
-    @Column(nullable = false)
+    @Column(name = "groupName")
     private String groupName;
 
-    @Enumerated(EnumType.ORDINAL)
-    @Column(nullable = false)
-    private GroupStatus status;
+    @ManyToMany
+    @JoinTable(
+            name = "group_user",
+            joinColumns = @JoinColumn(name = "groupId"),
+            inverseJoinColumns = @JoinColumn(name = "userId")
+    )
+    private Set<User> users = new HashSet<>();
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime regDate;
-
-    @Column(nullable = false)
-    private LocalDateTime lastUpdatedDate;
-
-
-    // Getters and setters
-
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    // Getters and Setters
 
     public Long getGroupId() {
         return groupId;
@@ -67,38 +46,15 @@ public class Group {
         this.groupName = groupName;
     }
 
-    public void setStatus(GroupStatus status) {
-        this.status = status;
+    public Set<User> getUsers() {
+        return users;
     }
 
-    public GroupStatus getStatus() {
-        return status;
+    public void setUsers(Set<User> users) {
+        this.users = users;
     }
 
-    public LocalDateTime getRegDate() {
-        return regDate;
-    }
-
-    public void setRegDate(LocalDateTime regDate) {
-        this.regDate = regDate;
-    }
-
-    public LocalDateTime getLastUpdatedDate() {
-        return lastUpdatedDate;
-    }
-
-    public void setLastUpdatedDate(LocalDateTime lastUpdatedDate) {
-        this.lastUpdatedDate = lastUpdatedDate;
-    }
-
-    @PrePersist
-    protected void onCreate() {
-        regDate = LocalDateTime.now();
-        lastUpdatedDate = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        lastUpdatedDate = LocalDateTime.now();
+    public void addUser(User user) {
+        this.users.add(user);
     }
 }
