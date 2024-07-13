@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import com.woory.backend.dto.CustomOAuth2User;
 import com.woory.backend.utils.JWTUtil;
 
-import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,7 +27,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 	}
 
 	@Override
-	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException, ServletException {
 		CustomOAuth2User user = (CustomOAuth2User)authentication.getPrincipal();
 
@@ -44,8 +43,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		response.sendRedirect("http://localhost:3000");
 	}
 
-
-	private ResponseCookie createAccessTokenCookie(String accessToken, long expiresIn){
+	private ResponseCookie createAccessTokenCookie(String accessToken, long expiresIn) {
 		return ResponseCookie.from("AccessToken", accessToken)
 			.httpOnly(true)
 			.maxAge(expiresIn)
@@ -53,6 +51,5 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 			.path("/")
 			.build();
 	}
-
 
 }
