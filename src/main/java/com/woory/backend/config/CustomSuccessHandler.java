@@ -39,7 +39,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		String accessToken = jwtUtil.generateAccessToken(userId, authorities);
 		ResponseCookie cookie = createAccessTokenCookie(accessToken, jwtUtil.getAccTokenExpireTime());
 		log.info("accessToken = {}", accessToken);
-		response.setHeader("set-cookie", cookie.toString());
+		response.setHeader("Set-Cookie", cookie.toString());
 		response.sendRedirect("http://localhost:3000");
 	}
 
@@ -47,7 +47,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		return ResponseCookie.from("AccessToken", accessToken)
 			.httpOnly(true)
 			.maxAge(expiresIn)
-			.sameSite("None")
+			// .sameSite("None")
 			.path("/")
 			.build();
 	}
