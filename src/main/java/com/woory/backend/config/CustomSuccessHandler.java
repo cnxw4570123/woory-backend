@@ -28,12 +28,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		Authentication authentication) throws IOException, ServletException {
 		CustomOAuth2User user = (CustomOAuth2User)authentication.getPrincipal();
 
-		String username = user.getUsername();
+		Long userId = user.getUserId();
 		String authorities = authentication.getAuthorities().stream()
 			.map(GrantedAuthority::getAuthority)
 			.collect(Collectors.joining(","));
 
-		String accessToken = jwtUtil.generateAccessToken(username, authorities);
+		String accessToken = jwtUtil.generateAccessToken(userId, authorities);
 		ResponseCookie cookie = createAccessTokenCookie(accessToken, jwtUtil.getAccTokenExpireTime());
 		response.setHeader("set-cookie", cookie.toString());
 	}
