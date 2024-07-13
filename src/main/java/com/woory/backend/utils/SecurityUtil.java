@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class SecurityUtil {
-	public static Long getCurrentUsername() {
+	public static Long getCurrentUserId() {
 		final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
 		CustomOAuth2User oAuth2User;
