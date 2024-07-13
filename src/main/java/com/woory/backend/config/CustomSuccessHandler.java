@@ -7,6 +7,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
 
 import com.woory.backend.dto.CustomOAuth2User;
 import com.woory.backend.utils.JWTUtil;
@@ -15,7 +16,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 	private final JWTUtil jwtUtil;
 
@@ -35,7 +39,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 		String accessToken = jwtUtil.generateAccessToken(userId, authorities);
 		ResponseCookie cookie = createAccessTokenCookie(accessToken, jwtUtil.getAccTokenExpireTime());
+		log.info("accessToken = {}", accessToken);
 		response.setHeader("set-cookie", cookie.toString());
+		response.sendRedirect("http://localhost:3000");
 	}
 
 
@@ -43,6 +49,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		return ResponseCookie.from("AccessToken", accessToken)
 			.httpOnly(true)
 			.maxAge(expiresIn)
+			.sameSite("None")
 			.path("/")
 			.build();
 	}
