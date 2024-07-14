@@ -41,7 +41,8 @@ dependencies {
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.mockito:mockito-junit-jupiter'
 
-
+    implementation 'org.springframework:spring-webflux'
+    implementation 'io.projectreactor.netty:reactor-netty'
 
     // 데이터베이스
     runtimeOnly 'com.mysql:mysql-connector-j' // RDS
