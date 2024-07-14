@@ -1,9 +1,17 @@
 package com.woory.backend.dto;
 
+import com.woory.backend.entity.Group;
 import com.woory.backend.entity.GroupStatus;
 
 import java.time.LocalDateTime;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class GroupDto {
     private Long groupId;
     private String email;
@@ -59,5 +67,12 @@ public class GroupDto {
 
     public void setLastUpdatedDate(LocalDateTime lastUpdatedDate) {
         this.lastUpdatedDate = lastUpdatedDate;
+    }
+
+    public static GroupDto fromGroup(Group group){
+        return GroupDto.builder()
+            .groupId(group.getGroupId())
+            .groupName(group.getGroupName())
+            .build();
     }
 }
