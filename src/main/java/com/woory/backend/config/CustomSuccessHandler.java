@@ -31,7 +31,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		Authentication authentication) throws IOException, ServletException {
 		CustomOAuth2User user = (CustomOAuth2User)authentication.getPrincipal();
 
-		Long userId = user.getUserId();
+		Long userId = Long.valueOf(user.getName());
 		String authorities = authentication.getAuthorities().stream()
 			.map(GrantedAuthority::getAuthority)
 			.collect(Collectors.joining(","));

@@ -16,6 +16,6 @@ public class SecurityUtil {
 		if (authentication == null || (oAuth2User = (CustomOAuth2User)authentication.getPrincipal()) == null) {
 			throw new RuntimeException("인증 정보가 없습니다.");
 		}
-		return oAuth2User.getUserId();
+		return Long.valueOf(oAuth2User.getName());
 	}
 }

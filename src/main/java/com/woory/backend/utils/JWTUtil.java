@@ -42,7 +42,7 @@ public class JWTUtil {
 
 	public String generateAccessToken(Long userId, String authorities) {
 		Date now = new Date();
-		Date tokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME);
+		Date tokenExpiresIn = new Date(now.getTime() + ACCESS_TOKEN_EXPIRE_TIME * 1_000);
 
 		return Jwts.builder()
 			.subject(Long.toString(userId))
