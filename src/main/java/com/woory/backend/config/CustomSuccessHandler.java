@@ -31,7 +31,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		Authentication authentication) throws IOException, ServletException {
 		CustomOAuth2User user = (CustomOAuth2User)authentication.getPrincipal();
 
-		Long userId = user.getUserId();
+		Long userId = Long.valueOf(user.getName());
 		String authorities = authentication.getAuthorities().stream()
 			.map(GrantedAuthority::getAuthority)
 			.collect(Collectors.joining(","));
@@ -39,7 +39,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		String accessToken = jwtUtil.generateAccessToken(userId, authorities);
 		ResponseCookie cookie = createAccessTokenCookie(accessToken, jwtUtil.getAccTokenExpireTime());
 		log.info("accessToken = {}", accessToken);
-		response.setHeader("set-cookie", cookie.toString());
+		response.setHeader("Set-Cookie", cookie.toString());
 		response.sendRedirect("http://localhost:3000");
 	}
 
@@ -47,7 +47,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		return ResponseCookie.from("AccessToken", accessToken)
 			.httpOnly(true)
 			.maxAge(expiresIn)
-			.sameSite("None")
+			// .sameSite("None")
 			.path("/")
 			.build();
 	}

@@ -34,12 +34,8 @@ public class CustomOAuth2User implements OAuth2User {
 
 	@Override
 	public String getName() {
-		return user.getNickname();
-	}
-
-	public Long getUserId() {
-		return user.getUserId();
-	}
+		return Long.toString(user.getUserId());
+	} // 유일한 아이디여야 함
 
 	public String getUsername() {
 		return user.getUsername();

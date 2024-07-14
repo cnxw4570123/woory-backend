@@ -13,7 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -34,7 +33,7 @@ public class GroupService {
         //로그인된 정보 가져오기
         User byUsername = getUser();
         Long id = byUsername.getUserId();
-        User byUserId = userRepository.findByUserId(id);
+        User byUserId = userRepository.findByUserId(id).get();
         long cnt = groupUserRepository.countByUser_UserId(id);
         long count = groupRepository.count();
 
@@ -101,7 +100,7 @@ public class GroupService {
 
         // 이메일 속성 가져오기
         String userName = customOAuth2User.getUsername();
-        User byUsername = userRepository.findByUsername(userName);
+        User byUsername = userRepository.findByUsername(userName).get();
         return byUsername;
     }
 
