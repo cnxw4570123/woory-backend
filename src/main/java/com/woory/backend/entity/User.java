@@ -7,7 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -34,8 +36,7 @@ public class User {
 
 	private String role;
 
-	@ManyToMany(mappedBy = "users", fetch = FetchType.LAZY)
-	private Set<Group> groups = new HashSet<>();
-
+	@OneToMany(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Group> groups = new ArrayList<>();
 }
 

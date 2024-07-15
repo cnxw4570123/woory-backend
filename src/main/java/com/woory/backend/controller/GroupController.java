@@ -25,14 +25,19 @@ public class GroupController {
     // 그룹 생성
     @PostMapping("/create")
     public ResponseEntity<String> createGroup(
-            @RequestParam String groupName,
-            @RequestParam MultipartFile groupPhoto) {
+            @RequestParam("groupName") String groupName,
+            @RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
 
         String photoPath;
-        try {
-            photoPath = savePhoto(groupPhoto); // 사진 경로 저장
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사진 저장 중 오류 발생");
+        if(groupPhoto != null){
+            try {
+                photoPath = savePhoto(groupPhoto); // 사진 경로 저장
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사진 저장 중 오류 발생");
+            }
+        } else{
+            String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
+            photoPath = defaultFile + "default.png";
         }
 
         // 그룹 생성
@@ -42,9 +47,9 @@ public class GroupController {
 
     @PutMapping("/update/{groupId}")
     public ResponseEntity<String> updateGroup(
-            @PathVariable Long groupId,
-            @RequestParam String groupName,
-            @RequestParam(required = false) MultipartFile groupPhoto) {
+            @PathVariable("groupId") Long groupId,
+            @RequestParam("groupName") String groupName,
+            @RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
 
         String photoPath = null;
 
@@ -63,37 +68,37 @@ public class GroupController {
 
     // 그룹 삭제
     @DeleteMapping("delete/{groupId}")
-    public ResponseEntity<Void> deleteGroup(@PathVariable Long groupId) {
+    public ResponseEntity<Void> deleteGroup(@PathVariable("groupId") Long groupId) {
         groupService.deleteGroup(groupId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     // 그룹 떠나기
     @PostMapping("/leave/{groupId}")
-    public ResponseEntity<Void> leaveGroup(@PathVariable Long groupId) {
+    public ResponseEntity<Void> leaveGroup(@PathVariable("groupId") Long groupId) {
         groupService.leaveGroup(groupId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     // 그룹 사용자를 벤하기 (그룹장 전용)
     @PostMapping("/ban/{groupId}/user/{userId}")
-    public ResponseEntity<Void> banGroupUser(@PathVariable Long groupId, @PathVariable Long userId) {
+    public ResponseEntity<Void> banGroupUser(@PathVariable("groupId") Long groupId, @PathVariable("userId") Long userId) {
         groupService.banGroup(groupId, userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     // 초대 링크 생성
     @PostMapping("/invite/{groupId}")
-    public ResponseEntity<String> generateInviteLink(@PathVariable Long groupId) {
+    public ResponseEntity<String> generateInviteLink(@PathVariable("groupId") Long groupId) {
         String inviteLink = groupService.generateInviteLink(groupId);
         return ResponseEntity.ok(inviteLink);
     }
 
     // 그룹 가입
     @GetMapping("/url/{groupId}")
-    public ResponseEntity<Void> joinGroup(@PathVariable Long groupId) {
+    public ResponseEntity<Void> joinGroup(@PathVariable("groupId") Long groupId) {
         groupService.joinGroup(groupId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 
     // 사진 저장 메서드
@@ -105,8 +110,8 @@ public class GroupController {
         if (photo.getSize() > maxSize) {
             throw new IOException("사진 크기는 100MB를 초과할 수 없습니다");
         }
-        String folderPath = "D:/java/img/";
-        String fileName = UUID.randomUUID().toString() + "_" + photo.getOriginalFilename();
+        String folderPath = new File("src/main/resources/images/").getAbsolutePath();
+        String fileName = UUID.randomUUID() + "_" + photo.getOriginalFilename();
         File file = new File(folderPath + fileName);
         photo.transferTo(file); // 파일 저장
 

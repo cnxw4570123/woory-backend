@@ -4,12 +4,16 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
 @Entity
 @Table(name = "group_table")
+@Getter
+@Setter
 public class Group {
 
     @Id
@@ -23,45 +27,7 @@ public class Group {
     @Column(name = "photoPath")
     private String photoPath;
 
-    @ManyToMany
-    @JoinTable(
-            name = "group_user",
-            joinColumns = @JoinColumn(name = "groupId"),
-            inverseJoinColumns = @JoinColumn(name = "userId")
-    )
-    private Set<User> users = new HashSet<>();
-
-    // Getters and Setters
-
-    public Long getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(Long groupId) {
-        this.groupId = groupId;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
-    }
-
-    public String getPhotoPath() {return photoPath;}
-
-    public void setPhotoPath(String groupPhoto) {this.photoPath = groupPhoto;}
-
-    public void addUser(User user) {
-        this.users.add(user);
-    }
+    @ManyToOne
+    @JoinColumn(name = "USER_ID")
+    private User users;
 }
