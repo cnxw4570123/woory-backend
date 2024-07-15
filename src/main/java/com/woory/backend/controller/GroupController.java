@@ -32,7 +32,7 @@ public class GroupController {
         try {
             photoPath = savePhoto(groupPhoto); // 사진 경로 저장
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사진 저장 중 오류 발생");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사진 저장 중 오류 발생");
         }
 
         // 그룹 생성
@@ -52,7 +52,7 @@ public class GroupController {
             try {
                 photoPath = savePhoto(groupPhoto);
             } catch (IOException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("사진 저장 중 오류 발생");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사진 저장 중 오류 발생");
             }
         }
 
