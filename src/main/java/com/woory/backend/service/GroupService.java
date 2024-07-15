@@ -75,8 +75,13 @@ public class GroupService {
     }
     @Transactional
     public void deleteGroup(Long groupId) {
-        groupRepository.deleteByGroupId(groupId);
-        groupUserRepository.deleteByGroup_GroupId(groupId);
+        Long loginId = SecurityUtil.getCurrentUserId();
+        //로그인한사람이 그룹장이면 벤이 가능
+        GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(loginId, groupId).get().getStatus();
+        if (status == GroupStatus.GROUP_LEADER) {
+            groupRepository.deleteByGroupId(groupId);
+            groupUserRepository.deleteByGroup_GroupId(groupId);
+        }
     }
 
     @Transactional
@@ -89,10 +94,8 @@ public class GroupService {
             groupRepository.deleteByGroupId(groupId);
             groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(userId,groupId);
         }else{
-            Optional<GroupUser> groupUserOptional = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId,groupId);
-            GroupUser groupUser = groupUserOptional.get();
-
-            if (groupUser.getStatus() == GroupStatus.GROUP_LEADER) {
+            GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId).get().getStatus();
+            if (status == GroupStatus.GROUP_LEADER) {
                 GroupUser old = groupUserRepository.findOldestActiveUser();
                 old.setStatus(GroupStatus.GROUP_LEADER);
                 groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(old.getUser().getUserId(),groupId,old.getStatus());
@@ -106,9 +109,8 @@ public class GroupService {
     public void banGroup(Long groupId,Long userId) {
         Long loginId = SecurityUtil.getCurrentUserId();
         //로그인한사람이 그룹장이면 벤이 가능
-        Optional<GroupUser> groupUserOptional = groupUserRepository.findByUser_UserIdAndGroup_GroupId(loginId,groupId);
-        GroupUser groupUser = groupUserOptional.get();
-        if (groupUser.getStatus() == GroupStatus.GROUP_LEADER) {
+        GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(loginId, groupId).get().getStatus();
+        if (status == GroupStatus.GROUP_LEADER) {
             groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(groupId,userId,GroupStatus.BANNED);
 
         }
@@ -117,12 +119,9 @@ public class GroupService {
     public String generateInviteLink(Long groupId) {
         //로그인한 유저
         Long userId = SecurityUtil.getCurrentUserId();
-        Optional<GroupUser> groupUserOptional = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId);
-        GroupUser groupUserD = groupUserOptional.get();
-        if (groupUserD.getStatus() == GroupStatus.GROUP_LEADER) {
-            String status = groupUserD.getStatus().toString();
-            String inviteLink = "http://localhost:8080/api/groups/url/" + groupId ;
-            return inviteLink;
+        GroupStatus statusL = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId).get().getStatus();
+        if (statusL == GroupStatus.GROUP_LEADER) {
+            return "http://localhost:8080/api/groups/url/" + groupId ;
         }
         return "";
 
@@ -135,34 +134,47 @@ public class GroupService {
         Long userId = SecurityUtil.getCurrentUserId();
         User byUserId = userRepository.findByUserId(userId).get();
         Group byGroupId = groupRepository.findByGroupId(groupId);
-        // 그룹과 사용자가 존재하는지 확인;p[
-        Optional<Group> groupOptional = groupRepository.findById(groupId);
-        if (!groupOptional.isPresent()) {
-            throw new IllegalArgumentException("Invalid group ID");
+        GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId).get().getStatus();
+
+
+        if (status != GroupStatus.GROUP_LEADER || status != GroupStatus.BANNED || status != GroupStatus.MEMBER) {
+            // 그룹과 사용자가 존재하는지 확인;p[
+            Optional<Group> groupOptional = groupRepository.findById(groupId);
+            if (!groupOptional.isPresent()) {
+                throw new IllegalArgumentException("Invalid group ID");
+            }
+
+            // GroupUser 생성 및 저장
+            GroupUser groupUser = new GroupUser();
+            groupUser.setUser(byUserId);
+            groupUser.setGroup(byGroupId);
+            groupUser.setStatus(GroupStatus.MEMBER); // 초대 상태 설정
+            groupUser.setRegDate(new Date());
+            groupUser.setLastUpdatedDate(new Date());
+
+            groupUserRepository.save(groupUser);
         }
 
-        // GroupUser 생성 및 저장
-        GroupUser groupUser = new GroupUser();
-        groupUser.setUser(byUserId);
-        groupUser.setGroup(byGroupId);
-        groupUser.setStatus(GroupStatus.MEMBER); // 초대 상태 설정
-        groupUser.setRegDate(new Date());
-        groupUser.setLastUpdatedDate(new Date());
 
-        groupUserRepository.save(groupUser);
     }
 
     @Transactional
     public Group updateGroup(Long groupId, String groupName, String photoPath) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
+        Long userId = SecurityUtil.getCurrentUserId();
+        GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId).get().getStatus();
+        if (status == GroupStatus.GROUP_LEADER) {
 
-        group.setGroupName(groupName);
-        if (photoPath != null) {
-            group.setPhotoPath(photoPath); // 사진 경로 수정
+            Group group = groupRepository.findById(groupId)
+                    .orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
+
+            group.setGroupName(groupName);
+            if (photoPath != null) {
+                group.setPhotoPath(photoPath); // 사진 경로 수정
+            }
+
+            return groupRepository.save(group);
         }
-
-        return groupRepository.save(group);
+        return null;
     }
     public List<GroupUser> activeMember(Long groupId) {
         return groupUserRepository.findActiveUsersByGroup_GroupId(groupId);

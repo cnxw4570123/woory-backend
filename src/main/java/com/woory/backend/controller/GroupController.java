@@ -2,25 +2,21 @@ package com.woory.backend.controller;
 
 import com.woory.backend.entity.Group;
 import com.woory.backend.service.GroupService;
-import jakarta.transaction.Transactional;
-import org.antlr.v4.runtime.misc.Pair;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
+
 
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/groups")
+@RequestMapping("/v1/groups")
 public class GroupController {
 
     @Autowired
@@ -73,21 +69,21 @@ public class GroupController {
     }
 
     // 그룹 떠나기
-    @PostMapping("/{groupId}/leave")
+    @PostMapping("/leave/{groupId}")
     public ResponseEntity<Void> leaveGroup(@PathVariable Long groupId) {
         groupService.leaveGroup(groupId);
         return ResponseEntity.noContent().build();
     }
 
     // 그룹 사용자를 벤하기 (그룹장 전용)
-    @PostMapping("/{groupId}/ban/user/{userId}")
+    @PostMapping("/ban/{groupId}/user/{userId}")
     public ResponseEntity<Void> banGroupUser(@PathVariable Long groupId, @PathVariable Long userId) {
         groupService.banGroup(groupId, userId);
         return ResponseEntity.noContent().build();
     }
 
     // 초대 링크 생성
-    @PostMapping("/{groupId}/invite")
+    @PostMapping("/invite/{groupId}")
     public ResponseEntity<String> generateInviteLink(@PathVariable Long groupId) {
         String inviteLink = groupService.generateInviteLink(groupId);
         return ResponseEntity.ok(inviteLink);
