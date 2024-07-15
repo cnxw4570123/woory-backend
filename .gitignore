@@ -44,4 +44,4 @@ src/main/resources/application-**.yml
 .DS_Store
 
 ### SSL ###
-src/main/resources/*.p12
+src/main/resources/keystore**
