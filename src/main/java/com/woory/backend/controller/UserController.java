@@ -23,7 +23,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @Tag(name = "사용자 관련", description = "사용자 관련 API")
 public class UserController {
-	private GroupService groupService;
 	private UserService userService;
 
 	@GetMapping("/my")
