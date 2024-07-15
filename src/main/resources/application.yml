@@ -2,6 +2,11 @@ spring:
   application:
     name: woory
 
+  servlet:
+    multipart:
+      max-file-size: 4MB
+      max-request-size: 4MB
+
   profiles:
     default: prod
     include:

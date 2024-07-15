@@ -21,7 +21,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
     @Query(value = "SELECT * FROM Group_User WHERE status = 1 ORDER BY reg_date ASC LIMIT 1", nativeQuery = true)
     GroupUser findOldestActiveUser();
     Optional<GroupUser> findByUser_UserIdAndGroup_GroupId(Long userId, Long groupId);
-    Optional<GroupUser> findByGroup_GroupId(Long groupId);
+    List<GroupUser> findByGroup_GroupId(Long groupId);
     @Query(value = "SELECT * FROM group_user gu WHERE gu.status = 1 AND gu.groupId = :groupId", nativeQuery = true)
     List<GroupUser> findActiveUsersByGroup_GroupId(@Param("groupId") Long groupId);
 
