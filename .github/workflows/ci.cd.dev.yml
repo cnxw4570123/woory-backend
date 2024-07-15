@@ -48,7 +48,7 @@ jobs:
         run: |
           cd src/main/resources
           touch ./keystore.b64
-          echo "${secrets.KEYSTORE}" >> ./keystore.b64
+          echo "${{ secrets.KEYSTORE }}" >> ./keystore.b64
           base64 -d -i ./keystore.b64 > ./keystore.p12
           
 
@@ -75,10 +75,10 @@ jobs:
 
       - name: Deploy to EC2 with CodeDeploy
         run: aws deploy create-deployment
-            --application-name woorydeploy
-            --deployment-config-name CodeDeployDefault.AllAtOnce
-            --deployment-group-name dev
-            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=${{ secrets.S3_BUCKET_DIR_NAME }}/$GITHUB_SHA.zip
+          --application-name woorydeploy
+          --deployment-config-name CodeDeployDefault.AllAtOnce
+          --deployment-group-name dev
+          --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=${{ secrets.S3_BUCKET_DIR_NAME }}/$GITHUB_SHA.zip
 
         
 
