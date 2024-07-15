@@ -32,7 +32,7 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
 
-      - name: application-dev.yml 생성
+      - name: application-**.yml 생성
         shell: bash
         run: |
           mkdir -p src/main/resources
@@ -42,6 +42,15 @@ jobs:
           
           echo "${{ secrets.APPLICATION_DEV_YML }}" >> ./application-dev.yml
           echo "${{ secrets.APPLICATION_SECRET_YML }}" >> ./application-secret.yml
+
+      - name: keystore 파일 생성
+        shell: bash
+        run: |
+          cd src/main/resources
+          touch ./keystore.b64
+          echo "${secrets.KEYSTORE}" >> ./keystore.b64
+          base64 -d -i ./keystore.b64 > ./keystore.p12
+          
 
       - name: Grant execute permission for gradlew
         # 경로 확인 후 권한 부여
