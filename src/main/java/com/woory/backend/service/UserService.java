@@ -25,4 +25,16 @@ public class UserService {
 		return UserResponseDto.fromUser(user);
 	}
 
+	public void deleteAccount(){
+		Long userId = SecurityUtil.getCurrentUserId();
+
+		User user = userRepository.findByUserId(userId)
+			.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
+
+		if (user.getUsername().startsWith("kakao")){
+
+		}
+
+	}
+
 }

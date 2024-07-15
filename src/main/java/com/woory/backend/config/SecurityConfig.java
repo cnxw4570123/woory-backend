@@ -56,7 +56,7 @@ public class SecurityConfig {
 				))
 			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests((auth) -> auth
-				.requestMatchers("/", "/error").permitAll()  //에러 페이지 허용
+				.requestMatchers("/", "/error", "swagger-ui/**", "swagger/docs/**").permitAll()  //에러 페이지 허용
 				.anyRequest().authenticated());
 
 		return http.build();

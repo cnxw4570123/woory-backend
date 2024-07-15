@@ -18,3 +18,9 @@ spring:
         - local
       dev:
         - dev
+
+springdoc:
+  api-docs:
+    path: /swagger/docs
+  swagger-ui:
+    url: /swagger/docs
