@@ -14,18 +14,19 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 public class SwaggerConfig {
 	@Bean
 	public OpenAPI openAPI() {
-		String jwt = "JWT";
-		SecurityRequirement securityRequirement = new SecurityRequirement().addList(jwt);
-		Components components = new Components().addSecuritySchemes(jwt,
+		String cookie = "cookie";
+		SecurityRequirement securityRequirement = new SecurityRequirement().addList(cookie);
+		Components components = new Components().addSecuritySchemes(cookie,
 			new SecurityScheme()
 				.type(SecurityScheme.Type.APIKEY)
-				.scheme("bearer")
-				.bearerFormat("JWT")
+				.in(SecurityScheme.In.COOKIE)
+				.name("AccessToken")
 		);
 		return new OpenAPI()
 			.components(new Components())
 			.addSecurityItem(securityRequirement)
-			.components(components);
+			.components(components)
+			.info(apiInfo());
 	}
 
 	private Info apiInfo() {
