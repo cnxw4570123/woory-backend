@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
+@Transactional
 public class GroupService {
 	private UserRepository userRepository;
 	private GroupRepository groupRepository;
@@ -138,7 +139,7 @@ public class GroupService {
 		Long userId = SecurityUtil.getCurrentUserId();
 		User byUserId = getUser();
 
-		List<GroupUser> byGroupGroupId = groupUserRepository.findByGroup_GroupId(groupId);
+		List<GroupUser> byGroupGroupId = groupUserRepository.findAllByGroup_GroupId(groupId);
 
 		boolean present = byGroupGroupId.stream()
 			.anyMatch(groupUser -> groupUser.getUser().getUserId().equals(userId));
