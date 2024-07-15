@@ -10,6 +10,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import com.woory.backend.dto.CustomOAuth2User;
+import com.woory.backend.utils.CookieUtil;
 import com.woory.backend.utils.JWTUtil;
 
 import jakarta.servlet.ServletException;
@@ -37,19 +38,9 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 			.collect(Collectors.joining(","));
 
 		String accessToken = jwtUtil.generateAccessToken(userId, authorities);
-		ResponseCookie cookie = createAccessTokenCookie(accessToken, jwtUtil.getAccTokenExpireTime());
+		ResponseCookie cookie = CookieUtil.createAccessTokenCookie(accessToken, jwtUtil.getAccTokenExpireTime());
 		log.info("accessToken = {}", accessToken);
 		response.setHeader("Set-Cookie", cookie.toString());
-		response.sendRedirect("http://localhost:3000");
+		response.setStatus(HttpServletResponse.SC_OK);
 	}
-
-	private ResponseCookie createAccessTokenCookie(String accessToken, long expiresIn) {
-		return ResponseCookie.from("AccessToken", accessToken)
-			.httpOnly(true)
-			.maxAge(expiresIn)
-			// .sameSite("None")
-			.path("/")
-			.build();
-	}
-
 }
