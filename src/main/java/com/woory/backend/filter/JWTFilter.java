@@ -43,7 +43,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
 		// AccessToken이 없으면 종료
 		if(accessToken.isEmpty()){
-			log.info("AccessToken is null");
+			log.info("토큰 없음");
 			filterChain.doFilter(request, response);
 			return;
 		}

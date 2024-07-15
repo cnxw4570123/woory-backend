@@ -36,6 +36,7 @@ public class User {
 
 	private String role;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Group> groups = new ArrayList<>();
 }

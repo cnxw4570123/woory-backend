@@ -23,8 +23,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "가족 관련", description = "가족 관련 API")
 public class GroupController {
 
+    private final GroupService groupService;
+
     @Autowired
-    private GroupService groupService;
+    public GroupController(GroupService groupService) {
+        this.groupService = groupService;
+    }
 
     @Operation(summary = "그룹 생성", description = "이름과 파일을 받아서 가족 생성, 파일 미전송 시 기본 파일으로 지정")
     // 그룹 생성
