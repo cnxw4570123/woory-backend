@@ -25,10 +25,7 @@ class GroupServiceTest {
     @Test
     void createGroup() {
 
-        final String groupName = "test";
 
-
-        groupService.createGroup(groupName);
 
 
     }

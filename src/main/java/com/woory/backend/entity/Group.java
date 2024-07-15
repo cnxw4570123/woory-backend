@@ -20,6 +20,9 @@ public class Group {
     @Column(name = "groupName")
     private String groupName;
 
+    @Column(name = "photoPath")
+    private String photoPath;
+
     @ManyToMany
     @JoinTable(
             name = "group_user",
@@ -53,6 +56,10 @@ public class Group {
     public void setUsers(Set<User> users) {
         this.users = users;
     }
+
+    public String getPhotoPath() {return photoPath;}
+
+    public void setPhotoPath(String groupPhoto) {this.photoPath = groupPhoto;}
 
     public void addUser(User user) {
         this.users.add(user);
