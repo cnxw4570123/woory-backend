@@ -19,7 +19,7 @@ public class UserService {
 	public UserResponseDto getUserInfo() {
 		Long userId = SecurityUtil.getCurrentUserId();
 
-		User user = userRepository.findByUserId(userId)
+		User user = userRepository.findByUserIdWithGroups(userId)
 			.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
 
 		return UserResponseDto.fromUser(user);
@@ -28,7 +28,7 @@ public class UserService {
 	public void deleteAccount(){
 		Long userId = SecurityUtil.getCurrentUserId();
 
-		User user = userRepository.findByUserId(userId)
+		User user = userRepository.findByUserIdWithGroups(userId)
 			.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
 
 		if (user.getUsername().startsWith("kakao")){

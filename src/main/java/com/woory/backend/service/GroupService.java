@@ -162,7 +162,7 @@ public class GroupService {
 
 	private User getUser() {
 		Long userId = SecurityUtil.getCurrentUserId();
-		User byUserId = userRepository.findByUserId(userId)
+		User byUserId = userRepository.findByUserIdWithGroups(userId)
 			.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
 		return byUserId;
 	}
