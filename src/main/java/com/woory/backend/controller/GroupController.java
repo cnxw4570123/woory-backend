@@ -119,13 +119,7 @@ public class GroupController {
 
     // 사진 저장 메서드
     private String savePhoto(MultipartFile photo) throws IOException {
-        // 사진 크기 제한 설정 (100MB)
-        long maxSize = 100 * 1024 * 1024; // 100MB
 
-        // 사진 크기 확인
-        if (photo.getSize() > maxSize) {
-            throw new IOException("사진 크기는 100MB를 초과할 수 없습니다.");
-        }
 
         // 확장자 체크
         String originalFilename = photo.getOriginalFilename();

@@ -28,6 +28,7 @@ public class ContentService {
         this.topicRepository = topicRepository;
 
     }
+    @Transactional
     public Content createContent(Long groupId, Long topicId, String contentText, String contentImgPath) {
         Long userId = SecurityUtil.getCurrentUserId();
         User user = userRepository.findByUserId(userId)
@@ -80,7 +81,7 @@ public class ContentService {
         GroupStatus status = getGroupStatus(userId, groupId);
 
         if (!content.getUsers().getUserId().equals(userId)) {
-            throw new RuntimeException("컨텐츠를 삭제할 권한이 없습니다.");
+            throw new RuntimeException("컨텐츠를 수정할 권한이 없습니다.");
         }
 
         if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
