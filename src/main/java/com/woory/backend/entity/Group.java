@@ -28,6 +28,10 @@ public class Group {
     private String photoPath;
 
     @ManyToOne
-    @JoinColumn(name = "USER_ID")
+    @JoinColumn(name = "user_id")
     private User users;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "topic_Id")
+    private Topic topic;
 }
