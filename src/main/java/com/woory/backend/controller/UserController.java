@@ -40,8 +40,11 @@ public class UserController {
 	}
 
 	@DeleteMapping("/delete")
-	@Operation(summary = "현재 미완성입니다.")
+	@Operation(summary = "서비스 탈퇴")
 	public ResponseEntity<Void> deleteAccount(HttpServletResponse response) {
+		userService.deleteAccount();
+		// 쿠키 삭제
+		response.setHeader("Set-Cookie", CookieUtil.createAccessTokenCookie("", 0).toString());
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 }
