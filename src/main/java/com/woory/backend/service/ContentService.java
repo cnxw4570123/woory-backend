@@ -1,5 +1,6 @@
 package com.woory.backend.service;
 
+import com.woory.backend.dto.ContentReactionDto;
 import com.woory.backend.entity.*;
 import com.woory.backend.repository2.*;
 import com.woory.backend.utils.SecurityUtil;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ContentService {
@@ -17,15 +19,17 @@ public class ContentService {
     private UserRepository userRepository;
     private GroupUserRepository groupUserRepository;
     private TopicRepository topicRepository;
+    private final ContentReactionRepository contentReactionRepository;
 
     @Autowired
     public ContentService(UserRepository userRepository, GroupRepository groupRepository,
                           ContentRepository contentRepository,GroupUserRepository groupUserRepository,
-                          TopicRepository topicRepository) {
+                          TopicRepository topicRepository,ContentReactionRepository contentReactionRepository) {
         this.userRepository = userRepository;
         this.contentRepository = contentRepository;
         this.groupUserRepository = groupUserRepository;
         this.topicRepository = topicRepository;
+        this.contentReactionRepository = contentReactionRepository;
 
     }
     @Transactional
@@ -37,9 +41,6 @@ public class ContentService {
                 .orElseThrow(()-> new NoSuchElementException("그룹과 유저를 찾을 수 없습니다."));
         Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new NoSuchElementException("토픽을 찾을 수 없습니다."));
-
-
-
 
         // Content 생성 및 저장 로직
         Content content = new Content();
@@ -100,29 +101,95 @@ public class ContentService {
         return contentRepository.findContentsByRegDateLike(dateStr + "%");
     }
 
-    public List<Content> getContentBySpecificDay(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+    //리엑션 추가
+    public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
+        Content content = contentRepository.findByContentId(contentId)
+                .orElseThrow(() -> new NoSuchElementException("해당 컨텐츠를 찾을 수 없습니다."));
+        ContentReactionId id = new ContentReactionId(contentId, userId);
+        Optional<ContentReaction> byId = contentReactionRepository.findById(id);
 
-        // Set the start of the day (00:00:00)
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        Date startDate = calendar.getTime();
+        if (byId.isPresent()) {
+            ContentReaction contentReaction = byId.get();
+            if(contentReaction.getReaction() == newReaction){
+                removeReaction(contentId, userId);
+                return null;
+            }
+            decreaseReactionCount(content,contentReaction.getReaction());
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을수 없습니다."));
+        ContentReaction contentReaction = new ContentReaction(id, content, user, newReaction);
+        contentReactionRepository.save(contentReaction);
 
-        // Set the end of the day (23:59:59)
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        Date endDate = calendar.getTime();
+        increaseReactionCount(content, newReaction);
+        contentRepository.save(content);
 
-        return contentRepository.findAllByContentRegDateBetween(startDate, endDate);
+        ContentReactionDto dto = new ContentReactionDto();
+        dto.setContentId(contentReaction.getContent().getContentId());
+        dto.setUserId(contentReaction.getUser().getUserId());
+        dto.setReaction(contentReaction.getReaction());
+        return dto;
+
+    }
+    //컨텐츠의 리액션 보기
+    public List<ContentReactionDto> getReactionsByContentId(Long contentId) {
+        Content content = contentRepository.findById(contentId)
+                .orElseThrow(() -> new RuntimeException("Content not found"));
+
+        List<ContentReaction> reactions = contentReactionRepository.findByContent_ContentId(contentId);
+
+        // Convert List<ContentReaction> to List<ContentReactionDto>
+        return reactions.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private ContentReactionDto convertToDto(ContentReaction reaction) {
+        ContentReactionDto dto = new ContentReactionDto();
+        dto.setContentId(reaction.getContent().getContentId());
+        dto.setUserId(reaction.getUser().getUserId());
+        dto.setReaction(reaction.getReaction());
+        return dto;
+    }
+
+
+    private void removeReaction(Long contentId, Long userId) {
+        ContentReactionId id = new ContentReactionId(contentId, userId);
+        ContentReaction contentReaction = contentReactionRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("리액션을 찾을 수 없습니다."));
+        Content content = contentReaction.getContent();
+        decreaseReactionCount(content, contentReaction.getReaction());
+
+        contentReactionRepository.delete(contentReaction);
+
+        // Save the content
+        contentRepository.save(content);
     }
 
 
     private GroupStatus getGroupStatus(Long userId, Long groupId) {
         GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId).get().getStatus();
         return status;
+    }
+
+    private void increaseReactionCount(Content content, ReactionType reaction) {
+        switch (reaction) {
+            case LIKE -> content.setLikeCount(content.getLikeCount() + 1);
+            case LOVE -> content.setLoveCount(content.getLoveCount() + 1);
+            case WOW -> content.setWowCount(content.getWowCount() + 1);
+            case SAD -> content.setSadCount(content.getSadCount() + 1);
+            case ANGRY -> content.setAngryCount(content.getAngryCount() + 1);
+        }
+    }
+
+    private void decreaseReactionCount(Content content, ReactionType reaction) {
+        switch (reaction) {
+            case LIKE -> content.setLikeCount(content.getLikeCount() - 1);
+            case LOVE -> content.setLoveCount(content.getLoveCount() - 1);
+            case WOW -> content.setWowCount(content.getWowCount() - 1);
+            case SAD -> content.setSadCount(content.getSadCount() - 1);
+            case ANGRY -> content.setAngryCount(content.getAngryCount() - 1);
+        }
     }
 
 }
