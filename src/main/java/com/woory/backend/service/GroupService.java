@@ -1,11 +1,17 @@
 package com.woory.backend.service;
 
+import com.woory.backend.dto.TopicDto;
 import com.woory.backend.entity.Group;
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
+import com.woory.backend.entity.Topic;
+import com.woory.backend.entity.TopicManager;
+import com.woory.backend.entity.TopicSet;
 import com.woory.backend.entity.User;
 import com.woory.backend.repository2.GroupRepository;
 import com.woory.backend.repository2.GroupUserRepository;
+import com.woory.backend.repository2.TopicRepository;
+import com.woory.backend.repository2.TopicSetRepository;
 import com.woory.backend.repository2.UserRepository;
 import com.woory.backend.utils.SecurityUtil;
 
@@ -23,15 +29,21 @@ public class GroupService {
 	private UserRepository userRepository;
 	private GroupRepository groupRepository;
 	private GroupUserRepository groupUserRepository;
+	private TopicRepository topicRepository;
+	private TopicSetRepository topicSetRepository;
 	private final String serverAddress;
 
 	@Autowired
 	public GroupService(UserRepository userRepository, GroupRepository groupRepository,
 		GroupUserRepository groupUserRepository,
+		TopicRepository topicRepository,
+		TopicSetRepository topicSetRepository,
 		@Value("${server.ip}") String serverAddress) {
 		this.userRepository = userRepository;
 		this.groupRepository = groupRepository;
 		this.groupUserRepository = groupUserRepository;
+		this.topicRepository = topicRepository;
+		this.topicSetRepository = topicSetRepository;
 		this.serverAddress = serverAddress;
 	}
 
@@ -50,21 +62,34 @@ public class GroupService {
 		group.setPhotoPath(photoPath);
 
 		// 그룹 저장
-		group = groupRepository.save(group);
+		Group savedGroup = groupRepository.save(group);
 
 		if (group.getGroupId() == null) {
 			throw new IllegalStateException("Group ID was not generated.");
 		}
 
+		Date now = new Date();
 		// GroupUser 생성 및 저장
 		GroupUser groupUser = new GroupUser();
 		groupUser.setUser(byUserId);
-		groupUser.setGroup(group);
+		groupUser.setGroup(savedGroup);
 		groupUser.setStatus(GroupStatus.GROUP_LEADER); // 초기 상태 설정
-		groupUser.setRegDate(new Date());
+		groupUser.setRegDate(now);
 		groupUser.setLastUpdatedDate(new Date());
 
 		groupUserRepository.save(groupUser);
+
+		int topicOfToday = TopicManager.getTopicOfToday();
+		topicSetRepository.findTopicSetById((long)topicOfToday).ifPresent(
+			topicSet -> {
+				Topic build = Topic.builder().group(savedGroup)
+					.issueDate(now)
+					.topicByte(topicSet.getTopic_byte())
+					.topicContent(topicSet.getValue())
+					.build();
+				topicRepository.save(build);
+			}
+		);
 
 		return group;
 
@@ -98,7 +123,7 @@ public class GroupService {
 				GroupUser old = groupUsers.get(1);
 				old.setStatus(GroupStatus.GROUP_LEADER);
 				groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(old.getUser().getUserId(), groupId,
-						old.getStatus());
+					old.getStatus());
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			}
 		}
