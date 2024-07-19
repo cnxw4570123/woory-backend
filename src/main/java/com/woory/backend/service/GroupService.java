@@ -85,18 +85,20 @@ public class GroupService {
 	public void leaveGroup(Long groupId) {
 		//로그인된 정보 가져오기
 		Long userId = SecurityUtil.getCurrentUserId();
-		long cnt = groupUserRepository.countByGroup_GroupId(groupId);
+		List<GroupUser> groupUsers = activeMember(groupId);
+
 		//1명이하이면 그룹떠날시 그룹 삭제 유저그룹에서 삭제
-		if (cnt <= 1) {
+		if (groupUsers.size() <= 1) {
 			groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			groupRepository.deleteByGroupId(groupId);
 		} else {
 			GroupStatus status = getGroupStatus(groupId, userId);
 			if (status == GroupStatus.GROUP_LEADER) {
-				GroupUser old = groupUserRepository.findOldestActiveUser();
+				// "가장" 다음으로 오래된 회원
+				GroupUser old = groupUsers.get(1);
 				old.setStatus(GroupStatus.GROUP_LEADER);
 				groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(old.getUser().getUserId(), groupId,
-					old.getStatus());
+						old.getStatus());
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			}
 		}
@@ -187,7 +189,7 @@ public class GroupService {
 	}
 
 	public List<GroupUser> activeMember(Long groupId) {
-		return groupUserRepository.findActiveUsersByGroup_GroupId(groupId);
+		return groupUserRepository.findActiveGroupUsersByGroupIdOrderByRegDate(groupId);
 	}
 
 }

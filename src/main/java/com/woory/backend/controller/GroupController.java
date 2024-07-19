@@ -119,19 +119,33 @@ public class GroupController {
 
     // 사진 저장 메서드
     private String savePhoto(MultipartFile photo) throws IOException {
-        // 사진 크기 제한 설정 (100MB)
-        long maxSize = 100 * 1024 * 1024; // 100MB
 
-        // 사진 크기 확인
-        if (photo.getSize() > maxSize) {
-            throw new IOException("사진 크기는 100MB를 초과할 수 없습니다");
+
+        // 확장자 체크
+        String originalFilename = photo.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new IOException("파일 이름이 유효하지 않습니다.");
         }
-        String folderPath = new File("src/main/resources/images/").getAbsolutePath();
-        String fileName = UUID.randomUUID() + "_" + photo.getOriginalFilename();
+
+        String fileExtension = getFileExtension(originalFilename);
+        if (!fileExtension.equalsIgnoreCase("png") && !fileExtension.equalsIgnoreCase("jpg")) {
+            throw new IOException("파일 확장자는 png 또는 jpg만 가능합니다.");
+        }
+
+        String folderPath = new File("src/main/resources/images/").getAbsolutePath() + "/";
+        String fileName = UUID.randomUUID() + "_" + originalFilename;
         File file = new File(folderPath + fileName);
         photo.transferTo(file); // 파일 저장
 
         return file.getAbsolutePath(); // 사진 경로 반환
+    }
+    // 파일 확장자 추출 메서드
+    private String getFileExtension(String filename) {
+        int lastIndexOfDot = filename.lastIndexOf('.');
+        if (lastIndexOfDot == -1) {
+            return ""; // 확장자가 없는 경우 빈 문자열 반환
+        }
+        return filename.substring(lastIndexOfDot + 1);
     }
 
 }

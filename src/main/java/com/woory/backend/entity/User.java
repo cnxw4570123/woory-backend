@@ -39,5 +39,11 @@ public class User {
 	@Builder.Default
 	@OneToMany(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Group> groups = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Content> contents = new ArrayList<>();
+	@Builder.Default
+	@OneToMany(mappedBy = "users", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<Comment> comments = new HashSet<>();
 }
 
