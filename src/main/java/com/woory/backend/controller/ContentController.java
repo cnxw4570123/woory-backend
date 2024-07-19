@@ -1,5 +1,6 @@
 package com.woory.backend.controller;
 
+import com.woory.backend.entity.Comment;
 import com.woory.backend.entity.Content;
 import com.woory.backend.service.ContentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,10 +13,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/v1/content")
+@RequestMapping("/v1/contents")
 @Tag(name = "글작성 관련", description = "글작성 관련 API")
 public class ContentController {
 
@@ -26,8 +28,7 @@ public class ContentController {
         this.contentService = contentService;
     }
 
-    @Operation(summary = "그룹 생성", description = "이름과 파일을 받아서 가족 생성, 파일 미전송 시 기본 파일으로 지정")
-    // 그룹 생성
+    @Operation(summary = "content 생성")
     @PostMapping("/create")
     public ResponseEntity<String> createContent(
             @RequestParam Long groupId,
@@ -50,7 +51,7 @@ public class ContentController {
         Content content = contentService.createContent(groupId,topicId, contentText, photoPath);
         return ResponseEntity.ok("컨텐츠가 생성되었습니다: " + topicId);
     }
-
+    @Operation(summary = "content 삭제")
     @DeleteMapping("/{groupId}/{contentId}")
     public ResponseEntity<Void> deleteContent(
             @PathVariable Long groupId,
@@ -58,6 +59,7 @@ public class ContentController {
         contentService.deleteContent(groupId, contentId);
         return ResponseEntity.noContent().build();
     }
+    @Operation(summary = "content 수정")
     @PutMapping("/{groupId}/{contentId}")
     public ResponseEntity<String> updateContent(
             @PathVariable Long groupId,
@@ -77,6 +79,11 @@ public class ContentController {
         }
         Content updatedContent = contentService.updateContent(groupId, contentId, contentText, photoPath);
         return ResponseEntity.ok("컨텐츠가 수정되었습니다: " + contentId);
+    }
+    @GetMapping("/get")
+    public ResponseEntity<List<Content>> getContentsByRegDate(@RequestParam String date) {
+        List<Content> contents = contentService.getContentsByRegDateLike(date);
+        return ResponseEntity.ok(contents);
     }
 
     // 사진 저장 메서드
@@ -108,4 +115,6 @@ public class ContentController {
         }
         return filename.substring(lastIndexOfDot + 1);
     }
+
+
 }

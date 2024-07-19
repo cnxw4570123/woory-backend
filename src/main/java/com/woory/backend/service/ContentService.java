@@ -47,6 +47,7 @@ public class ContentService {
         content.setContentImgPath(contentImgPath);
         content.setUsers(user);
         content.setTopic(topic);
+        content.setContentRegDate(new Date());
 
         return contentRepository.save(content);
     }
@@ -95,6 +96,10 @@ public class ContentService {
 
 
     }
+    public List<Content> getContentsByRegDateLike(String dateStr) {
+        return contentRepository.findContentsByRegDateLike(dateStr + "%");
+    }
+
     public List<Content> getContentBySpecificDay(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
