@@ -1,11 +1,7 @@
 package com.woory.backend.controller;
 
 import com.woory.backend.dto.CommentDto;
-import com.woory.backend.dto.CommentReactionDto;
 import com.woory.backend.dto.CommentRequestDto;
-import com.woory.backend.dto.ContentReactionDto;
-import com.woory.backend.entity.Comment;
-import com.woory.backend.entity.ReactionType;
 import com.woory.backend.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,26 +46,7 @@ public class CommentController {
         List<CommentDto> comments = commentService.getCommentsByContentId(groupId,contentId);
         return ResponseEntity.ok(comments);
     }
-    @PostMapping("/reaction")
-    public ResponseEntity<?> addOrUpdateReaction(@RequestParam Long contentId,
-                                                 @RequestParam Long userId,
-                                                 @RequestParam String reaction) {
-        try {
-            ReactionType reactionType = ReactionType.valueOf(reaction.toUpperCase());
-            CommentReactionDto commentReactionDto = commentService.addOrUpdateReaction(contentId, userId, reactionType);
-            if (commentReactionDto == null) {
-                return ResponseEntity.ok("리액션이 없습니다.");
-            }
-            return ResponseEntity.ok(commentReactionDto);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-    @GetMapping("/reaction")
-    public ResponseEntity<?> getReactions(@RequestParam Long contentId) {
-        List<CommentReactionDto> reactionsByCommentId = commentService.getReactionsByCommentId(contentId);
-        return ResponseEntity.ok(reactionsByCommentId);
-    }
+
 
 
 }
