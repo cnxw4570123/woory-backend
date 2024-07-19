@@ -12,10 +12,9 @@ import java.util.Optional;
 
 @Repository
 public interface ContentRepository extends JpaRepository<Content, Long> {
-
-    List<Content> findAllByContentRegDateBetween(Date startDate, Date endDate);
     Optional<Content> findByContentId(Long contentId);
-
     @Query(value = "SELECT * FROM content WHERE DATE_FORMAT(content_reg_date, '%Y-%m-%d') LIKE :date%", nativeQuery = true)
     List<Content> findContentsByRegDateLike(@Param("date") String date);
+    @Query(value = "SELECT * FROM content WHERE DATE_FORMAT(content_reg_date, '%Y-%m') LIKE :date%", nativeQuery = true)
+    List<Content> findContentsByRegDateMonthLike(@Param("date") String date);
 }

@@ -1,7 +1,9 @@
 package com.woory.backend.controller;
 
+import com.woory.backend.dto.ContentReactionDto;
 import com.woory.backend.entity.Comment;
 import com.woory.backend.entity.Content;
+import com.woory.backend.entity.ReactionType;
 import com.woory.backend.service.ContentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +24,7 @@ import java.util.UUID;
 public class ContentController {
 
     private final ContentService contentService;
+
 
     @Autowired
     public ContentController(ContentService contentService) {
@@ -51,6 +54,7 @@ public class ContentController {
         Content content = contentService.createContent(groupId,topicId, contentText, photoPath);
         return ResponseEntity.ok("컨텐츠가 생성되었습니다: " + topicId);
     }
+
     @Operation(summary = "content 삭제")
     @DeleteMapping("/{groupId}/{contentId}")
     public ResponseEntity<Void> deleteContent(
@@ -59,6 +63,7 @@ public class ContentController {
         contentService.deleteContent(groupId, contentId);
         return ResponseEntity.noContent().build();
     }
+
     @Operation(summary = "content 수정")
     @PutMapping("/{groupId}/{contentId}")
     public ResponseEntity<String> updateContent(
@@ -80,6 +85,8 @@ public class ContentController {
         Content updatedContent = contentService.updateContent(groupId, contentId, contentText, photoPath);
         return ResponseEntity.ok("컨텐츠가 수정되었습니다: " + contentId);
     }
+
+    @Operation(summary = "content 조회")
     @GetMapping("/get")
     public ResponseEntity<List<Content>> getContentsByRegDate(@RequestParam String date) {
         List<Content> contents = contentService.getContentsByRegDateLike(date);
@@ -115,6 +122,25 @@ public class ContentController {
         }
         return filename.substring(lastIndexOfDot + 1);
     }
-
+    @PostMapping("/reaction")
+    public ResponseEntity<?> addOrUpdateReaction(@RequestParam Long contentId,
+                                                 @RequestParam Long userId,
+                                                 @RequestParam String reaction) {
+        try {
+            ReactionType reactionType = ReactionType.valueOf(reaction.toUpperCase());
+            ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(contentId, userId, reactionType);
+            if (updatedReaction == null) {
+                return ResponseEntity.ok("Reaction removed successfully");
+            }
+            return ResponseEntity.ok(updatedReaction);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    @GetMapping("/reaction")
+    public ResponseEntity<?> getReactions(@RequestParam Long contentId) {
+        List<ContentReactionDto> reactionsByContentId = contentService.getReactionsByContentId(contentId);
+        return ResponseEntity.ok(reactionsByContentId);
+    }
 
 }

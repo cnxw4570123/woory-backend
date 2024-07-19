@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Builder
 @NoArgsConstructor
@@ -40,9 +38,25 @@ public class Comment {
     @Column(name = "status", nullable = false)
     private String status;
 
+    @Column(name = "like_count", nullable = false)
+    private int likeCount;
+
+    @Column(name = "love_count", nullable = false)
+    private int loveCount;
+
+    @Column(name = "wow_count", nullable = false)
+    private int wowCount;
+
+    @Column(name = "sad_count", nullable = false)
+    private int sadCount;
+
+    @Column(name = "angry_count", nullable = false)
+    private int angryCount;
+
     @Column(name = "comment_date", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date commentDate;
+
 
 
 }

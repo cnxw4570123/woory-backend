@@ -2,7 +2,6 @@ package com.woory.backend.controller;
 
 import com.woory.backend.dto.CommentDto;
 import com.woory.backend.dto.CommentRequestDto;
-import com.woory.backend.entity.Comment;
 import com.woory.backend.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,5 +46,7 @@ public class CommentController {
         List<CommentDto> comments = commentService.getCommentsByContentId(groupId,contentId);
         return ResponseEntity.ok(comments);
     }
+
+
 
 }

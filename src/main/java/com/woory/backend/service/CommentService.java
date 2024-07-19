@@ -3,16 +3,12 @@ package com.woory.backend.service;
 import com.woory.backend.dto.CommentDto;
 import com.woory.backend.dto.CommentRequestDto;
 import com.woory.backend.entity.*;
-import com.woory.backend.repository2.CommentRepository;
-import com.woory.backend.repository2.ContentRepository;
-import com.woory.backend.repository2.GroupUserRepository;
-import com.woory.backend.repository2.UserRepository;
+import com.woory.backend.repository2.*;
 import com.woory.backend.utils.SecurityUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -26,8 +22,10 @@ public class CommentService {
     private UserRepository userRepository;
     private GroupUserRepository groupUserRepository;
 
+
     @Autowired
-    public CommentService(CommentRepository commentRepository, ContentRepository contentRepository, UserRepository userRepository, GroupUserRepository groupUserRepository) {
+    public CommentService(CommentRepository commentRepository, ContentRepository contentRepository,
+                          UserRepository userRepository, GroupUserRepository groupUserRepository) {
         this.commentRepository = commentRepository;
         this.contentRepository = contentRepository;
         this.userRepository = userRepository;
@@ -90,6 +88,7 @@ public class CommentService {
         comment.setStatus("d");
         commentRepository.save(comment);
     }
+
     @Transactional
     public CommentDto  updateComment(Long groupId, Long commentId, String newText){
         Long userId = SecurityUtil.getCurrentUserId();
@@ -132,4 +131,6 @@ public class CommentService {
         commentDto.setCommentDate(comment.getCommentDate());
         return commentDto;
     }
+
+
 }
