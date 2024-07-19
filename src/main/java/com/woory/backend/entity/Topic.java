@@ -16,22 +16,24 @@ import java.util.List;
 @Table(name = "topic")
 public class Topic {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "topicId")
-    private Long topicId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "topicId")
+	private Long topicId;
 
-    @Column(name = "topicContent")
-    private String topicContent;
+	@Column(name = "topicContent")
+	private String topicContent;
 
-    @Column(name = "issueDate")
-    private Date issueDate;
+	@Column(name = "issueDate")
+	private Date issueDate;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "topic", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Group> groups = new ArrayList<>();
+	private int topicByte;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "topic", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Content> content = new ArrayList<>();
+	@ManyToOne
+	@JoinColumn(name = "group_id")
+	private Group group;
+
+	@Builder.Default
+	@OneToMany(mappedBy = "topic", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Content> content = new ArrayList<>();
 }

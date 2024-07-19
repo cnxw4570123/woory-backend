@@ -47,6 +47,11 @@ public class TopicManager {
 
 		Deque<TopicByDate> topicIndex = new ArrayDeque<>(topics);
 		if (topicIndex.isEmpty() || topicIndex.peekLast().getDate().isBefore(now)) {
+			// 만약 7개 이상 가지고 있으면 6개만 남김
+			while (topicIndex.size() >= 7) {
+				topicIndex.poll();
+			}
+
 			topicIndex.add(new TopicByDate(randomTopic.nextInt(TOPIC_COUNT)));
 		}
 
@@ -65,7 +70,7 @@ public class TopicManager {
 	}
 
 	public static int pollTopicOfToday() {
-		if (topicOfLast7Days.size() == 7) {
+		if (topicOfLast7Days.size() >= 7) {
 			topicOfLast7Days.poll();
 		}
 		int topic;
