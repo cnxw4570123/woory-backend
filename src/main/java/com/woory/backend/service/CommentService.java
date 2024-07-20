@@ -36,7 +36,7 @@ public class CommentService {
     public CommentDto addComment(Long groupId, CommentRequestDto commentRequestDto) {
         Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(commentRequestDto.getUserId(), groupId);
         Optional<Content> contentOptional = contentRepository.findByContentId(commentRequestDto.getContentId());
-        Optional<User> userOptional = userRepository.findByUserId(commentRequestDto.getUserId());
+        Optional<User> userOptional = userRepository.findByUserIdWithGroups(commentRequestDto.getUserId());
         GroupStatus status = byUserUserIdAndGroupGroupId
                 .orElseThrow(() -> new NoSuchElementException("가족에서 확인되지 않는 유저입니다.")).getStatus();
         if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {

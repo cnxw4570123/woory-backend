@@ -35,7 +35,7 @@ public class ContentService {
     @Transactional
     public Content createContent(Long groupId, Long topicId, String contentText, String contentImgPath) {
         Long userId = SecurityUtil.getCurrentUserId();
-        User user = userRepository.findByUserId(userId)
+        User user = userRepository.findByUserIdWithGroups(userId)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
         groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
                 .orElseThrow(()-> new NoSuchElementException("그룹과 유저를 찾을 수 없습니다."));

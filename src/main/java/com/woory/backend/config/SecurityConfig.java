@@ -1,6 +1,7 @@
 package com.woory.backend.config;
 
 import java.util.Collections;
+import java.util.List;
 
 import com.woory.backend.filter.JWTFilter;
 import com.woory.backend.service.CustomOAuth2UserService;
@@ -66,7 +67,7 @@ public class SecurityConfig {
 
 		CorsConfiguration configuration = new CorsConfiguration();
 
-		configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+		configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://woory-frontend.vercel.app"));
 		configuration.setAllowedMethods(Collections.singletonList("*"));
 		configuration.setAllowCredentials(true);
 		configuration.setAllowedHeaders(Collections.singletonList("*"));

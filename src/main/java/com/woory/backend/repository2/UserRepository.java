@@ -14,5 +14,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUsername(String username);
 
 	@Query("select u from User u left join fetch u.groups where u.userId = :userId")
-	Optional<User> findByUserId(@Param("userId") long id);
+	Optional<User> findByUserIdWithGroups(@Param("userId") long id);
 }
