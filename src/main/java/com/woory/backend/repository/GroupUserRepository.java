@@ -1,8 +1,8 @@
-package com.woory.backend.repository2;
+package com.woory.backend.repository;
 
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
-import jakarta.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

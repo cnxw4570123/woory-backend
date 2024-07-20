@@ -1,7 +1,7 @@
-package com.woory.backend.repository2;
+package com.woory.backend.repository;
 
 import com.woory.backend.entity.Comment;
-import com.woory.backend.entity.Group;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
