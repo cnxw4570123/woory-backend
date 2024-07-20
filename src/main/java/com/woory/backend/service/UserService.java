@@ -1,5 +1,7 @@
 package com.woory.backend.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -10,23 +12,28 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.dto.UserResponseDto;
 import com.woory.backend.entity.User;
-import com.woory.backend.repository2.UserRepository;
+import com.woory.backend.repository.GroupUserRepository;
+import com.woory.backend.repository.UserRepository;
 import com.woory.backend.utils.SecurityUtil;
-
-import lombok.AllArgsConstructor;
 
 @Service
 @Transactional
 public class UserService {
 	private final String KAKAO_KEY;
 	private UserRepository userRepository;
+	private GroupUserRepository groupUserRepository;
 
 	@Autowired
-	public UserService(@Value("${reg_info.kakao.admin-key}") String kakaoKey, UserRepository userRepository) {
+	public UserService(
+		@Value("${reg_info.kakao.admin-key}") String kakaoKey,
+		UserRepository userRepository,
+		GroupUserRepository groupUserRepository) {
 		this.KAKAO_KEY = kakaoKey;
 		this.userRepository = userRepository;
+		this.groupUserRepository = groupUserRepository;
 	}
 
 	public UserResponseDto getUserInfo() {
@@ -35,7 +42,9 @@ public class UserService {
 		User user = userRepository.findByUserIdWithGroups(userId)
 			.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
 
-		return UserResponseDto.fromUser(user);
+		List<GroupInfoDto> myGroup = groupUserRepository.findMyGroupInfoDto(userId);
+
+		return UserResponseDto.fromUserAndGroups(user, myGroup);
 	}
 
 	public void deleteAccount() {

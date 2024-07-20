@@ -1,8 +1,13 @@
 package com.woory.backend.dto;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.User;
 
 import lombok.AllArgsConstructor;
@@ -19,18 +24,18 @@ public class UserResponseDto {
 	private String userEmail;
 	private String nickname;
 	private String profileImgLink;
-	private Set<GroupDto> groupList;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private List<GroupInfoDto> groupList;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Map<GroupStatus, GroupInfoDto> byGroupStatus;
 
-	public static UserResponseDto fromUser(User user) {
+	public static UserResponseDto fromUserAndGroups(User user, List<GroupInfoDto> groupList) {
 		return UserResponseDto.builder()
 			.userId(user.getUserId())
 			.userEmail(user.getEmail())
 			.nickname(user.getNickname())
 			.profileImgLink(user.getProfileImage())
-			.groupList(user.getGroups().stream()
-				.map(GroupDto::fromGroup)
-				.collect(Collectors.toSet())
-			)
+			.groupList(groupList)
 			.build();
 	}
 }
