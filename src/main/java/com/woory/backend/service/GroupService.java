@@ -1,5 +1,6 @@
 package com.woory.backend.service;
 
+import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
@@ -9,7 +10,6 @@ import com.woory.backend.entity.TopicSet;
 import com.woory.backend.entity.User;
 import com.woory.backend.repository.GroupRepository;
 import com.woory.backend.repository.GroupUserRepository;
-import com.woory.backend.repository.TopicRepository;
 import com.woory.backend.repository.TopicSetRepository;
 import com.woory.backend.repository.UserRepository;
 import com.woory.backend.utils.SecurityUtil;
@@ -41,6 +41,11 @@ public class GroupService {
 		this.groupUserRepository = groupUserRepository;
 		this.topicSetRepository = topicSetRepository;
 		this.serverAddress = serverAddress;
+	}
+
+	public List<GroupInfoDto> getMyGroups() {
+		Long userId = SecurityUtil.getCurrentUserId();
+		return groupUserRepository.findMyGroupInfoDto(userId);
 	}
 
 	public Group createGroup(String groupName, String photoPath) {
@@ -122,7 +127,6 @@ public class GroupService {
 		GroupStatus status = getGroupStatus(groupId, loginId);
 		if (status == GroupStatus.GROUP_LEADER) {
 			groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(groupId, userId, GroupStatus.BANNED);
-
 		}
 	}
 
