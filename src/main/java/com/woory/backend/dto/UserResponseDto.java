@@ -25,17 +25,14 @@ public class UserResponseDto {
 	private String nickname;
 	private String profileImgLink;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private List<GroupInfoDto> groupList;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Map<GroupStatus, GroupInfoDto> byGroupStatus;
+	private Map<GroupStatus, List<GroupInfoDto>> byGroupStatus;
 
 	public static UserResponseDto fromUserAndGroups(User user, List<GroupInfoDto> groupList) {
 		return UserResponseDto.builder()
 			.userId(user.getUserId())
-			.userEmail(user.getEmail())
 			.nickname(user.getNickname())
+			.byGroupStatus(GroupInfoDto.toSeparatedByStatus(groupList))
 			.profileImgLink(user.getProfileImage())
-			.groupList(groupList)
 			.build();
 	}
 }
