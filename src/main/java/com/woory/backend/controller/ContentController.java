@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,18 +36,20 @@ public class ContentController {
 
 	@Operation(summary = "content 생성")
 	@PostMapping("/create")
-	public ResponseEntity<String> createContent(
-		@RequestParam("groupId") Long groupId,
-		@RequestParam("topicId") Long topicId,
-		@RequestParam("contentText") String contentText,
-		@RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
+	public ResponseEntity<Map<String, Object>> createContent(
+			@RequestParam("groupId") Long groupId,
+			@RequestParam("topicId") Long topicId,
+			@RequestParam("contentText") String contentText,
+			@RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
 
 		String photoPath;
 		if (groupPhoto != null) {
 			try {
-				photoPath = savePhoto(groupPhoto); // 사진 경로 저장
+				photoPath = savePhoto(groupPhoto);
 			} catch (IOException e) {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사진 저장 중 오류 발생");
+				Map<String, Object> response = new HashMap<>();
+				response.put("message", "사진 저장 중 오류 발생");
+				return ResponseEntity.badRequest().body(response);
 			}
 		} else {
 			String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
@@ -54,45 +57,51 @@ public class ContentController {
 		}
 
 		Content content = contentService.createContent(groupId, topicId, contentText, photoPath);
-		return ResponseEntity.ok("컨텐츠가 생성되었습니다: " + topicId);
-	}
-
-	@Operation(summary = "content 삭제")
-	@DeleteMapping("/{groupId}/{contentId}")
-	public ResponseEntity<Void> deleteContent(
-		@PathVariable("groupId") Long groupId,
-		@PathVariable("contentId") Long contentId) {
-		contentService.deleteContent(groupId, contentId);
-		return ResponseEntity.ok().build();
+		Map<String, Object> response = new HashMap<>();
+		response.put("message", "컨텐츠가 생성되었습니다: " + topicId);
+		response.put("data", content);
+		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "content 수정")
 	@PutMapping("/{groupId}/{contentId}")
-	public ResponseEntity<String> updateContent(
-		@PathVariable("groupId") Long groupId,
-		@PathVariable("contentId") Long contentId,
-		@RequestParam String contentText,
-		@RequestPart(value = "groupPhoto", required = false) MultipartFile contentImg) {
+	public ResponseEntity<Map<String, Object>> updateContent(
+			@PathVariable("groupId") Long groupId,
+			@PathVariable("contentId") Long contentId,
+			@RequestParam String contentText,
+			@RequestPart(value = "groupPhoto", required = false) MultipartFile contentImg) {
+
 		String photoPath = "";
 		if (contentImg != null) {
 			try {
-				photoPath = savePhoto(contentImg); // 사진 경로 저장
+				photoPath = savePhoto(contentImg);
 			} catch (IOException e) {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("사진 저장 중 오류 발생");
+				Map<String, Object> response = new HashMap<>();
+				response.put("message", "사진 저장 중 오류 발생");
+
+				return ResponseEntity.badRequest().body(response);
 			}
 		} else {
 			String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
 			photoPath = defaultFile + "default.png";
 		}
+
 		Content updatedContent = contentService.updateContent(groupId, contentId, contentText, photoPath);
-		return ResponseEntity.ok("컨텐츠가 수정되었습니다: " + contentId);
+		Map<String, Object> response = new HashMap<>();
+		response.put("message", "컨텐츠가 수정되었습니다: " + contentId);
+		response.put("data", updatedContent);
+		return ResponseEntity.ok(response);
 	}
+
 
 	@Operation(summary = "content 조회")
 	@GetMapping("/get")
-	public ResponseEntity<List<Content>> getContentsByRegDate(@RequestBody Map<String, String> param) {
+	public ResponseEntity<Map<String, Object>> getContentsByRegDate(@RequestBody Map<String, String> param) {
 		List<Content> contents = contentService.getContentsByRegDateLike(param.get("date"));
-		return ResponseEntity.ok(contents);
+		Map<String, Object> response = new HashMap<>();
+		response.put("message", "컨텐츠가 조회되었습니다");
+		response.put("data", contents);
+		return ResponseEntity.ok(response);
 	}
 
 	// 사진 저장 메서드
