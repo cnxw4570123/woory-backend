@@ -6,6 +6,7 @@ import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
 import com.woory.backend.service.ContentService;
 
+import com.woory.backend.utils.StatusUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -42,14 +43,12 @@ public class ContentController {
 			@RequestParam("contentText") String contentText,
 			@RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
 
-		String photoPath;
+		String photoPath = "";
 		if (groupPhoto != null) {
 			try {
 				photoPath = savePhoto(groupPhoto);
 			} catch (IOException e) {
-				Map<String, Object> response = new HashMap<>();
-				response.put("message", "사진 저장 중 오류 발생");
-				return ResponseEntity.badRequest().body(response);
+				StatusUtil.getPhotoSaveError();
 			}
 		} else {
 			String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
@@ -57,8 +56,7 @@ public class ContentController {
 		}
 
 		Content content = contentService.createContent(groupId, topicId, contentText, photoPath);
-		Map<String, Object> response = new HashMap<>();
-		response.put("message", "컨텐츠가 생성되었습니다: " + topicId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: " + topicId);
 		response.put("data", content);
 		return ResponseEntity.ok(response);
 	}
@@ -76,10 +74,7 @@ public class ContentController {
 			try {
 				photoPath = savePhoto(contentImg);
 			} catch (IOException e) {
-				Map<String, Object> response = new HashMap<>();
-				response.put("message", "사진 저장 중 오류 발생");
-
-				return ResponseEntity.badRequest().body(response);
+				StatusUtil.getPhotoSaveError();
 			}
 		} else {
 			String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
@@ -87,19 +82,19 @@ public class ContentController {
 		}
 
 		Content updatedContent = contentService.updateContent(groupId, contentId, contentText, photoPath);
-		Map<String, Object> response = new HashMap<>();
-		response.put("message", "컨텐츠가 수정되었습니다: " + contentId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다: " + contentId);
 		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);
 	}
+
+
 
 
 	@Operation(summary = "content 조회")
 	@GetMapping("/get")
 	public ResponseEntity<Map<String, Object>> getContentsByRegDate(@RequestBody Map<String, String> param) {
 		List<Content> contents = contentService.getContentsByRegDateLike(param.get("date"));
-		Map<String, Object> response = new HashMap<>();
-		response.put("message", "컨텐츠가 조회되었습니다");
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
 		return ResponseEntity.ok(response);
 	}

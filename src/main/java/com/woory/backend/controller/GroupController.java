@@ -5,6 +5,7 @@ import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
 import com.woory.backend.service.GroupService;
 
+import com.woory.backend.utils.StatusUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +40,7 @@ public class GroupController {
     @GetMapping("/my")
     public ResponseEntity<Map<String, Object>> getGroups() {
         List<GroupInfoDto> groups = groupService.getMyGroups();
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "그룹 정보 조회 성공");
+        Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
         response.put("data", groups);
         return ResponseEntity.ok(response);
     }
@@ -57,9 +57,7 @@ public class GroupController {
             try {
                 photoPath = savePhoto(groupPhoto);
             } catch (IOException e) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("message", "사진 저장 중 오류 발생");
-                return ResponseEntity.badRequest().body(response);
+                return StatusUtil.getPhotoSaveError();
             }
         } else {
             String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
@@ -67,11 +65,12 @@ public class GroupController {
         }
 
         Group group = groupService.createGroup(groupName, photoPath);
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "그룹이 생성되었습니다: " + group.getGroupId());
+        Map<String, Object> response = StatusUtil.getStatusMessage("가족이 생성되었습니다.");
         response.put("data", group);
         return ResponseEntity.ok(response);
     }
+
+
 
 
     @PutMapping("/update/{groupId}")
@@ -87,15 +86,12 @@ public class GroupController {
             try {
                 photoPath = savePhoto(groupPhoto);
             } catch (IOException e) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("message", "사진 저장 중 오류 발생");
-                return ResponseEntity.badRequest().body(response);
+                return StatusUtil.getPhotoSaveError();
             }
         }
 
         Group updatedGroup = groupService.updateGroup(groupId, groupName, photoPath);
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "그룹이 수정되었습니다: " + updatedGroup.getGroupId());
+        Map<String, Object> response = StatusUtil.getStatusMessage("가족이 수정되었습니다");
         response.put("data", updatedGroup);
         return ResponseEntity.ok(response);
     }
@@ -106,9 +102,7 @@ public class GroupController {
     @DeleteMapping("/delete/{groupId}")
     public ResponseEntity<Map<String, String>> deleteGroup(@PathVariable("groupId") Long groupId) {
         groupService.deleteGroup(groupId);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "그룹이 삭제되었습니다: " + groupId);
-        return ResponseEntity.ok(response);
+        return StatusUtil.getResponseMessage("가족이 삭제되었습니다.");
     }
 
     // 그룹 떠나기
@@ -116,9 +110,7 @@ public class GroupController {
     @PostMapping("/leave/{groupId}")
     public ResponseEntity<Map<String, String>> leaveGroup(@PathVariable("groupId") Long groupId) {
         groupService.leaveGroup(groupId);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "그룹에서 나왔습니다: " + groupId);
-        return ResponseEntity.ok(response);
+        return StatusUtil.getResponseMessage("가족에서 나왔습니다.");
     }
 
     // 그룹 사용자를 벤하기 (그룹장 전용)
@@ -126,9 +118,7 @@ public class GroupController {
     @PostMapping("/ban/{groupId}/user/{userId}")
     public ResponseEntity<Map<String, String>> banGroupUser(@PathVariable("groupId") Long groupId, @PathVariable("userId") Long userId) {
         groupService.banGroup(groupId, userId);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "사용자가 추방되었습니다: " + userId);
-        return ResponseEntity.ok(response);
+        return StatusUtil.getResponseMessage("사용자가 추방되었습니다.");
     }
 
     // 초대 링크 생성
@@ -136,8 +126,7 @@ public class GroupController {
     @PostMapping("/invite/{groupId}")
     public ResponseEntity<Map<String, Object>> generateInviteLink(@PathVariable("groupId") Long groupId) {
         String inviteLink = groupService.generateInviteLink(groupId);
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "초대 링크가 생성되었습니다");
+        Map<String, Object> response = StatusUtil.getStatusMessage("초대 링크가 생성되었습니다");
         response.put("data", inviteLink);
         return ResponseEntity.ok(response);
     }
@@ -147,9 +136,7 @@ public class GroupController {
     @GetMapping("/url/{groupId}")
     public ResponseEntity<Map<String, String>> joinGroup(@PathVariable("groupId") Long groupId) {
         groupService.joinGroup(groupId);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "그룹에 참여했습니다: " + groupId);
-        return ResponseEntity.ok(response);
+        return StatusUtil.getResponseMessage("그룹에 참여했습니다.");
     }
 
     // 사진 저장 메서드
@@ -182,5 +169,7 @@ public class GroupController {
         }
         return filename.substring(lastIndexOfDot + 1);
     }
+
+
 
 }
