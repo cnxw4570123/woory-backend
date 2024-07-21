@@ -101,7 +101,13 @@ public class ContentService {
 		return contentRepository.findContentsByRegDateLike(dateStr + "%");
 	}
 
-	//리엑션 추가
+	/**
+	 * 리엑션을 추가하면 모아서 전달
+	 * @param contentId
+	 * @param userId
+	 * @param newReaction
+	 * @return
+	 */
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
 		Content content = contentRepository.findByContentId(contentId)
 			.orElseThrow(() -> new NoSuchElementException("해당 컨텐츠를 찾을 수 없습니다."));
@@ -115,20 +121,23 @@ public class ContentService {
 				removeReaction(contentReaction);
 				return null;
 			}
-			decreaseReactionCount(content, contentReaction.getReaction());
+			// decreaseReactionCount(content, contentReaction.getReaction());
 		}
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을수 없습니다."));
 		ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
 		contentReactionRepository.save(contentReaction);
 
-		increaseReactionCount(content, newReaction);
+		// increaseReactionCount(content, newReaction);
 		contentRepository.save(content);
 
 		return ContentReactionDto.toContentReactionDto(contentReaction);
 
 	}
 
+	/**
+	 * 이 부분은 사용안 할 것 같음. -> 컨텐츠 조회 시 같이 조회되도록 수정
+	 */
 	//컨텐츠의 리액션 보기
 	public List<ContentReactionDto> getReactionsByContentId(Long contentId) {
 		Content content = contentRepository.findById(contentId)
@@ -144,7 +153,7 @@ public class ContentService {
 
 	private void removeReaction(ContentReaction contentReaction) {
 		Content content = contentReaction.getContent();
-		decreaseReactionCount(content, contentReaction.getReaction());
+		// decreaseReactionCount(content, contentReaction.getReaction());
 
 		contentReactionRepository.delete(contentReaction);
 
@@ -157,24 +166,24 @@ public class ContentService {
 		return status;
 	}
 
-	private void increaseReactionCount(Content content, ReactionType reaction) {
-		switch (reaction) {
-			case LIKE -> content.setLikeCount(content.getLikeCount() + 1);
-			case LOVE -> content.setLoveCount(content.getLoveCount() + 1);
-			case WOW -> content.setWowCount(content.getWowCount() + 1);
-			case SAD -> content.setSadCount(content.getSadCount() + 1);
-			case ANGRY -> content.setAngryCount(content.getAngryCount() + 1);
-		}
-	}
-
-	private void decreaseReactionCount(Content content, ReactionType reaction) {
-		switch (reaction) {
-			case LIKE -> content.setLikeCount(content.getLikeCount() - 1);
-			case LOVE -> content.setLoveCount(content.getLoveCount() - 1);
-			case WOW -> content.setWowCount(content.getWowCount() - 1);
-			case SAD -> content.setSadCount(content.getSadCount() - 1);
-			case ANGRY -> content.setAngryCount(content.getAngryCount() - 1);
-		}
-	}
+	// private void increaseReactionCount(Content content, ReactionType reaction) {
+	// 	switch (reaction) {
+	// 		case LIKE -> content.setLikeCount(content.getLikeCount() + 1);
+	// 		case LOVE -> content.setLoveCount(content.getLoveCount() + 1);
+	// 		case WOW -> content.setWowCount(content.getWowCount() + 1);
+	// 		case SAD -> content.setSadCount(content.getSadCount() + 1);
+	// 		case ANGRY -> content.setAngryCount(content.getAngryCount() + 1);
+	// 	}
+	// }
+	//
+	// private void decreaseReactionCount(Content content, ReactionType reaction) {
+	// 	switch (reaction) {
+	// 		case LIKE -> content.setLikeCount(content.getLikeCount() - 1);
+	// 		case LOVE -> content.setLoveCount(content.getLoveCount() - 1);
+	// 		case WOW -> content.setWowCount(content.getWowCount() - 1);
+	// 		case SAD -> content.setSadCount(content.getSadCount() - 1);
+	// 		case ANGRY -> content.setAngryCount(content.getAngryCount() - 1);
+	// 	}
+	// }
 
 }

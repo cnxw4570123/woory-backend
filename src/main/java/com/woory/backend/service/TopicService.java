@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import com.woory.backend.dto.TopicDto;
 import com.woory.backend.entity.TopicManager;
 import com.woory.backend.entity.TopicSet;
-import com.woory.backend.repository2.GroupRepository;
-import com.woory.backend.repository2.TopicRepository;
-import com.woory.backend.repository2.TopicSetRepository;
+import com.woory.backend.repository.GroupRepository;
+import com.woory.backend.repository.TopicRepository;
+import com.woory.backend.repository.TopicSetRepository;
 
 import jakarta.transaction.Transactional;
 

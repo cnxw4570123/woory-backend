@@ -6,7 +6,7 @@ import com.woory.backend.dto.NaverResponse;
 import com.woory.backend.dto.OAuth2Response;
 import com.woory.backend.dto.UserDto;
 import com.woory.backend.entity.User;
-import com.woory.backend.repository2.UserRepository;
+import com.woory.backend.repository.UserRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

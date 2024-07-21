@@ -11,19 +11,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class ContentReaction {
-
-    @EmbeddedId
-    private ContentReactionId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("contentId")
     @JoinColumn(name = "content_id")
     private Content content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
     @JoinColumn(name = "user_id")
     private User user;
 
@@ -31,6 +28,10 @@ public class ContentReaction {
     @Column(name = "reaction", nullable = false)
     private ReactionType reaction;
 
-    // reactionCount is no longer needed here
+    public ContentReaction(Content content, User user, ReactionType reaction) {
+        this.content = content;
+        this.user = user;
+        this.reaction = reaction;
+    }
 }
 
