@@ -2,6 +2,7 @@ package com.woory.backend.controller;
 
 import com.woory.backend.dto.CommentDto;
 import com.woory.backend.dto.CommentRequestDto;
+import com.woory.backend.dto.UpdateCommentRequest;
 import com.woory.backend.service.CommentService;
 import com.woory.backend.utils.StatusUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,8 +42,12 @@ public class CommentController {
     }
     @Operation(summary = "comment 수정")
     @PutMapping("/{groupId}/{commentId}")
-    public ResponseEntity<Map<String, Object>> updateComment(@PathVariable Long groupId, @PathVariable Long commentId, @RequestBody String newText) {
-        CommentDto updatedComment = commentService.updateComment(groupId, commentId, newText);
+    public ResponseEntity<Map<String, Object>> updateComment(
+            @PathVariable Long groupId,
+            @PathVariable Long commentId,
+            @RequestBody UpdateCommentRequest updateRequest) {
+
+        CommentDto updatedComment = commentService.updateComment(groupId, commentId, updateRequest.getNewText());
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 수정되었습니다");
         response.put("data", updatedComment);
         return ResponseEntity.ok(response);

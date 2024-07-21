@@ -54,6 +54,7 @@ public class GroupService {
 		return myGroups;
 	}
 
+
 	public Group createGroup(String groupName, String photoPath) {
 		Group group = new Group();
 		//로그인된 정보 가져오기

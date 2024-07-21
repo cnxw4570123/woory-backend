@@ -3,6 +3,7 @@ package com.woory.backend.controller;
 import com.woory.backend.dto.GroupDto;
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
+import com.woory.backend.entity.GroupUser;
 import com.woory.backend.service.GroupService;
 
 import com.woory.backend.utils.StatusUtil;
@@ -45,6 +46,7 @@ public class GroupController {
         return ResponseEntity.ok(response);
     }
 
+
     @Operation(summary = "그룹 생성", description = "이름과 파일을 받아서 가족 생성, 파일 미전송 시 기본 파일으로 지정")
     // 그룹 생성
     @PostMapping("/create")
@@ -66,7 +68,7 @@ public class GroupController {
 
         Group group = groupService.createGroup(groupName, photoPath);
         Map<String, Object> response = StatusUtil.getStatusMessage("가족이 생성되었습니다.");
-        response.put("data", group);
+//        response.put("data", group);
         return ResponseEntity.ok(response);
     }
 
@@ -92,7 +94,7 @@ public class GroupController {
 
         Group updatedGroup = groupService.updateGroup(groupId, groupName, photoPath);
         Map<String, Object> response = StatusUtil.getStatusMessage("가족이 수정되었습니다");
-        response.put("data", updatedGroup);
+//        response.put("data", updatedGroup);
         return ResponseEntity.ok(response);
     }
 
@@ -136,7 +138,7 @@ public class GroupController {
     @GetMapping("/url/{groupId}")
     public ResponseEntity<Map<String, String>> joinGroup(@PathVariable("groupId") Long groupId) {
         groupService.joinGroup(groupId);
-        return StatusUtil.getResponseMessage("그룹에 참여했습니다.");
+        return StatusUtil.getResponseMessage("가족에 참여했습니다.");
     }
 
     // 사진 저장 메서드

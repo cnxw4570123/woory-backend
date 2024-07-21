@@ -1,5 +1,6 @@
 package com.woory.backend.repository;
 
+import com.woory.backend.dto.ContentDto;
 import com.woory.backend.entity.Content;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

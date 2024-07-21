@@ -1,9 +1,12 @@
 package com.woory.backend.controller;
 
+import com.woory.backend.dto.ContentDto;
 import com.woory.backend.dto.ContentReactionDto;
 import com.woory.backend.entity.Comment;
 import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
+import com.woory.backend.error.CustomException;
+import com.woory.backend.error.ErrorCode;
 import com.woory.backend.service.ContentService;
 
 import com.woory.backend.utils.StatusUtil;
@@ -41,12 +44,12 @@ public class ContentController {
 			@RequestParam("groupId") Long groupId,
 			@RequestParam("topicId") Long topicId,
 			@RequestParam("contentText") String contentText,
-			@RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
+			@RequestPart(value = "contentPhoto", required = false) MultipartFile contentPhoto) {
 
 		String photoPath = "";
-		if (groupPhoto != null) {
+		if (contentPhoto != null) {
 			try {
-				photoPath = savePhoto(groupPhoto);
+				photoPath = savePhoto(contentPhoto);
 			} catch (IOException e) {
 				StatusUtil.getPhotoSaveError();
 			}
@@ -56,8 +59,8 @@ public class ContentController {
 		}
 
 		Content content = contentService.createContent(groupId, topicId, contentText, photoPath);
-		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: " + topicId);
-		response.put("data", content);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: ");
+//		response.put("data", content);
 		return ResponseEntity.ok(response);
 	}
 
@@ -67,7 +70,7 @@ public class ContentController {
 			@PathVariable("groupId") Long groupId,
 			@PathVariable("contentId") Long contentId,
 			@RequestParam String contentText,
-			@RequestPart(value = "groupPhoto", required = false) MultipartFile contentImg) {
+			@RequestPart(value = "contentPhoto", required = false) MultipartFile contentImg) {
 
 		String photoPath = "";
 		if (contentImg != null) {
@@ -82,20 +85,44 @@ public class ContentController {
 		}
 
 		Content updatedContent = contentService.updateContent(groupId, contentId, contentText, photoPath);
-		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다: " + contentId);
-		response.put("data", updatedContent);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
+//		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);
 	}
 
 
 
 
-	@Operation(summary = "content 조회")
+	@Operation(summary = "content 일 조회")
 	@GetMapping("/get")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDate(@RequestBody Map<String, String> param) {
-		List<Content> contents = contentService.getContentsByRegDateLike(param.get("date"));
+	public ResponseEntity<Map<String, Object>> getContentsByRegDate(@RequestParam String param) {
+		if (param == null || !param.matches("\\d{4}-\\d{2}-\\d{2}")) {
+			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
+		}
+		List<ContentDto> contents = contentService.getContentsByRegDateLike(param);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
+		return ResponseEntity.ok(response);
+	}
+	@Operation(summary = "content 월 조회")
+	@GetMapping("/get/month")
+	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(@RequestParam String param) {
+		if (param == null || !param.matches("\\d{4}-\\d{2}")) {
+			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
+		}
+		List<ContentDto> contents = contentService.getContentsByRegDateMonthLike(param);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
+		response.put("data", contents);
+		return ResponseEntity.ok(response);
+	}
+
+	@Operation(summary = "컨텐츠 삭제")
+	@DeleteMapping("/delete/{groupId}/{contentId}")
+	public ResponseEntity<Map<String, Object>> deleteContent(
+			@PathVariable Long groupId,
+			@PathVariable Long contentId) {
+		contentService.deleteContent(groupId, contentId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 삭제되었습니다");
 		return ResponseEntity.ok(response);
 	}
 
@@ -138,9 +165,9 @@ public class ContentController {
 			ReactionType reactionType = ReactionType.valueOf(reaction.toUpperCase());
 			ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(contentId, userId, reactionType);
 			if (updatedReaction == null) {
-				return ResponseEntity.ok("Reaction removed successfully");
+				return ResponseEntity.ok("표현이 삭제되었습니다");
 			}
-			return ResponseEntity.ok(updatedReaction);
+			return ResponseEntity.ok("표현이 추가되었습니다.");
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}

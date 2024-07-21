@@ -1,6 +1,6 @@
 package com.woory.backend.service;
 
-import com.woory.backend.dto.ContentReactionDto;
+import com.woory.backend.dto.*;
 import com.woory.backend.entity.*;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
@@ -100,11 +100,17 @@ public class ContentService {
 
 	}
 
-	public List<Content> getContentsByRegDateLike(String dateStr) {
-		if (dateStr == null || !dateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
-			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
-		}
-		return contentRepository.findContentsByRegDateLike(dateStr + "%");
+	public List<ContentDto> getContentsByRegDateLike(String dateStr) {
+		List<Content> contents = contentRepository.findContentsByRegDateLike(dateStr + "%");
+		return contents.stream()
+				.map(this::convertToDTO)
+				.collect(Collectors.toList());
+	}
+	public List<ContentDto> getContentsByRegDateMonthLike(String dateStr) {
+		List<Content> contents = contentRepository.findContentsByRegDateMonthLike(dateStr + "%");
+		return contents.stream()
+				.map(this::convertToDTO)
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -191,5 +197,28 @@ public class ContentService {
 	// 		case ANGRY -> content.setAngryCount(content.getAngryCount() - 1);
 	// 	}
 	// }
+	private ContentDto convertToDTO(Content content) {
+		ContentDto dto = new ContentDto();
+		dto.setContentId(content.getContentId());
+		dto.setContentText(content.getContentText());
+		dto.setContentImgPath(content.getContentImgPath());
+		dto.setContentRegDate(content.getContentRegDate());
+
+		TopicRequestDto topicDTO = new TopicRequestDto();
+		topicDTO.setTopicId(content.getTopic().getTopicId());
+		topicDTO.setTopicContent(content.getTopic().getTopicContent());
+		topicDTO.setIssueDate(content.getTopic().getIssueDate());
+		topicDTO.setTopicByte(content.getTopic().getTopicByte());
+
+		GroupRequestDto groupDTO = new GroupRequestDto();
+		groupDTO.setGroupId(content.getTopic().getGroup().getGroupId());
+		groupDTO.setGroupName(content.getTopic().getGroup().getGroupName());
+		groupDTO.setPhotoPath(content.getTopic().getGroup().getPhotoPath());
+
+		topicDTO.setGroup(groupDTO);
+		dto.setTopic(topicDTO);
+
+		return dto;
+	}
 
 }
