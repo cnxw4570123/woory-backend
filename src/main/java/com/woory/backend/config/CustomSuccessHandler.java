@@ -1,6 +1,9 @@
 package com.woory.backend.config;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseCookie;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Component;
 import com.woory.backend.dto.CustomOAuth2User;
 import com.woory.backend.utils.CookieUtil;
 import com.woory.backend.utils.JWTUtil;
+import com.woory.backend.utils.SecurityUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,27 +25,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-	private final JWTUtil jwtUtil;
-
-	public CustomSuccessHandler(JWTUtil jwtUtil) {
-		this.jwtUtil = jwtUtil;
-	}
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException, ServletException {
 		CustomOAuth2User user = (CustomOAuth2User)authentication.getPrincipal();
 
-		Long userId = Long.valueOf(user.getName());
-		String authorities = authentication.getAuthorities().stream()
-			.map(GrantedAuthority::getAuthority)
-			.collect(Collectors.joining(","));
+		UUID code = UUID.randomUUID();
+		SecurityUtil.saveUserWithUUID(code, user);
 
-		String accessToken = jwtUtil.generateAccessToken(userId, authorities);
-		ResponseCookie cookie = CookieUtil.createAccessTokenCookie(accessToken, jwtUtil.getAccTokenExpireTime());
-		log.info("accessToken = {}", accessToken);
-		response.setHeader("Set-Cookie", cookie.toString());
-		response.sendRedirect("http://localhost:3000");
+		String client = user.getUsername().split(" ")[0];
+
+		response.sendRedirect("http://localhost:3000/oauth/" + client + "?code=" + code);
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 }
