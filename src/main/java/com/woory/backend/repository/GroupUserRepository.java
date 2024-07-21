@@ -30,7 +30,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	Optional<GroupUser> findByUser_UserIdAndGroup_GroupId(Long userId, Long groupId);
 
 	List<GroupUser> findAllByGroup_GroupId(Long groupId);
-
+	List<GroupUser> findALLByUser_UserId(Long userId);
 	void deleteByGroup_GroupIdAndUser_UserId(Long groupId, Long userId);
 
 	void deleteByGroup_GroupId(Long groupId);

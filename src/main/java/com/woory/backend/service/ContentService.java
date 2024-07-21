@@ -2,6 +2,8 @@ package com.woory.backend.service;
 
 import com.woory.backend.dto.ContentReactionDto;
 import com.woory.backend.entity.*;
+import com.woory.backend.error.CustomException;
+import com.woory.backend.error.ErrorCode;
 import com.woory.backend.repository.*;
 import com.woory.backend.utils.SecurityUtil;
 
@@ -38,11 +40,11 @@ public class ContentService {
 	public Content createContent(Long groupId, Long topicId, String contentText, String contentImgPath) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		User user = userRepository.findByUserIdWithGroups(userId)
-			.orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new NoSuchElementException("그룹과 유저를 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		Topic topic = topicRepository.findById(topicId)
-			.orElseThrow(() -> new NoSuchElementException("토픽을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
 
 		// Content 생성 및 저장 로직
 		Content content = new Content();
@@ -59,15 +61,16 @@ public class ContentService {
 	public void deleteContent(Long groupId, Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new NoSuchElementException("그룹과 아이디를 찾을 수 없습니다.")).getStatus();
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND)).getStatus();
 		Content content = contentRepository.findById(contentId)
-			.orElseThrow(() -> new RuntimeException("컨텐츠를 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+
 		//본인의 것만 삭제하기 위해서
 		if (!content.getUsers().getUserId().equals(userId)) {
-			throw new RuntimeException("컨텐츠를 삭제할 권한이 없습니다.");
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE);
 		}
 		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new RuntimeException("컨텐츠를 삭제할 권한이 없습니다.");
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE);
 		}
 		contentRepository.delete(content);
 	}
@@ -77,17 +80,17 @@ public class ContentService {
 		Long userId = SecurityUtil.getCurrentUserId();
 
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new NoSuchElementException("그룹과 이름을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		Content content = contentRepository.findById(contentId)
-			.orElseThrow(() -> new RuntimeException("컨텐츠를 수정할 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		GroupStatus status = getGroupStatus(userId, groupId);
 
 		if (!content.getUsers().getUserId().equals(userId)) {
-			throw new RuntimeException("컨텐츠를 수정할 권한이 없습니다.");
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_UPDATE);
 		}
 
 		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new RuntimeException("컨텐츠를 수정할 권한이 없습니다.");
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_UPDATE);
 		}
 		content.setContentText(contentText);
 		if (contentImg != null) {
@@ -98,6 +101,9 @@ public class ContentService {
 	}
 
 	public List<Content> getContentsByRegDateLike(String dateStr) {
+		if (dateStr == null || !dateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
+		}
 		return contentRepository.findContentsByRegDateLike(dateStr + "%");
 	}
 
@@ -110,7 +116,7 @@ public class ContentService {
 	 */
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
 		Content content = contentRepository.findByContentId(contentId)
-			.orElseThrow(() -> new NoSuchElementException("해당 컨텐츠를 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 
 		Optional<ContentReaction> byId = contentReactionRepository.findContentReactionByContent_ContentIdAndUser_UserId(
 			contentId, userId);
@@ -124,7 +130,7 @@ public class ContentService {
 			// decreaseReactionCount(content, contentReaction.getReaction());
 		}
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을수 없습니다."));
+			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
 		ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
 		contentReactionRepository.save(contentReaction);
 

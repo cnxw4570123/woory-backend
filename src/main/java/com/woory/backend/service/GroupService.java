@@ -8,6 +8,8 @@ import com.woory.backend.entity.Topic;
 import com.woory.backend.entity.TopicManager;
 import com.woory.backend.entity.TopicSet;
 import com.woory.backend.entity.User;
+import com.woory.backend.error.CustomException;
+import com.woory.backend.error.ErrorCode;
 import com.woory.backend.repository.GroupRepository;
 import com.woory.backend.repository.GroupUserRepository;
 import com.woory.backend.repository.TopicSetRepository;
@@ -45,7 +47,11 @@ public class GroupService {
 
 	public List<GroupInfoDto> getMyGroups() {
 		Long userId = SecurityUtil.getCurrentUserId();
-		return groupUserRepository.findMyGroupInfoDto(userId);
+		List<GroupInfoDto> myGroups = groupUserRepository.findMyGroupInfoDto(userId);
+		if (myGroups.isEmpty()) {
+			throw new CustomException(ErrorCode.USER_GROUPS_NOT_FOUND);
+		}
+		return myGroups;
 	}
 
 	public Group createGroup(String groupName, String photoPath) {
@@ -56,7 +62,7 @@ public class GroupService {
 		long cnt = byUserId.getGroupUsers().size();
 
 		if (cnt >= 5) {
-			throw new IllegalStateException("User cannot create more than 5 groups");
+			throw new CustomException(ErrorCode.GROUP_CREATION_LIMIT_EXCEEDED);
 		}
 
 		group.setGroupName(groupName);
@@ -74,7 +80,7 @@ public class GroupService {
 		// 토픽 생성
 		int topicOfToday = TopicManager.getTopicOfToday();
 		TopicSet topicSet = topicSetRepository.findTopicSetById((long)topicOfToday)
-			.orElseThrow(() -> new RuntimeException(""));
+			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
 		Topic topic = Topic.fromTopicSetWithDateAndGroup(group, topicSet, now);
 
 		group.setGroupUsers(List.of(groupUser));
@@ -90,6 +96,8 @@ public class GroupService {
 		GroupStatus status = getGroupStatus(groupId, loginId);
 		if (status == GroupStatus.GROUP_LEADER) {
 			groupRepository.deleteByGroupId(groupId);
+		}else{
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE_GROUP);
 		}
 	}
 
@@ -132,7 +140,7 @@ public class GroupService {
 
 	private GroupStatus getGroupStatus(Long groupId, Long loginId) {
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(loginId, groupId)
-			.orElseThrow(() -> new RuntimeException("해당 회원 없음")).getStatus();
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND)).getStatus();
 		return status;
 	}
 
@@ -155,6 +163,10 @@ public class GroupService {
 		// 로그인된 유저 가져오기
 		Long userId = SecurityUtil.getCurrentUserId();
 		User byUserId = getUser();
+		int userCount = groupUserRepository.findALLByUser_UserId(userId).size();
+		if(userCount >= 5){
+			throw new CustomException(ErrorCode.GROUP_CREATION_LIMIT_EXCEEDED);
+		}
 
 		List<GroupUser> byGroupGroupId = groupUserRepository.findAllByGroup_GroupId(groupId);
 
@@ -162,7 +174,7 @@ public class GroupService {
 			.anyMatch(groupUser -> groupUser.getUser().getUserId().equals(userId));
 
 		if (present) {
-			throw new IllegalStateException("이미 회원 가입 기록 있습니다.");
+			throw new CustomException(ErrorCode.USER_ALREADY_MEMBER);
 		}
 
 		// 확실히 그룹에 들어올 수 있음
@@ -180,7 +192,7 @@ public class GroupService {
 	private User getUser() {
 		Long userId = SecurityUtil.getCurrentUserId();
 		User byUserId = userRepository.findByUserIdWithGroups(userId)
-			.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
+		.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		return byUserId;
 	}
 
@@ -191,7 +203,7 @@ public class GroupService {
 		if (status == GroupStatus.GROUP_LEADER) {
 
 			Group group = groupRepository.findById(groupId)
-				.orElseThrow(() -> new IllegalArgumentException("그룹이 존재하지 않습니다."));
+				.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 
 			group.setGroupName(groupName);
 			if (photoPath != null) {
@@ -199,8 +211,10 @@ public class GroupService {
 			}
 
 			return groupRepository.save(group);
+		}else{
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_UPDATE_GROUP); // 권한이 없을 때의 예외 처리
 		}
-		return null;
+
 	}
 
 	public List<GroupUser> activeMember(Long groupId) {
