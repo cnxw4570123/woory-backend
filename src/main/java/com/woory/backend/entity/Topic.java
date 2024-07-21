@@ -36,4 +36,12 @@ public class Topic {
 	@Builder.Default
 	@OneToMany(mappedBy = "topic", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Content> content = new ArrayList<>();
+
+	public static Topic fromTopicSetWithDateAndGroup(Group group, TopicSet topicSet, Date date) {
+		return Topic.builder().group(group)
+			.issueDate(date)
+			.topicByte(topicSet.getTopic_byte())
+			.topicContent(topicSet.getValue())
+			.build();
+	}
 }
