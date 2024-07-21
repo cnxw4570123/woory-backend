@@ -111,18 +111,21 @@ public class CommentService {
 	public CommentDto updateComment(Long groupId, Long commentId, String newText) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		Comment comment = commentRepository.findByCommentId(commentId)
-			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
+				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
+
 		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
 			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
 		}
+
 		if (!comment.getUsers().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
 		}
+
 		comment.setCommentText(newText);
-		Comment save = commentRepository.save(comment);
-		return CommentDto.fromComment(save);
+		Comment savedComment = commentRepository.save(comment);
+		return CommentDto.fromComment(savedComment);
 	}
 
 	// 댓글 조회 메서드 추가
