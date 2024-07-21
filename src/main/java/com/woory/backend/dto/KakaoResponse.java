@@ -37,6 +37,6 @@ public class KakaoResponse implements OAuth2Response {
 	}
 
 	public String getProfileImage() {
-		return getProfile().get("profile_image_url").toString();
+		return getProfile().getOrDefault("profile_image_url", "").toString();
 	}
 }
