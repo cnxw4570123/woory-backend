@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 public class TopicManager {
 	private static final Random randomTopic = new Random(System.currentTimeMillis());
 	private static final Path TOPIC_PATH = Paths.get("src/main/resources/topics.txt");
-	private static final Integer TOPIC_COUNT = 80;
+	private static final Integer TOPIC_COUNT = 100;
 	private static Deque<TopicByDate> topicOfLast7Days = init();
 
 	private TopicManager() {
