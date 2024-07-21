@@ -1,5 +1,7 @@
 package com.woory.backend.controller;
 
+import com.woory.backend.dto.GroupDto;
+import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
 import com.woory.backend.service.GroupService;
 
@@ -13,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +31,12 @@ public class GroupController {
     @Autowired
     public GroupController(GroupService groupService) {
         this.groupService = groupService;
+    }
+
+    // 그룹 조회
+    @GetMapping("/my")
+    public ResponseEntity<List<GroupInfoDto>> getGroups(){
+        return ResponseEntity.ok(groupService.getMyGroups());
     }
 
     @Operation(summary = "그룹 생성", description = "이름과 파일을 받아서 가족 생성, 파일 미전송 시 기본 파일으로 지정")

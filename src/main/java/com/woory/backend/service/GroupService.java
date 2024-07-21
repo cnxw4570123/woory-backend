@@ -1,6 +1,6 @@
 package com.woory.backend.service;
 
-import com.woory.backend.dto.TopicDto;
+import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
@@ -8,11 +8,10 @@ import com.woory.backend.entity.Topic;
 import com.woory.backend.entity.TopicManager;
 import com.woory.backend.entity.TopicSet;
 import com.woory.backend.entity.User;
-import com.woory.backend.repository2.GroupRepository;
-import com.woory.backend.repository2.GroupUserRepository;
-import com.woory.backend.repository2.TopicRepository;
-import com.woory.backend.repository2.TopicSetRepository;
-import com.woory.backend.repository2.UserRepository;
+import com.woory.backend.repository.GroupRepository;
+import com.woory.backend.repository.GroupUserRepository;
+import com.woory.backend.repository.TopicSetRepository;
+import com.woory.backend.repository.UserRepository;
 import com.woory.backend.utils.SecurityUtil;
 
 import jakarta.transaction.Transactional;
@@ -29,22 +28,24 @@ public class GroupService {
 	private UserRepository userRepository;
 	private GroupRepository groupRepository;
 	private GroupUserRepository groupUserRepository;
-	private TopicRepository topicRepository;
 	private TopicSetRepository topicSetRepository;
 	private final String serverAddress;
 
 	@Autowired
 	public GroupService(UserRepository userRepository, GroupRepository groupRepository,
 		GroupUserRepository groupUserRepository,
-		TopicRepository topicRepository,
 		TopicSetRepository topicSetRepository,
 		@Value("${server.ip}") String serverAddress) {
 		this.userRepository = userRepository;
 		this.groupRepository = groupRepository;
 		this.groupUserRepository = groupUserRepository;
-		this.topicRepository = topicRepository;
 		this.topicSetRepository = topicSetRepository;
 		this.serverAddress = serverAddress;
+	}
+
+	public List<GroupInfoDto> getMyGroups() {
+		Long userId = SecurityUtil.getCurrentUserId();
+		return groupUserRepository.findMyGroupInfoDto(userId);
 	}
 
 	public Group createGroup(String groupName, String photoPath) {
@@ -52,7 +53,7 @@ public class GroupService {
 		//로그인된 정보 가져오기
 
 		User byUserId = getUser();
-		long cnt = byUserId.getGroups().size();
+		long cnt = byUserId.getGroupUsers().size();
 
 		if (cnt >= 5) {
 			throw new IllegalStateException("User cannot create more than 5 groups");
@@ -61,38 +62,25 @@ public class GroupService {
 		group.setGroupName(groupName);
 		group.setPhotoPath(photoPath);
 
-		// 그룹 저장
-		Group savedGroup = groupRepository.save(group);
-
-		if (group.getGroupId() == null) {
-			throw new IllegalStateException("Group ID was not generated.");
-		}
-
 		Date now = new Date();
-		// GroupUser 생성 및 저장
+
+		// GroupUser 생성
 		GroupUser groupUser = new GroupUser();
 		groupUser.setUser(byUserId);
-		groupUser.setGroup(savedGroup);
+		groupUser.setGroup(group);
 		groupUser.setStatus(GroupStatus.GROUP_LEADER); // 초기 상태 설정
 		groupUser.setRegDate(now);
 		groupUser.setLastUpdatedDate(new Date());
-
-		groupUserRepository.save(groupUser);
-
+		// 토픽 생성
 		int topicOfToday = TopicManager.getTopicOfToday();
-		topicSetRepository.findTopicSetById((long)topicOfToday).ifPresent(
-			topicSet -> {
-				Topic build = Topic.builder().group(savedGroup)
-					.issueDate(now)
-					.topicByte(topicSet.getTopic_byte())
-					.topicContent(topicSet.getValue())
-					.build();
-				topicRepository.save(build);
-			}
-		);
+		TopicSet topicSet = topicSetRepository.findTopicSetById((long)topicOfToday)
+			.orElseThrow(() -> new RuntimeException(""));
+		Topic topic = Topic.fromTopicSetWithDateAndGroup(group, topicSet, now);
 
-		return group;
+		group.setGroupUsers(List.of(groupUser));
+		group.setTopic(List.of(topic));
 
+		return groupRepository.save(group);
 	}
 
 	@Transactional
@@ -102,7 +90,6 @@ public class GroupService {
 		GroupStatus status = getGroupStatus(groupId, loginId);
 		if (status == GroupStatus.GROUP_LEADER) {
 			groupRepository.deleteByGroupId(groupId);
-			groupUserRepository.deleteByGroup_GroupId(groupId);
 		}
 	}
 
@@ -114,7 +101,6 @@ public class GroupService {
 
 		//1명이하이면 그룹떠날시 그룹 삭제 유저그룹에서 삭제
 		if (groupUsers.size() <= 1) {
-			groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			groupRepository.deleteByGroupId(groupId);
 		} else {
 			GroupStatus status = getGroupStatus(groupId, userId);
@@ -124,6 +110,11 @@ public class GroupService {
 				old.setStatus(GroupStatus.GROUP_LEADER);
 				groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(old.getUser().getUserId(), groupId,
 					old.getStatus());
+				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
+				return;
+			}
+
+			if(status == GroupStatus.MEMBER){
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			}
 		}
@@ -136,7 +127,6 @@ public class GroupService {
 		GroupStatus status = getGroupStatus(groupId, loginId);
 		if (status == GroupStatus.GROUP_LEADER) {
 			groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(groupId, userId, GroupStatus.BANNED);
-
 		}
 	}
 

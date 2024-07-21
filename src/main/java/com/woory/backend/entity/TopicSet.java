@@ -19,6 +19,7 @@ public class TopicSet {
 	@Column(name = "TOPIC_ID")
 	private Long id;
 	private String category;
+	@Column(name = "TOPIC_VALUE")
 	private String value;
 	private Integer topic_byte;
 

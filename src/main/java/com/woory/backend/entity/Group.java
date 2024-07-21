@@ -27,9 +27,8 @@ public class Group {
 	@Column(name = "photoPath")
 	private String photoPath;
 
-	@ManyToOne
-	@JoinColumn(name = "user_id")
-	private User users;
+	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<GroupUser> groupUsers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
 	private List<Topic> topic = new ArrayList<>();
