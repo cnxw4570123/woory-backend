@@ -88,7 +88,7 @@ public class GroupController {
 
     // 그룹 삭제
     @Operation(summary = "가족 삭제")
-    @DeleteMapping("delete/{groupId}")
+    @DeleteMapping("/delete/{groupId}")
     public ResponseEntity<Void> deleteGroup(@PathVariable("groupId") Long groupId) {
         groupService.deleteGroup(groupId);
         return ResponseEntity.ok().build();
