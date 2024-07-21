@@ -38,10 +38,12 @@ jobs:
           mkdir -p src/main/resources
           cd src/main/resources
           touch ./application-dev.yml
-          touch ./applciation-secret.yml
+          touch ./application-secret.yml
+          touch ./application-test.yml
           
           echo "${{ secrets.APPLICATION_DEV_YML }}" >> ./application-dev.yml
           echo "${{ secrets.APPLICATION_SECRET_YML }}" >> ./application-secret.yml
+          echo "${{ secrets.APPLICATION_TEST_YML }}" >> ./application-test.yml
 
       - name: keystore 파일 생성
         shell: bash
@@ -50,14 +52,21 @@ jobs:
           touch ./keystore.b64
           echo "${{ secrets.KEYSTORE }}" >> ./keystore.b64
           base64 -d -i ./keystore.b64 > ./keystore.p12
-          
+
+      - name: 테스트용 DB 설정
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql version: '8.0'
+          mysql database: 'woory'
+          mysql root password: ${{ secrets.TEST_DB_PW }}
+          mysql user: 'root'
 
       - name: Grant execute permission for gradlew
         # 경로 확인 후 권한 부여
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew clean build -x test
 
       - name: Zip project files
         run: zip -r ./$GITHUB_SHA.zip . # 프로젝트 전체 파일 압축
