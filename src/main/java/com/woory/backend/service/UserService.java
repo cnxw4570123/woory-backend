@@ -2,6 +2,8 @@ package com.woory.backend.service;
 
 import java.util.List;
 
+import com.woory.backend.error.CustomException;
+import com.woory.backend.error.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -40,7 +42,7 @@ public class UserService {
 		Long userId = SecurityUtil.getCurrentUserId();
 
 		User user = userRepository.findByUserIdWithGroups(userId)
-			.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		List<GroupInfoDto> myGroup = groupUserRepository.findMyGroupInfoDto(userId);
 
@@ -51,7 +53,7 @@ public class UserService {
 		Long userId = SecurityUtil.getCurrentUserId();
 
 		User user = userRepository.findByUserIdWithGroups(userId)
-			.orElseThrow(() -> new RuntimeException("회원 정보 없음"));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		if (user.getUsername().startsWith("kakao")) {
 			String kakaoId = user.getUsername().split("kakao ")[1];
