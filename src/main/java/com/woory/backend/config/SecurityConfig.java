@@ -67,7 +67,7 @@ public class SecurityConfig {
 
 		CorsConfiguration configuration = new CorsConfiguration();
 
-		configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://woory-frontend.vercel.app"));
+		configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://woory.vercel.app"));
 		configuration.setAllowedMethods(Collections.singletonList("*"));
 		configuration.setAllowCredentials(true);
 		configuration.setAllowedHeaders(Collections.singletonList("*"));
