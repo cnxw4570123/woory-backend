@@ -19,7 +19,7 @@ if [ -z "$CURRENT_PID"]
 then
   echo "실행중인 woory서비스 없음." | sudo tee -a $LOG_FILE
 else
-  echo "kill -9 $CURRENT_PID" | sudo tee -a $LOG_FILE
+  echo "sudo kill -9 $CURRENT_PID" | sudo tee -a $LOG_FILE
   sleep 5
 fi
 
