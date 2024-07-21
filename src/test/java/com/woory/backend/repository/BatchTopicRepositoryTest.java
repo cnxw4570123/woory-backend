@@ -44,7 +44,7 @@ public class BatchTopicRepositoryTest {
 	@DisplayName("배치 저장 테스트")
 	void insertTopicToAllGroups() {
 		// given
-		TopicSet topicSet = new TopicSet(1L, "일상 공유", "가장 최근에 본 영화", 19);
+		TopicSet topicSet = new TopicSet(1L, "가장 최근에 본 영화", 19);
 		Date now = new Date();
 		List<TopicDto> list = groupIndex.stream()
 			.map(group ->
