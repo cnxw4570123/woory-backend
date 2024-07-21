@@ -3,6 +3,8 @@ package com.woory.backend.service;
 import com.woory.backend.dto.CommentDto;
 import com.woory.backend.dto.CommentRequestDto;
 import com.woory.backend.entity.*;
+import com.woory.backend.error.CustomException;
+import com.woory.backend.error.ErrorCode;
 import com.woory.backend.repository.*;
 import com.woory.backend.utils.SecurityUtil;
 
@@ -37,12 +39,22 @@ public class CommentService {
 	public CommentDto addComment(Long groupId, CommentRequestDto commentRequestDto) {
 		Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(
 			commentRequestDto.getUserId(), groupId);
+
+		if (byUserUserIdAndGroupGroupId.isEmpty()) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP);
+		}
 		Optional<Content> contentOptional = contentRepository.findByContentId(commentRequestDto.getContentId());
+		if (contentOptional.isEmpty()) {
+			throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
+		}
 		Optional<User> userOptional = userRepository.findByUserIdWithGroups(commentRequestDto.getUserId());
+		if (userOptional.isEmpty()) {
+			throw new CustomException(ErrorCode.USER_NOT_FOUND);
+		}
 		GroupStatus status = byUserUserIdAndGroupGroupId
 			.orElseThrow(() -> new NoSuchElementException("가족에서 확인되지 않는 유저입니다.")).getStatus();
 		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new IllegalStateException("가족에서 확인되지 않는 유저입니다.");
+			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
 		}
 		if (contentOptional.isPresent() && userOptional.isPresent()) {
 			Content content = contentOptional.get();
@@ -50,10 +62,13 @@ public class CommentService {
 
 			Comment parentComment = null;
 			if (commentRequestDto.getParentCommentId() != null) {
-				parentComment = commentRepository.findByCommentId(commentRequestDto.getParentCommentId())
-					.orElse(null);
+				Optional<Comment> byCommentId = commentRepository.findByCommentId(commentRequestDto.getParentCommentId());
+				if (byCommentId.isEmpty()) {
+					throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+				}
+				parentComment = byCommentId.get();
 				if (parentComment != null && parentComment.getParentComment() != null) {
-					throw new RuntimeException("대댓글에 댓글을 달수 없습니다.");
+					throw new CustomException(ErrorCode.REPLY_TO_REPLY_NOT_ALLOWED);
 				}
 			}
 
@@ -77,15 +92,15 @@ public class CommentService {
 	public void deleteComment(Long groupId, Long commentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new NoSuchElementException("가족에서 확인되지 않는 유저입니다.")).getStatus();
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
 		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new IllegalStateException("가족에서 확인되지 않는 유저입니다");
+			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
 		}
 		Comment comment = commentRepository.findById(commentId)
-			.orElseThrow(() -> new NoSuchElementException("댓글을 찾을 수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 		// 댓글 작성자 확인
 		if (!comment.getUsers().getUserId().equals(userId)) {
-			throw new IllegalStateException("댓글 작성자만 삭제할 수 있습니다.");
+			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
 		}
 		// 댓글의 상태를 "d"로 변경
 		comment.setStatus("d");
@@ -96,14 +111,14 @@ public class CommentService {
 	public CommentDto updateComment(Long groupId, Long commentId, String newText) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		Comment comment = commentRepository.findByCommentId(commentId)
-			.orElseThrow(() -> new NoSuchElementException("해당 댓글을 찾을수 없습니다."));
+			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new NoSuchElementException("가족에서 확인되지 않는 유저입니다.")).getStatus();
+			.orElseThrow(() ->  new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
 		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new IllegalStateException("가족에서 확인되지 않는 유저입니다");
+			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
 		}
 		if (!comment.getUsers().getUserId().equals(userId)) {
-			throw new IllegalStateException("댓글 작성자만 수정할 수 있습니다.");
+			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
 		}
 		comment.setCommentText(newText);
 		Comment save = commentRepository.save(comment);
@@ -114,12 +129,15 @@ public class CommentService {
 	public List<CommentDto> getCommentsByContentId(Long groupId, Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new NoSuchElementException("가족에서 확인되지 않는 유저입니다.")).getStatus();
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
 		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new IllegalStateException("가족에서 확인되지 않는 유저입니다");
+			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
 		}
 
 		List<Comment> comments = commentRepository.findByContent_ContentIdAndStatus(contentId, "a");
+		if (comments.isEmpty()) {
+			throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+		}
 		return comments.stream().map(CommentDto::fromComment).collect(Collectors.toList());
 	}
 }
