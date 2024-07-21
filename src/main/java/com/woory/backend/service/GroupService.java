@@ -163,7 +163,7 @@ public class GroupService {
 		// 로그인된 유저 가져오기
 		Long userId = SecurityUtil.getCurrentUserId();
 		User byUserId = getUser();
-		int userCount = groupUserRepository.findALLByUser_UserId(userId).size();
+		int userCount = groupUserRepository.findByUser_UserId(userId).size();
 		if(userCount >= 5){
 			throw new CustomException(ErrorCode.GROUP_CREATION_LIMIT_EXCEEDED);
 		}
