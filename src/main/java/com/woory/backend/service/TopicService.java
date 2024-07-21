@@ -3,6 +3,8 @@ package com.woory.backend.service;
 import java.util.Date;
 import java.util.List;
 
+import com.woory.backend.error.CustomException;
+import com.woory.backend.error.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,8 @@ public class TopicService {
 		// 새 토픽 생성
 		long topic = TopicManager.pollTopicOfToday();
 
-		TopicSet topicSet = topicSetRepository.findTopicSetById(topic).orElseThrow(() -> new RuntimeException(""));
+		TopicSet topicSet = topicSetRepository.findTopicSetById(topic)
+				.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
 		Date now = new Date();
 
 		List<TopicDto> topicDtos = groupRepository.findAll().stream()

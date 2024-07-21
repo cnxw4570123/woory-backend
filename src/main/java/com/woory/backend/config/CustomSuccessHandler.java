@@ -41,7 +41,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 		ResponseCookie cookie = CookieUtil.createAccessTokenCookie(accessToken, jwtUtil.getAccTokenExpireTime());
 		log.info("accessToken = {}", accessToken);
 		response.setHeader("Set-Cookie", cookie.toString());
-		response.sendRedirect("http://localhost:3000");
+//		response.sendRedirect("http://localhost:3000");
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 }
