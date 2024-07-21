@@ -1,4 +1,4 @@
-package com.woory.backend.repository2;
+package com.woory.backend.repository;
 
 import com.woory.backend.entity.Group;
 

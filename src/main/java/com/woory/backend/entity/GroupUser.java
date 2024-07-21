@@ -35,5 +35,5 @@ public class GroupUser {
     @Column(name = "lastUpdatedDate")
     private Date lastUpdatedDate;
 
-    // Constructors, Getters and Setters (생략)
+    private String image;
 }
