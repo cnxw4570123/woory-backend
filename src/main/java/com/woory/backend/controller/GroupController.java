@@ -1,11 +1,11 @@
 package com.woory.backend.controller;
 
+import com.woory.backend.dto.DataDto;
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
 import com.woory.backend.service.AwsService;
 import com.woory.backend.service.GroupService;
 
-import com.woory.backend.utils.PhotoUtils;
 import com.woory.backend.utils.StatusUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -48,10 +46,10 @@ public class GroupController {
 		return ResponseEntity.ok(response);
 	}
 
-	// 그룹 멤버 조회
+	// 그룹 조회
 	@GetMapping("/get/{groupId}")
 	public ResponseEntity<Map<String, Object>> getMyGroup(@PathVariable("groupId") Long groupId) {
-		List<GroupInfoDto> groups = groupService.getMyGroupId(groupId);
+		DataDto groups = groupService.getMyGroupId(groupId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
 		response.put("data", groups);
 		return ResponseEntity.ok(response);

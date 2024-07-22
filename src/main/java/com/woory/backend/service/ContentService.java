@@ -41,9 +41,10 @@ public class ContentService {
 		this.contentReactionRepository = contentReactionRepository;
 
 	}
+
 	public ContentDto getContentById(Long contentId) {
 		Content content = contentRepository.findByContentId(contentId)
-				.orElseThrow(()->new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		ContentDto contentDto = new ContentDto();
 		contentDto.setContentId(content.getContentId());
 		contentDto.setContentText(content.getContentText());
@@ -66,7 +67,9 @@ public class ContentService {
 		// Content 생성 및 저장 로직
 		Content content = new Content();
 		content.setContentText(contentText);
-		content.setContentImgPath(contentImgPath);
+		if (contentImgPath != null) {
+			content.setContentImgPath(contentImgPath);
+		}
 		content.setUsers(user);
 		content.setTopic(topic);
 		content.setContentRegDate(new Date());
@@ -117,11 +120,11 @@ public class ContentService {
 
 	}
 
-	public List<ContentDto> getContentsByRegDateLike(Long groupId,String dateStr) {
-		List<Content> contents = contentRepository.findByGroupIdAndRegDate(groupId,dateStr);
+	public List<ContentDto> getContentsByRegDateLike(Long groupId, String dateStr) {
+		List<Content> contents = contentRepository.findByGroupIdAndRegDate(groupId, dateStr);
 		return contents.stream()
-				.map(this::convertToDTO1)
-				.collect(Collectors.toList());
+			.map(this::convertToDTO1)
+			.collect(Collectors.toList());
 	}
 
 	public List<ContentDto> getContentsByRegDateMonthLike(String dateStr) {
@@ -130,18 +133,19 @@ public class ContentService {
 			.map(this::convertToDTO)
 			.collect(Collectors.toList());
 	}
+
 	public Map<ReactionType, Long> getReactionCounts(Long contentId) {
 		List<ContentReaction> reactions = contentReactionRepository.findByContent_ContentId(contentId);
 
 		Map<ReactionType, List<ContentReactionDto>> reactionMap = ContentReactionDto.toSeparatedReactions(reactions);
 
 		return reactionMap.entrySet().stream()
-				.collect(Collectors.toMap(Map.Entry::getKey, entry -> (long) entry.getValue().size()));
+			.collect(Collectors.toMap(Map.Entry::getKey, entry -> (long)entry.getValue().size()));
 	}
 
 	public ContentDto getContent(Long contentId) {
 		Content content = contentRepository.findByContentId(contentId)
-				.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		ContentDto contentDto = new ContentDto();
 		contentDto.setContentId(content.getContentId());
 		contentDto.setContentRegDate(content.getContentRegDate());
@@ -235,13 +239,14 @@ public class ContentService {
 
 		return dto;
 	}
+
 	private ContentDto convertToDTO1(Content content) {
 		return new ContentDto(
-				content.getContentId(),
-				content.getContentText(),
-				content.getContentImgPath(),
-				content.getContentRegDate()
-				// Map other fields if necessary
+			content.getContentId(),
+			content.getContentText(),
+			content.getContentImgPath(),
+			content.getContentRegDate()
+			// Map other fields if necessary
 		);
 	}
 
