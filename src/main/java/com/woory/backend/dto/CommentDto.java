@@ -32,7 +32,6 @@ public class CommentDto {
             .userId(comment.getUsers().getUserId())
             .parentCommentId(comment.getParentComment() != null ? comment.getParentComment().getCommentId() : null)
             .commentText(comment.getCommentText())
-            .status(comment.getStatus())
             .commentDate(comment.getCommentDate())
             .build();
     }
