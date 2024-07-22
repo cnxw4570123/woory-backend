@@ -2,7 +2,6 @@ package com.woory.backend.controller;
 
 import com.woory.backend.dto.ContentDto;
 import com.woory.backend.dto.ContentReactionDto;
-import com.woory.backend.entity.Comment;
 import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
 import com.woory.backend.error.CustomException;
@@ -14,17 +13,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/v1/contents")
@@ -36,6 +31,11 @@ public class ContentController {
 	@Autowired
 	public ContentController(ContentService contentService) {
 		this.contentService = contentService;
+	}
+
+	@GetMapping("/detail/{contentId}")
+	public ContentDto getContentById(@PathVariable Long contentId) {
+		return contentService.getContentById(contentId);
 	}
 
 	@Operation(summary = "content 생성")
@@ -89,30 +89,49 @@ public class ContentController {
 //		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);
 	}
+	@Operation(summary = "content 일 조회")
+	@GetMapping("/get/{contentId}")
+	public ResponseEntity<Map<String, Object>> getContents(@PathVariable Long contentId) {
 
+		ContentDto content = contentService.getContent(contentId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
+		response.put("data", content);
+		return ResponseEntity.ok(response);
+	}
 
 
 
 	@Operation(summary = "content 일 조회")
-	@GetMapping("/get")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDate(@RequestParam String param) {
+	@GetMapping("/get/day")
+	public ResponseEntity<Map<String, Object>> getContentsByRegDate(@RequestParam Long groupId,@RequestParam String param) {
 		if (param == null || !param.matches("\\d{4}-\\d{2}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
-		List<ContentDto> contents = contentService.getContentsByRegDateLike(param);
+		List<ContentDto> contents = contentService.getContentsByRegDateLike(groupId,param);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
 		return ResponseEntity.ok(response);
 	}
 	@Operation(summary = "content 월 조회")
 	@GetMapping("/get/month")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(@RequestParam String param) {
+	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(@RequestParam Long groupId,@RequestParam String param) {
 		if (param == null || !param.matches("\\d{4}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
-		List<ContentDto> contents = contentService.getContentsByRegDateMonthLike(param);
+		List<ContentDto> contents = contentService.getContentsByRegDateLike(groupId,param);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
+		return ResponseEntity.ok(response);
+	}
+	@GetMapping("/content/reactions/count")
+	public ResponseEntity<Map<String, Object>> getReactionCounts(@RequestParam Long contentId) {
+		Map<ReactionType, Long> reactionCounts = contentService.getReactionCounts(contentId);
+
+		Map<String, Object> response = Map.of(
+				"message", "리액션 개수가 조회되었습니다.",
+				"data", reactionCounts
+		);
+
 		return ResponseEntity.ok(response);
 	}
 

@@ -36,11 +36,11 @@ public class Comment {
 	@Column(name = "comment_text", length = 255, nullable = false)
 	private String commentText;
 
-	@Column(name = "status", nullable = false)
-	private String status;
 
 	@Column(name = "comment_date", nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date commentDate;
+
+
 
 }

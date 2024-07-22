@@ -11,6 +11,7 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND(404, "COMMENT_003", "해당 댓글을 찾을 수 없습니다."),
     REPLY_TO_REPLY_NOT_ALLOWED(400, "COMMENT_004", "대댓글에 대댓글은 할 수 없습니다."),
     NOT_COMMENT_AUTHOR(403, "COMMENT_005", "해당 댓글을 삭제할 권한이 없습니다."),
+    PARENT_COMMENT_NOT_FOUND(404, "COMMENT_003", "부모 댓글을 찾을 수 없습니다."),
 
 
     TOPIC_NOT_FOUND(404,"TOPIC_001","토픽 세트를 찾을 수 없습니다."),

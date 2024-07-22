@@ -14,4 +14,12 @@ public class ContentDto {
     private String contentImgPath;
     private Date contentRegDate;
     private TopicRequestDto topic;
+
+    public ContentDto(Long contentId, String contentText, String contentImgPath, Date contentRegDate) {
+        this.contentId = contentId;
+        this.contentText = contentText;
+        this.contentImgPath = contentImgPath;
+        this.contentRegDate = contentRegDate;
+    }
+    public ContentDto(){}
 }

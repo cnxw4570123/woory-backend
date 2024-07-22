@@ -3,6 +3,7 @@ package com.woory.backend.controller;
 import com.woory.backend.dto.CommentDto;
 import com.woory.backend.dto.CommentRequestDto;
 import com.woory.backend.dto.UpdateCommentRequest;
+import com.woory.backend.entity.Comment;
 import com.woory.backend.service.CommentService;
 import com.woory.backend.utils.StatusUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,15 +30,15 @@ public class CommentController {
     @Operation(summary = "comment 쓰기")
     @PostMapping("/add/{groupId}")
     public ResponseEntity<Map<String, Object>> addComment(@PathVariable Long groupId, @RequestBody CommentRequestDto commentRequestDto) {
-        CommentDto commentDto = commentService.addComment(groupId, commentRequestDto);
+        Comment comment = commentService.addComment(groupId, commentRequestDto);
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 추가되었습니다");
-        response.put("data", commentDto);
+//        response.put("data", comment);
         return ResponseEntity.ok(response);
     }
     @Operation(summary = "comment 삭제")
-    @DeleteMapping("/{groupId}/{commentId}")
-    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable Long groupId, @PathVariable Long commentId) {
-        commentService.deleteComment(groupId, commentId);
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable Long commentId) {
+        commentService.deleteCommentAndReplies(commentId);
         return StatusUtil.getResponseMessage("댓글 삭제");
     }
     @Operation(summary = "comment 수정")

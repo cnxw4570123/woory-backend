@@ -36,9 +36,9 @@ public class CommentService {
 	}
 
 	@Transactional
-	public CommentDto addComment(Long groupId, CommentRequestDto commentRequestDto) {
+	public Comment addComment(Long groupId, CommentRequestDto commentRequestDto) {
 		Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(
-			commentRequestDto.getUserId(), groupId);
+				commentRequestDto.getUserId(), groupId);
 
 		if (byUserUserIdAndGroupGroupId.isEmpty()) {
 			throw new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP);
@@ -64,7 +64,7 @@ public class CommentService {
 			if (commentRequestDto.getParentCommentId() != null) {
 				Optional<Comment> byCommentId = commentRepository.findByCommentId(commentRequestDto.getParentCommentId());
 				if (byCommentId.isEmpty()) {
-					throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+					throw new CustomException(ErrorCode.PARENT_COMMENT_NOT_FOUND);
 				}
 				parentComment = byCommentId.get();
 				if (parentComment != null && parentComment.getParentComment() != null) {
@@ -72,39 +72,24 @@ public class CommentService {
 				}
 			}
 
-			Comment comment = Comment.builder()
-				.parentComment(parentComment)
-				.content(content)
-				.users(user)
-				.commentText(commentRequestDto.getCommentText())
-				.status(commentRequestDto.getStatus())
-				.commentDate(commentRequestDto.getCommentDate())
-				.build();
+			Comment comment = new Comment();
+			comment.setCommentText(commentRequestDto.getCommentText());
+			comment.setCommentDate(commentRequestDto.getCommentDate());
+			comment.setContent(content);
+			comment.setUsers(user);
+			comment.setParentComment(parentComment);
 
-			Comment savedComment = commentRepository.save(comment);
-			return CommentDto.fromComment(savedComment);
+			return commentRepository.save(comment);
 		} else {
 			throw new RuntimeException("Content or User not found");
 		}
 	}
 
 	@Transactional
-	public void deleteComment(Long groupId, Long commentId) {
-		Long userId = SecurityUtil.getCurrentUserId();
-		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
-		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
-		}
-		Comment comment = commentRepository.findById(commentId)
-			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-		// 댓글 작성자 확인
-		if (!comment.getUsers().getUserId().equals(userId)) {
-			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
-		}
-		// 댓글의 상태를 "d"로 변경
-		comment.setStatus("d");
-		commentRepository.save(comment);
+	public void deleteCommentAndReplies(Long commentId) {
+		Comment comment = commentRepository.findByCommentId(commentId)
+				.orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
+		deleteRecursive(comment);
 	}
 
 	@Transactional
@@ -137,10 +122,20 @@ public class CommentService {
 			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
 		}
 
-		List<Comment> comments = commentRepository.findByContent_ContentIdAndStatus(contentId, "a");
+		List<Comment> comments = commentRepository.findByContent_ContentId(contentId);
 		if (comments.isEmpty()) {
 			throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
 		}
 		return comments.stream().map(CommentDto::fromComment).collect(Collectors.toList());
+	}
+
+	private void deleteRecursive(Comment comment) {
+		List<Comment> childComments = commentRepository.findByParentComment(comment);
+
+		for (Comment child : childComments) {
+			deleteRecursive(child);
+		}
+
+		commentRepository.delete(comment);
 	}
 }

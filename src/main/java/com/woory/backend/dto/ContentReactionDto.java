@@ -37,4 +37,5 @@ public class ContentReactionDto {
 			.map(ContentReactionDto::toContentReactionDto)
 			.collect(Collectors.groupingBy(ContentReactionDto::getReaction));
 	}
+
 }

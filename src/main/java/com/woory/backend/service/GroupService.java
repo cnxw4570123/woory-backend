@@ -53,6 +53,15 @@ public class GroupService {
 		}
 		return myGroups;
 	}
+	public List<GroupInfoDto> getMyGroupId(Long groupID) {
+		Long userId = SecurityUtil.getCurrentUserId();
+
+		List<GroupInfoDto> myGroups = groupUserRepository.findMyGroupInfoDtoByGrooupId(groupID);
+		if (myGroups.isEmpty()) {
+			throw new CustomException(ErrorCode.GROUP_NOT_FOUND);
+		}
+		return myGroups;
+	}
 
 
 	public Group createGroup(String groupName, String photoPath) {
