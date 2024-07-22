@@ -17,10 +17,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woory.backend.domain.TokenStatus;
 import com.woory.backend.dto.CustomOAuth2User;
 import com.woory.backend.dto.UserDto;
 import com.woory.backend.utils.JWTUtil;
+import com.woory.backend.utils.JsonUtil;
 import com.woory.backend.utils.SecurityUtil;
 
 import jakarta.servlet.FilterChain;
@@ -58,9 +60,15 @@ public class JWTFilter extends OncePerRequestFilter {
 				.collect(Collectors.joining(","));
 
 			String token = jwtUtil.generateAccessToken(userId, authorities);
-			response.getWriter().write("accessToken : " + token);
+			Map<String, String> tokenResponse = new HashMap<>();
+
+			tokenResponse.put("accessToken", token);
+			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+			response.getWriter().write(JsonUtil.toJson(tokenResponse));
+
 			response.setStatus(HttpServletResponse.SC_OK);
-			filterChain.doFilter(request, response);
+
+			// filterChain.doFilter(request, response);
 			return;
 		}
 
