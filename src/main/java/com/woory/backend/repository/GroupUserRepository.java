@@ -35,6 +35,7 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	List<GroupUser> findAllByGroup_GroupId(Long groupId);
 
 	List<GroupUser> findByUser_UserId(Long userId);
+
 	void deleteByGroup_GroupIdAndUser_UserId(Long groupId, Long userId);
 
 	void deleteByGroup_GroupId(Long groupId);
@@ -43,6 +44,12 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 
 	@Query("select gu from GroupUser gu where gu.group.groupId = :groupId and gu.user.userId != :userId ")
 	List<GroupUser> findGroupUserWithoutUser(@Param("groupId") Long groupId, @Param("userId") Long userId);
+  
+  @Query("select gu from GroupUser gu join fetch gu.user u where u.userId = :userId and gu.group.groupId = :groupId")
+	Optional<GroupUser> findGroupUserWithUserByGroupIdAndUserId(
+		@Param("userId") long userId,
+		@Param("groupId") long groupId);
+
 
 
 }

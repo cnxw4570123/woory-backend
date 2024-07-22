@@ -8,6 +8,7 @@ import com.woory.backend.entity.ContentReaction;
 import com.woory.backend.entity.ReactionType;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ContentReactionDto {
 
 	private Long contentId;
@@ -23,13 +25,12 @@ public class ContentReactionDto {
 	private Long userId;
 	private ReactionType reaction;
 
-
 	public static ContentReactionDto toContentReactionDto(ContentReaction reaction) {
-		ContentReactionDto dto = new ContentReactionDto();
-		dto.setContentId(reaction.getContent().getContentId());
-		dto.setUserId(reaction.getUser().getUserId());
-		dto.setReaction(reaction.getReaction());
-		return dto;
+		return ContentReactionDto.builder()
+			.contentId(reaction.getContent().getContentId())
+			.userId(reaction.getUser().getUserId())
+			.reaction(reaction.getReaction())
+			.build();
 	}
 
 	public static Map<ReactionType, List<ContentReactionDto>> toSeparatedReactions(List<ContentReaction> reactions) {
@@ -38,4 +39,9 @@ public class ContentReactionDto {
 			.collect(Collectors.groupingBy(ContentReactionDto::getReaction));
 	}
 
+	public static Map<ReactionType, Long> toReactionSizeByStatus(List<ContentReaction> reactions) {
+		return reactions.stream()
+			.map(ContentReactionDto::toContentReactionDto)
+			.collect(Collectors.groupingBy(ContentReactionDto::getReaction, Collectors.counting()));
+	}
 }

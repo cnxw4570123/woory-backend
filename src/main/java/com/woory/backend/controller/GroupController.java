@@ -4,24 +4,20 @@ import com.woory.backend.dto.DataDto;
 import com.woory.backend.dto.GroupDto;
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
-import com.woory.backend.entity.GroupUser;
 import com.woory.backend.service.GroupService;
 
+import com.woory.backend.utils.PhotoUtils;
 import com.woory.backend.utils.StatusUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
-
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,6 +42,7 @@ public class GroupController {
         response.put("data", groups);
         return ResponseEntity.ok(response);
     }
+ 
     // 그룹 조회
     @GetMapping("/get/{groupId}")
     public ResponseEntity<Map<String, Object>> getMyGroup(@PathVariable("groupId") Long groupId) {
@@ -83,29 +80,23 @@ public class GroupController {
 
 
 
-
     @PutMapping("/update/{groupId}")
-    @Operation(summary = "가족 수정", description = "가족 이름과 사진을 받아서 가족 수정")
-    public ResponseEntity<Map<String, Object>> updateGroup(
-            @PathVariable("groupId") Long groupId,
-            @RequestParam("groupName") String groupName,
-            @RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
-
-        String photoPath = null;
-
-        if (groupPhoto != null && !groupPhoto.isEmpty()) {
-            try {
-                photoPath = savePhoto(groupPhoto);
-            } catch (IOException e) {
-                return StatusUtil.getPhotoSaveError();
-            }
-        }
-
-        Group updatedGroup = groupService.updateGroup(groupId, groupName, photoPath);
-        Map<String, Object> response = StatusUtil.getStatusMessage("가족이 수정되었습니다");
-//        response.put("data", updatedGroup);
-        return ResponseEntity.ok(response);
-    }
+	  @Operation(summary = "가족 수정", description = "가족 이름과 사진을 받아서 가족 수정")
+	  public ResponseEntity<Map<String, Object>> updateGroup(
+		  @PathVariable("groupId") Long groupId,
+		  @RequestParam("groupName") String groupName,
+		  @RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
+		  try {
+			  String photoPath = PhotoUtils.handlePhoto(groupPhoto);
+			  Group updatedGroup = groupService.updateGroup(groupId, groupName, photoPath);
+			  Map<String, Object> response = StatusUtil.getStatusMessage("가족이 수정되었습니다");
+			  //        response.put("data", updatedGroup);
+			  return ResponseEntity.ok(response);
+		  } catch (IOException e) {
+			  return StatusUtil.getPhotoSaveError();
+		  }
+	  }
+ 
 
 
     // 그룹 삭제
@@ -115,6 +106,7 @@ public class GroupController {
         groupService.deleteGroup(groupId);
         return StatusUtil.getResponseMessage("가족이 삭제되었습니다.");
     }
+  
 
     // 그룹 떠나기
     @Operation(summary = "가족 나가기")
@@ -131,7 +123,7 @@ public class GroupController {
         groupService.banGroup(groupId, userId);
         return StatusUtil.getResponseMessage("사용자가 추방되었습니다.");
     }
-
+  
     // 초대 링크 생성
     @Operation(summary = "가족 초대 링크 생성", description = "임시로 서버 주소 + 엔드포인트 매핑 해놓았는데 추후 수정 예정입니다.")
     @PostMapping("/invite/{groupId}")
@@ -182,5 +174,24 @@ public class GroupController {
     }
 
 
+
+
+  
+  
+   
+  
+	
+
+	
+  
+
+
+  
+	
+
+	
+  
+  
+	
 
 }
