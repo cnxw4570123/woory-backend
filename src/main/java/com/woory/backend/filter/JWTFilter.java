@@ -52,6 +52,10 @@ public class JWTFilter extends OncePerRequestFilter {
 
 			if (userByCode == null) {
 				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				Map<String, String> error = new HashMap<>();
+				response.setHeader("Content-Type", "application/json;charset=UTF-8");
+				error.put("message", "유효하지 않은 코드입니다.");
+				response.getWriter().write(JsonUtil.toJson(error));
 				return;
 			}
 			Long userId = Long.valueOf(userByCode.getName());
