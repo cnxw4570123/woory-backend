@@ -41,6 +41,17 @@ public class ContentService {
 		this.contentReactionRepository = contentReactionRepository;
 
 	}
+	public ContentDto getContentById(Long contentId) {
+		Content content = contentRepository.findByContentId(contentId)
+				.orElseThrow(()->new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		ContentDto contentDto = new ContentDto();
+		contentDto.setContentId(content.getContentId());
+		contentDto.setContentText(content.getContentText());
+		contentDto.setContentImgPath(contentDto.getContentImgPath());
+		contentDto.setContentRegDate(content.getContentRegDate());
+
+		return contentDto;
+	}
 
 	@Transactional
 	public Content createContent(Long groupId, Long topicId, String contentText, String contentImgPath) {
@@ -106,18 +117,37 @@ public class ContentService {
 
 	}
 
-	public List<ContentDto> getContentsByRegDateLike(String dateStr) {
-		List<Content> contents = contentRepository.findContentsByRegDateLike(dateStr + "%");
+	public List<ContentDto> getContentsByRegDateLike(Long groupId,String dateStr) {
+		List<Content> contents = contentRepository.findByGroupIdAndRegDate(groupId,dateStr);
+		return contents.stream()
+				.map(this::convertToDTO1)
+				.collect(Collectors.toList());
+	}
+
+	public List<ContentDto> getContentsByRegDateMonthLike(String dateStr) {
+		List<Content> contents = contentRepository.findByDateWithImgPath(dateStr + "%");
 		return contents.stream()
 			.map(this::convertToDTO)
 			.collect(Collectors.toList());
 	}
+	public Map<ReactionType, Long> getReactionCounts(Long contentId) {
+		List<ContentReaction> reactions = contentReactionRepository.findByContent_ContentId(contentId);
 
-	public List<ContentDto> getContentsByRegDateMonthLike(String dateStr) {
-		List<Content> contents = contentRepository.findContentsByRegDateMonthLike(dateStr + "%");
-		return contents.stream()
-			.map(this::convertToDTO)
-			.collect(Collectors.toList());
+		Map<ReactionType, List<ContentReactionDto>> reactionMap = ContentReactionDto.toSeparatedReactions(reactions);
+
+		return reactionMap.entrySet().stream()
+				.collect(Collectors.toMap(Map.Entry::getKey, entry -> (long) entry.getValue().size()));
+	}
+
+	public ContentDto getContent(Long contentId) {
+		Content content = contentRepository.findByContentId(contentId)
+				.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		ContentDto contentDto = new ContentDto();
+		contentDto.setContentId(content.getContentId());
+		contentDto.setContentRegDate(content.getContentRegDate());
+		contentDto.setContentText(content.getContentText());
+		contentDto.setContentImgPath(content.getContentImgPath());
+		return contentDto;
 	}
 
 	/**
@@ -204,6 +234,15 @@ public class ContentService {
 		dto.setTopic(topicDTO);
 
 		return dto;
+	}
+	private ContentDto convertToDTO1(Content content) {
+		return new ContentDto(
+				content.getContentId(),
+				content.getContentText(),
+				content.getContentImgPath(),
+				content.getContentRegDate()
+				// Map other fields if necessary
+		);
 	}
 
 	public TopicDto getTopic(LocalDate date, Long groupId) {

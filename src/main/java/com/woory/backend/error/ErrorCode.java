@@ -14,6 +14,7 @@ public enum ErrorCode {
 	COMMENT_NOT_FOUND(404, "COMMENT_003", "해당 댓글을 찾을 수 없습니다."),
 	REPLY_TO_REPLY_NOT_ALLOWED(400, "COMMENT_004", "대댓글에 대댓글은 할 수 없습니다."),
 	NOT_COMMENT_AUTHOR(403, "COMMENT_005", "해당 댓글을 삭제할 권한이 없습니다."),
+  PARENT_COMMENT_NOT_FOUND(404, "COMMENT_006", "부모 댓글을 찾을 수 없습니다."),
 
 	TOPIC_NOT_FOUND(404, "TOPIC_001", "토픽 세트를 찾을 수 없습니다."),
 	// ContentService
@@ -32,25 +33,17 @@ public enum ErrorCode {
 	USER_GROUPS_NOT_FOUND(404, "USER_001", "유저,가족의 정보를 찾을 수 없습니다."),
 	USER_NOT_FOUND(404, "USER_002", "해당 유저를 찾을수 없습니다.");
 
-	private final String code;
-	private final String message;
-	private final int status;
+    private final String code;
+    private final String message;
+    private final int status;
 
-	ErrorCode(final int status, final String code, final String message) {
-		this.status = status;
-		this.message = message;
-		this.code = code;
-	}
+    ErrorCode(final int status, final String code, final String message) {
+        this.status = status;
+        this.message = message;
+        this.code = code;
+    }
 
-	public String getCode() {
-		return code;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public int getStatus() {
-		return status;
-	}
+    public String getCode() { return code; }
+    public String getMessage() { return message; }
+    public int getStatus() { return status; }
 }
