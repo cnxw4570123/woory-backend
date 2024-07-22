@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.woory.backend.entity.GroupStatus;
+import com.woory.backend.entity.GroupUser;
 import com.woory.backend.entity.User;
 
 import lombok.AllArgsConstructor;
@@ -21,18 +22,16 @@ import lombok.NoArgsConstructor;
 @Getter
 public class UserResponseDto {
 	private long userId;
-	private String userEmail;
 	private String nickname;
 	private String profileImgLink;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Map<GroupStatus, List<GroupInfoDto>> byGroupStatus;
+	private boolean isHouseHolder;
 
-	public static UserResponseDto fromUserAndGroups(User user, List<GroupInfoDto> groupList) {
+	public static UserResponseDto fromUserWithCurrentGroup(User user, GroupUser groupUser) {
 		return UserResponseDto.builder()
 			.userId(user.getUserId())
 			.nickname(user.getNickname())
-			.byGroupStatus(GroupInfoDto.toSeparatedByStatus(groupList))
 			.profileImgLink(user.getProfileImage())
+			.isHouseHolder(groupUser.getStatus().equals(GroupStatus.GROUP_LEADER))
 			.build();
 	}
 }

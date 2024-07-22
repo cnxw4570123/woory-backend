@@ -1,8 +1,15 @@
 package com.woory.backend.controller;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.woory.backend.dto.UserResponseDto;
+import com.woory.backend.error.CustomException;
+import com.woory.backend.error.ErrorCode;
 import com.woory.backend.service.UserService;
 import com.woory.backend.utils.CookieUtil;
+import com.woory.backend.utils.PhotoUtils;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -10,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -29,10 +36,10 @@ import lombok.AllArgsConstructor;
 public class UserController {
 	private UserService userService;
 
-	@GetMapping("/my")
+	@GetMapping("/my/{groupId}")
 	@Operation(summary = "회원 조회")
-	public ResponseEntity<UserResponseDto> my() {
-		return ResponseEntity.ok(userService.getUserInfo());
+	public ResponseEntity<UserResponseDto> my(@PathVariable("groupId") long groupId) {
+		return ResponseEntity.ok(userService.getUserInfo(groupId));
 	}
 
 	@GetMapping("/logout")
@@ -52,13 +59,20 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 
-	// 가족 프로필 수정
-	@PostMapping("/update/{groupId}")
-	public ResponseEntity<Void> updateGroupUserProfile(
-		@PathVariable("groupId") Long groupId,
-		@RequestParam("groupUsername") String groupUsername,
+	// 프로필 수정
+	@PutMapping("/update")
+	public ResponseEntity<Map<String, String>> updateGroupUserProfile(
+		@RequestPart("nickname") String nickname,
 		@RequestPart(value = "userPhoto", required = false) MultipartFile image) {
-		return ResponseEntity.ok().build();
+		try {
+			String photoPath = PhotoUtils.handlePhoto(image);
+			userService.updateProfile(photoPath, nickname);
+			Map<String, String> response = new HashMap<>();
+			response.put("message", "수정이 완료되었습니다.");
+			return ResponseEntity.ok(response);
 
+		} catch (IOException e) {
+			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
+		}
 	}
 }

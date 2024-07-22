@@ -32,9 +32,15 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	List<GroupUser> findAllByGroup_GroupId(Long groupId);
 
 	List<GroupUser> findByUser_UserId(Long userId);
+
 	void deleteByGroup_GroupIdAndUser_UserId(Long groupId, Long userId);
 
 	void deleteByGroup_GroupId(Long groupId);
 
 	boolean existsByGroup_GroupId(Long groupId);
+
+	@Query("select gu from GroupUser gu join fetch gu.user u where u.userId = :userId and gu.group.groupId = :groupId")
+	Optional<GroupUser> findGroupUserWithUserByGroupIdAndUserId(
+		@Param("userId") long userId,
+		@Param("groupId") long groupId);
 }
