@@ -2,12 +2,14 @@ package com.woory.backend.controller;
 
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
+import com.woory.backend.service.AwsService;
 import com.woory.backend.service.GroupService;
 
 import com.woory.backend.utils.PhotoUtils;
 import com.woory.backend.utils.StatusUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,51 +28,49 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class GroupController {
 
 	private final GroupService groupService;
-  
+	private final AwsService awsService;
+	private final String defaultImage;
+
 	@Autowired
-	public GroupController(GroupService groupService) {
+	public GroupController(GroupService groupService, AwsService awsService,
+		@Value("${service.default.groupImg}") String defaultImage) {
 		this.groupService = groupService;
+		this.awsService = awsService;
+		this.defaultImage = defaultImage;
 	}
 
+	// 가족 조회
+	@GetMapping("/my")
+	public ResponseEntity<Map<String, Object>> getGroups() {
+		List<GroupInfoDto> groups = groupService.getMyGroups();
+		Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
+		response.put("data", groups);
+		return ResponseEntity.ok(response);
+	}
 
-  // 가족 조회
-  @GetMapping("/my")
-  public ResponseEntity<Map<String, Object>> getGroups() {
-      List<GroupInfoDto> groups = groupService.getMyGroups();
-      Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
-      response.put("data", groups);
-      return ResponseEntity.ok(response);
-  }
-  
-    // 그룹 멤버 조회
-  @GetMapping("/get/{groupId}")
-  public ResponseEntity<Map<String, Object>> getMyGroup(@PathVariable("groupId") Long groupId) {
-      List<GroupInfoDto> groups = groupService.getMyGroupId(groupId);
-      Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
-      response.put("data", groups);
-      return ResponseEntity.ok(response);
-  }
-  
+	// 그룹 멤버 조회
+	@GetMapping("/get/{groupId}")
+	public ResponseEntity<Map<String, Object>> getMyGroup(@PathVariable("groupId") Long groupId) {
+		List<GroupInfoDto> groups = groupService.getMyGroupId(groupId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
+		response.put("data", groups);
+		return ResponseEntity.ok(response);
+	}
+
 	@Operation(summary = "그룹 생성", description = "이름과 파일을 받아서 가족 생성, 파일 미전송 시 기본 파일으로 지정")
 	// 그룹 생성
 	@PostMapping("/create")
 	public ResponseEntity<Map<String, Object>> createGroup(
 		@RequestParam("groupName") String groupName,
 		@RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
-		try {
-			String photoPath = PhotoUtils.handlePhoto(groupPhoto);
-			if (photoPath == null) {
-				String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
-				photoPath = defaultFile + "default.png";
-			}
-			Group group = groupService.createGroup(groupName, photoPath);
-			Map<String, Object> response = StatusUtil.getStatusMessage("가족이 생성되었습니다.");
-			//        response.put("data", group);
-			return ResponseEntity.ok(response);
-
-		} catch (IOException e) {
-			return StatusUtil.getPhotoSaveError();
+		String photoPath = awsService.saveFile(groupPhoto);
+		if (photoPath == null) {
+			photoPath = defaultImage;
 		}
+		Group group = groupService.createGroup(groupName, photoPath);
+		Map<String, Object> response = StatusUtil.getStatusMessage("가족이 생성되었습니다.");
+		response.put("groupId", group.getGroupId());
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("/update/{groupId}")
@@ -79,17 +79,12 @@ public class GroupController {
 		@PathVariable("groupId") Long groupId,
 		@RequestParam("groupName") String groupName,
 		@RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
-		try {
-			String photoPath = PhotoUtils.handlePhoto(groupPhoto);
-			Group updatedGroup = groupService.updateGroup(groupId, groupName, photoPath);
-			Map<String, Object> response = StatusUtil.getStatusMessage("가족이 수정되었습니다");
-			//        response.put("data", updatedGroup);
-			return ResponseEntity.ok(response);
-		} catch (IOException e) {
-			return StatusUtil.getPhotoSaveError();
-		}
+		String photoPath = awsService.saveFile(groupPhoto);
+		Group updatedGroup = groupService.updateGroup(groupId, groupName, photoPath);
+		Map<String, Object> response = StatusUtil.getStatusMessage("가족이 수정되었습니다");
+		//        response.put("data", updatedGroup);
+		return ResponseEntity.ok(response);
 	}
-  
 
 	// 그룹 삭제
 	@Operation(summary = "가족 삭제")
@@ -106,7 +101,7 @@ public class GroupController {
 		groupService.leaveGroup(groupId);
 		return StatusUtil.getResponseMessage("가족에서 나왔습니다.");
 	}
-  
+
 	// 그룹 사용자를 벤하기 (그룹장 전용)
 	@Operation(summary = "가족 구성원 추방")
 	@PostMapping("/ban/{groupId}/user/{userId}")
@@ -117,19 +112,21 @@ public class GroupController {
 	}
 
 	// 초대 링크 생성
+	@Deprecated
 	@Operation(summary = "가족 초대 링크 생성", description = "임시로 서버 주소 + 엔드포인트 매핑 해놓았는데 추후 수정 예정입니다.")
-	@PostMapping("/invite/{groupId}")
+	// GET 요청
+	@GetMapping("/invite/{groupId}")
 	public ResponseEntity<Map<String, Object>> generateInviteLink(@PathVariable("groupId") Long groupId) {
 		String inviteLink = groupService.generateInviteLink(groupId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("초대 링크가 생성되었습니다");
 		response.put("data", inviteLink);
 		return ResponseEntity.ok(response);
 	}
-  
-  
+
 	// 그룹 가입
 	@Operation(summary = "가족에 참여", description = "초대 링크를 통해 그룹에 참여")
-	@GetMapping("/url/{groupId}")
+	// POST 요청
+	@PostMapping("/url/{groupId}")
 	public ResponseEntity<Map<String, String>> joinGroup(@PathVariable("groupId") Long groupId) {
 		groupService.joinGroup(groupId);
 		return StatusUtil.getResponseMessage("가족에 참여했습니다.");

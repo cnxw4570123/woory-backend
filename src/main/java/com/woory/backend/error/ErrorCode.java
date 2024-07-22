@@ -5,9 +5,11 @@ public enum ErrorCode {
 
 	INTERNAL_SERVER_ERROR(500, "COMMON_001", "예기치 못한 에러가 발생하였습니다."),
 	FILE_SIZE_EXCEED(400, "COMMON_002", "파일 크기는 5MB를 초과할 수 없습니다."),
-	FILE_IS_NOT_IMAGE(400, "COMMON_002", "파일 확장자는 png 또는 jpg만 가능합니다."),
-	INVALID_FILE_NAME(400,"COMMON_003", "파일 이름이 유효하지 않습니다."),
-	ERROR_SAVING_FILE(400, "COMMON_004", "파일 저장중 문제가 발생했습니다."),
+	FILE_IS_NOT_IMAGE(400, "COMMON_003", "파일 확장자는 png 또는 jpg만 가능합니다."),
+	FILE_DOES_NOT_EXIST(400, "COMMON_004", "파일이 존재하지 않습니다."),
+	INVALID_FILE_NAME(400, "COMMON_005", "파일 이름이 유효하지 않습니다."),
+	ERROR_SAVING_FILE(500, "COMMON_006", "파일 저장중 문제가 발생했습니다."),
+	ERROR_DELETING_FILE(500, "COMMON_007", "파일 삭제중 문제가 발생했습니다."),
 	// CommentService
 	USER_NOT_FOUND_IN_GROUP(404, "COMMENT_001", "가족에서 사용자를 찾을수 없습니다."),
 	USER_BANNED_OR_NON_MEMBER(403, "COMMENT_002", "가족에 속한 사용자가 아닙니다."),
