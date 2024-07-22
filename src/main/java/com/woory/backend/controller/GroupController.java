@@ -1,5 +1,6 @@
 package com.woory.backend.controller;
 
+import com.woory.backend.dto.DataDto;
 import com.woory.backend.dto.GroupDto;
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.entity.Group;
@@ -48,7 +49,7 @@ public class GroupController {
     // 그룹 조회
     @GetMapping("/get/{groupId}")
     public ResponseEntity<Map<String, Object>> getMyGroup(@PathVariable("groupId") Long groupId) {
-        List<GroupInfoDto> groups = groupService.getMyGroupId(groupId);
+        DataDto groups = groupService.getMyGroupId(groupId);
         Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
         response.put("data", groups);
         return ResponseEntity.ok(response);

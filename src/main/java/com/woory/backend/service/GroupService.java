@@ -1,6 +1,9 @@
 package com.woory.backend.service;
 
+import com.woory.backend.dto.DataDto;
 import com.woory.backend.dto.GroupInfoDto;
+import com.woory.backend.dto.MemberDetailDto;
+import com.woory.backend.dto.UserDetailDto;
 import com.woory.backend.entity.Group;
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
@@ -33,6 +36,7 @@ public class GroupService {
 	private TopicSetRepository topicSetRepository;
 	private final String serverAddress;
 
+
 	@Autowired
 	public GroupService(UserRepository userRepository, GroupRepository groupRepository,
 		GroupUserRepository groupUserRepository,
@@ -53,14 +57,38 @@ public class GroupService {
 		}
 		return myGroups;
 	}
-	public List<GroupInfoDto> getMyGroupId(Long groupID) {
+	public DataDto getMyGroupId(Long groupID) {
 		Long userId = SecurityUtil.getCurrentUserId();
-
-		List<GroupInfoDto> myGroups = groupUserRepository.findMyGroupInfoDtoByGrooupId(groupID);
-		if (myGroups.isEmpty()) {
-			throw new CustomException(ErrorCode.GROUP_NOT_FOUND);
+		User user = userRepository.findByUserId(userId)
+				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		List<GroupUser> groupUserWithoutUser = groupUserRepository.findGroupUserWithoutUser(groupID, userId);
+		UserDetailDto userDetailDto = new UserDetailDto();
+		userDetailDto.setUserId(user.getUserId());
+		userDetailDto.setUserName(user.getNickname());
+		userDetailDto.setProfileUrl(user.getProfileImage());
+		userDetailDto.setHouseholder(true);
+		List<MemberDetailDto> memberDTOs = new ArrayList<>();
+		for(GroupUser groupUser : groupUserWithoutUser){
+			MemberDetailDto memberDetailDto = new MemberDetailDto();
+			memberDetailDto.setUserId(groupUser.getUser().getUserId());
+			memberDetailDto.setUserName(groupUser.getUser().getNickname());
+			memberDetailDto.setProfileUrl(groupUser.getUser().getProfileImage());
+			memberDetailDto.setHouseholder(true);
+			memberDTOs.add(memberDetailDto);
 		}
-		return myGroups;
+
+
+
+		DataDto dataDto = new DataDto();
+		dataDto.setUser(userDetailDto);
+		dataDto.setMembers(memberDTOs);
+
+
+//		List<GroupInfoDto> myGroups = groupUserRepository.findMyGroupInfoDtoByGrooupId(groupID);
+//		if (myGroups.isEmpty()) {
+//			throw new CustomException(ErrorCode.GROUP_NOT_FOUND);
+//		}
+		return dataDto;
 	}
 
 

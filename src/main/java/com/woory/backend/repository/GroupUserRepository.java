@@ -40,4 +40,9 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	void deleteByGroup_GroupId(Long groupId);
 
 	boolean existsByGroup_GroupId(Long groupId);
+
+	@Query("select gu from GroupUser gu where gu.group.groupId = :groupId and gu.user.userId != :userId ")
+	List<GroupUser> findGroupUserWithoutUser(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
+
 }
