@@ -1,9 +1,12 @@
 package com.woory.backend.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import com.woory.backend.entity.GroupUser;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -38,15 +41,15 @@ public class UserService {
 		this.groupUserRepository = groupUserRepository;
 	}
 
-	public UserResponseDto getUserInfo() {
+	public UserResponseDto getUserInfo(long groupId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 
-		User user = userRepository.findByUserIdWithGroups(userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		GroupUser groupUser = groupUserRepository.findGroupUserWithUserByGroupIdAndUserId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 
-		List<GroupInfoDto> myGroup = groupUserRepository.findMyGroupInfoDto(userId);
+		User user = groupUser.getUser();
 
-		return UserResponseDto.fromUserAndGroups(user, myGroup);
+		return UserResponseDto.fromUserWithCurrentGroup(user, groupUser);
 	}
 
 	public void deleteAccount() {
@@ -79,6 +82,20 @@ public class UserService {
 			.retrieve()
 			.bodyToMono(String.class)
 			.block();
+	}
+
+	public void updateProfile(String filePath, String nickname) {
+		Long userId = SecurityUtil.getCurrentUserId();
+
+		User user = userRepository.findById(userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		if (filePath != null) {
+			user.setProfileImage(filePath);
+		}
+		user.setNickname(nickname);
+
+		userRepository.save(user);
 	}
 
 }

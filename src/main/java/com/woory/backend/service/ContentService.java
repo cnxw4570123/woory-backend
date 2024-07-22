@@ -9,15 +9,21 @@ import com.woory.backend.utils.SecurityUtil;
 
 import jakarta.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.datetime.DateFormatter;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class ContentService {
 
+	private static final Logger log = LoggerFactory.getLogger(ContentService.class);
 	private ContentRepository contentRepository;
 	private UserRepository userRepository;
 	private GroupUserRepository groupUserRepository;
@@ -117,11 +123,12 @@ public class ContentService {
 				.map(this::convertToDTO1)
 				.collect(Collectors.toList());
 	}
+
 	public List<ContentDto> getContentsByRegDateMonthLike(String dateStr) {
 		List<Content> contents = contentRepository.findByDateWithImgPath(dateStr + "%");
 		return contents.stream()
-				.map(this::convertToDTO)
-				.collect(Collectors.toList());
+			.map(this::convertToDTO)
+			.collect(Collectors.toList());
 	}
 	public Map<ReactionType, Long> getReactionCounts(Long contentId) {
 		List<ContentReaction> reactions = contentReactionRepository.findByContent_ContentId(contentId);
@@ -163,14 +170,12 @@ public class ContentService {
 				removeReaction(contentReaction);
 				return null;
 			}
-			// decreaseReactionCount(content, contentReaction.getReaction());
 		}
 		User user = userRepository.findById(userId)
-			.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
 		contentReactionRepository.save(contentReaction);
 
-		// increaseReactionCount(content, newReaction);
 		contentRepository.save(content);
 
 		return ContentReactionDto.toContentReactionDto(contentReaction);
@@ -195,7 +200,6 @@ public class ContentService {
 
 	private void removeReaction(ContentReaction contentReaction) {
 		Content content = contentReaction.getContent();
-		// decreaseReactionCount(content, contentReaction.getReaction());
 
 		contentReactionRepository.delete(contentReaction);
 
@@ -208,25 +212,6 @@ public class ContentService {
 		return status;
 	}
 
-	// private void increaseReactionCount(Content content, ReactionType reaction) {
-	// 	switch (reaction) {
-	// 		case LIKE -> content.setLikeCount(content.getLikeCount() + 1);
-	// 		case LOVE -> content.setLoveCount(content.getLoveCount() + 1);
-	// 		case WOW -> content.setWowCount(content.getWowCount() + 1);
-	// 		case SAD -> content.setSadCount(content.getSadCount() + 1);
-	// 		case ANGRY -> content.setAngryCount(content.getAngryCount() + 1);
-	// 	}
-	// }
-	//
-	// private void decreaseReactionCount(Content content, ReactionType reaction) {
-	// 	switch (reaction) {
-	// 		case LIKE -> content.setLikeCount(content.getLikeCount() - 1);
-	// 		case LOVE -> content.setLoveCount(content.getLoveCount() - 1);
-	// 		case WOW -> content.setWowCount(content.getWowCount() - 1);
-	// 		case SAD -> content.setSadCount(content.getSadCount() - 1);
-	// 		case ANGRY -> content.setAngryCount(content.getAngryCount() - 1);
-	// 	}
-	// }
 	private ContentDto convertToDTO(Content content) {
 		ContentDto dto = new ContentDto();
 		dto.setContentId(content.getContentId());
@@ -258,6 +243,13 @@ public class ContentService {
 				content.getContentRegDate()
 				// Map other fields if necessary
 		);
+	}
+
+	public TopicDto getTopic(LocalDate date, Long groupId) {
+		log.info("date = {}", date.toString());
+		Topic topic = topicRepository.findTopicByGroupIdAndIssueDate(groupId, date, date.plusDays(1L))
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+		return TopicDto.fromTopic(topic);
 	}
 
 }
