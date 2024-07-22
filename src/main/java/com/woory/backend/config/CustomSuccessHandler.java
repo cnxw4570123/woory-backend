@@ -36,7 +36,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
 		String client = user.getUsername().split(" ")[0];
 
-		response.sendRedirect("http://localhost:3000/oauth/" + client + "?code=" + code);
+		response.sendRedirect("http://localhost:3000/oauth/callback/" + client + "?code=" + code);
 		response.setStatus(HttpServletResponse.SC_OK);
 	}
 }
