@@ -77,7 +77,7 @@ public class GroupController {
 
         Group group = groupService.createGroup(groupName, photoPath);
         Map<String, Object> response = StatusUtil.getStatusMessage("가족이 생성되었습니다.");
-//        response.put("data", group);
+        response.put("groupId", group.getGroupId());
         return ResponseEntity.ok(response);
     }
 
