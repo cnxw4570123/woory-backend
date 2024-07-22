@@ -27,6 +27,9 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	@Query("select new com.woory.backend.dto.GroupInfoDto(g.groupId, g.groupName, g.photoPath, gu.status) from GroupUser gu join gu.group g on g = gu.group where gu.status != com.woory.backend.entity.GroupStatus.BANNED and gu.user.userId = :userId order by gu.regDate asc")
 	List<GroupInfoDto> findMyGroupInfoDto(@Param("userId") Long userId);
 
+	@Query("select new com.woory.backend.dto.GroupInfoDto(g.groupId, g.groupName, g.photoPath, gu.status) from GroupUser gu join gu.group g on g = gu.group where gu.status != com.woory.backend.entity.GroupStatus.BANNED and gu.group.groupId = :groupId order by gu.regDate asc")
+	List<GroupInfoDto> findMyGroupInfoDtoByGrooupId(@Param("groupId") Long groupId);
+
 	Optional<GroupUser> findByUser_UserIdAndGroup_GroupId(Long userId, Long groupId);
 
 	List<GroupUser> findAllByGroup_GroupId(Long groupId);

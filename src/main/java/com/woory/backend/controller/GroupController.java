@@ -26,20 +26,31 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class GroupController {
 
 	private final GroupService groupService;
+  
 	@Autowired
 	public GroupController(GroupService groupService) {
 		this.groupService = groupService;
 	}
 
-	// 그룹 조회
-	@GetMapping("/my")
-	public ResponseEntity<Map<String, Object>> getGroups() {
-		List<GroupInfoDto> groups = groupService.getMyGroups();
-		Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
-		response.put("data", groups);
-		return ResponseEntity.ok(response);
-	}
 
+  // 가족 조회
+  @GetMapping("/my")
+  public ResponseEntity<Map<String, Object>> getGroups() {
+      List<GroupInfoDto> groups = groupService.getMyGroups();
+      Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
+      response.put("data", groups);
+      return ResponseEntity.ok(response);
+  }
+  
+    // 그룹 멤버 조회
+  @GetMapping("/get/{groupId}")
+  public ResponseEntity<Map<String, Object>> getMyGroup(@PathVariable("groupId") Long groupId) {
+      List<GroupInfoDto> groups = groupService.getMyGroupId(groupId);
+      Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
+      response.put("data", groups);
+      return ResponseEntity.ok(response);
+  }
+  
 	@Operation(summary = "그룹 생성", description = "이름과 파일을 받아서 가족 생성, 파일 미전송 시 기본 파일으로 지정")
 	// 그룹 생성
 	@PostMapping("/create")
@@ -78,6 +89,7 @@ public class GroupController {
 			return StatusUtil.getPhotoSaveError();
 		}
 	}
+  
 
 	// 그룹 삭제
 	@Operation(summary = "가족 삭제")
@@ -94,7 +106,7 @@ public class GroupController {
 		groupService.leaveGroup(groupId);
 		return StatusUtil.getResponseMessage("가족에서 나왔습니다.");
 	}
-
+  
 	// 그룹 사용자를 벤하기 (그룹장 전용)
 	@Operation(summary = "가족 구성원 추방")
 	@PostMapping("/ban/{groupId}/user/{userId}")
@@ -113,7 +125,8 @@ public class GroupController {
 		response.put("data", inviteLink);
 		return ResponseEntity.ok(response);
 	}
-
+  
+  
 	// 그룹 가입
 	@Operation(summary = "가족에 참여", description = "초대 링크를 통해 그룹에 참여")
 	@GetMapping("/url/{groupId}")

@@ -19,6 +19,7 @@ import com.woory.backend.entity.ReactionType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContentDto {
 	private Long contentId;
 	private String contentText;
@@ -27,6 +28,13 @@ public class ContentDto {
 	private TopicRequestDto topic;
 	private int commentsCount;
 	private Map<ReactionType, Long> countByReaction;
+  
+  public ContentDto(Long contentId, String contentText, String contentImgPath, Date contentRegDate) {
+      this.contentId = contentId;
+      this.contentText = contentText;
+      this.contentImgPath = contentImgPath;
+      this.contentRegDate = contentRegDate;
+  }
 
 	public static ContentDto toContentDto(Content content) {
 		return ContentDto.builder()

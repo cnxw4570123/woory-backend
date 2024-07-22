@@ -2,6 +2,7 @@ package com.woory.backend.controller;
 
 import com.woory.backend.dto.ContentDto;
 import com.woory.backend.dto.ContentReactionDto;
+
 import com.woory.backend.dto.TopicDto;
 import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -40,6 +42,11 @@ public class ContentController {
 	@Autowired
 	public ContentController(ContentService contentService) {
 		this.contentService = contentService;
+	}
+
+	@GetMapping("/detail/{contentId}")
+	public ContentDto getContentById(@PathVariable Long contentId) {
+		return contentService.getContentById(contentId);
 	}
 
 	@Operation(summary = "content 생성")
@@ -86,6 +93,9 @@ public class ContentController {
 			return StatusUtil.getPhotoSaveError();
 		}
 	}
+	@Operation(summary = "content 일 조회")
+	@GetMapping("/get/{contentId}")
+	public ResponseEntity<Map<String, Object>> getContents(@PathVariable Long contentId) {
 
 	@Operation(summary = "content 일 조회")
 	@GetMapping("/{groupId}/get")
@@ -110,13 +120,24 @@ public class ContentController {
 
 	@Operation(summary = "content 월 조회")
 	@GetMapping("/get/month")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(@RequestParam String param) {
+	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(@RequestParam Long groupId,@RequestParam String param) {
 		if (param == null || !param.matches("\\d{4}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
-		List<ContentDto> contents = contentService.getContentsByRegDateMonthLike(param);
+		List<ContentDto> contents = contentService.getContentsByRegDateLike(groupId,param);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
+		return ResponseEntity.ok(response);
+	}
+	@GetMapping("/content/reactions/count")
+	public ResponseEntity<Map<String, Object>> getReactionCounts(@RequestParam Long contentId) {
+		Map<ReactionType, Long> reactionCounts = contentService.getReactionCounts(contentId);
+
+		Map<String, Object> response = Map.of(
+				"message", "리액션 개수가 조회되었습니다.",
+				"data", reactionCounts
+		);
+
 		return ResponseEntity.ok(response);
 	}
 
