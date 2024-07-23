@@ -1,6 +1,7 @@
 package com.woory.backend.service;
 
 import com.woory.backend.dto.DataDto;
+import com.woory.backend.dto.GroupDto;
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.dto.MemberDetailDto;
 import com.woory.backend.dto.UserDetailDto;
@@ -59,8 +60,6 @@ public class GroupService {
 
 	public DataDto getMyGroupId(Long groupID) {
 		Long userId = SecurityUtil.getCurrentUserId();
-		// User user = userRepository.findByUserId(userId)
-		// 	.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		GroupUser currentGroupUser = groupUserRepository.findGroupUserWithUserByGroupIdAndUserId(userId, groupID)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -88,10 +87,6 @@ public class GroupService {
 		dataDto.setUser(userDetailDto);
 		dataDto.setMembers(memberDTOs);
 
-		//		List<GroupInfoDto> myGroups = groupUserRepository.findMyGroupInfoDtoByGrooupId(groupID);
-		//		if (myGroups.isEmpty()) {
-		//			throw new CustomException(ErrorCode.GROUP_NOT_FOUND);
-		//		}
 		return dataDto;
 	}
 
@@ -236,6 +231,20 @@ public class GroupService {
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		return byUserId;
 	}
+	//그룹에 속한 유저인지 아닌지 확인
+	public Boolean CheckUserIncludeGroup (Long groupId){
+		Long userId = SecurityUtil.getCurrentUserId();
+		Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId);
+		if(byUserUserIdAndGroupGroupId.isPresent()){
+			GroupStatus status = byUserUserIdAndGroupGroupId.get().getStatus();
+			if(status.equals(GroupStatus.MEMBER)||status.equals(GroupStatus.GROUP_LEADER)){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		return false;
+	}
 
 	@Transactional
 	public Group updateGroup(Long groupId, String groupName, String photoPath) {
@@ -260,6 +269,12 @@ public class GroupService {
 
 	public List<GroupUser> activeMember(Long groupId) {
 		return groupUserRepository.findActiveGroupUsersByGroupIdOrderByRegDate(groupId);
+	}
+
+	public GroupInfoDto getGroupInfo(long groupId) {
+		Group group = groupRepository.findByGroupId(groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+		return GroupInfoDto.fromGroup(group);
 	}
 
 }

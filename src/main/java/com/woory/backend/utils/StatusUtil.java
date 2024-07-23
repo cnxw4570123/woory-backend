@@ -16,9 +16,9 @@ public class StatusUtil {
         return ResponseEntity.badRequest().body(response);
     }
 
-    public static Map<String, Object> getStatusMessage(String contentId) {
+        public static Map<String, Object> getStatusMessage(String message) {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", contentId);
+        response.put("message", message);
         return response;
     }
     public static ResponseEntity<Map<String, String>> getResponseMessage(String message){

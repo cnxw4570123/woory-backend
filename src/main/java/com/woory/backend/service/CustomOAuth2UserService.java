@@ -10,6 +10,8 @@ import com.woory.backend.repository.UserRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -27,9 +29,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
 	private static final Logger log = LoggerFactory.getLogger(CustomOAuth2UserService.class);
 	private final UserRepository userRepository;
+	private final String userDefaultImg;
 
-	public CustomOAuth2UserService(UserRepository userRepository) {
+	@Autowired
+	public CustomOAuth2UserService(UserRepository userRepository,
+		@Value("${service.default.profileImg}") String profileImg) {
 		this.userRepository = userRepository;
+		this.userDefaultImg = profileImg;
 	}
 
 	@Override
@@ -59,7 +65,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 				User user = new User();
 				user.setUsername(username);
 				user.setEmail(oAuth2Response.getEmail());
-				user.setProfileImage(oAuth2Response.getProfileImage());
+				user.setProfileImage(userDefaultImg);
 				user.setRole("ROLE_USER");
 				user.setNickname(oAuth2Response.getName());
 				return user;
@@ -67,7 +73,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
 		byUsername.setUsername(username);
 		byUsername.setEmail(oAuth2Response.getEmail());
-		byUsername.setProfileImage(oAuth2Response.getProfileImage());
+		byUsername.setProfileImage(userDefaultImg);
 		return new CustomOAuth2User(UserDto.fromUser(userRepository.save(byUsername)));
 	}
 
@@ -75,7 +81,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		WebClient webClient = WebClient.builder()
 			.build();
 
-		if(registration.getRegistrationId().equals("naver")){
+		if (registration.getRegistrationId().equals("naver")) {
 			MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 			params.add("grant_type", "delete"); // 토큰 삭제 시 delete
 			params.add("client_id", registration.getClientId());

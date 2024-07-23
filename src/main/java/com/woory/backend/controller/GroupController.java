@@ -37,7 +37,7 @@ public class GroupController {
 		this.defaultImage = defaultImage;
 	}
 
-	// 가족 조회
+	// 내 모든 가족 조회
 	@GetMapping("/my")
 	public ResponseEntity<Map<String, Object>> getGroups() {
 		List<GroupInfoDto> groups = groupService.getMyGroups();
@@ -46,12 +46,30 @@ public class GroupController {
 		return ResponseEntity.ok(response);
 	}
 
+	// 가족 아이디로 가족 정보 조회
+	@GetMapping("/get/info/{groupId}")
+	public ResponseEntity<Map<String, Object>> getGroupInfo(@PathVariable("groupId") Long groupId) {
+		GroupInfoDto groupInfo = groupService.getGroupInfo(groupId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회에 성공했습니다.");
+		response.put("data", groupInfo);
+		return ResponseEntity.ok(response);
+	}
+
 	// 가족 구성원 조회
 	@GetMapping("/get/{groupId}")
 	public ResponseEntity<Map<String, Object>> getMyGroup(@PathVariable("groupId") Long groupId) {
 		DataDto groups = groupService.getMyGroupId(groupId);
-		Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
+		Map<String, Object> response = StatusUtil.getStatusMessage("가족 구성원 조회에 성공했습니다");
 		response.put("data", groups);
+		return ResponseEntity.ok(response);
+	}
+	// 가족 구성원 조회
+	@Operation(summary = "유저 그룹에 속한 사람인지 판단", description = "로그인 시 로그인한아이디와 그룹아이디로 가족에 속한 사람인지 판단")
+	@GetMapping("/check/{groupId}")
+	public ResponseEntity<Map<String, Object>> CheckUserIncludeGroup(@PathVariable("groupId") Long groupId) {
+		Boolean checked = groupService.CheckUserIncludeGroup(groupId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
+		response.put("isInFamily", checked);
 		return ResponseEntity.ok(response);
 	}
 
