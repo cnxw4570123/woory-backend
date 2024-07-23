@@ -46,6 +46,7 @@ public class ContentController {
 		this.awsService = awsService;
 	}
 
+	// 컨텐츠 조회 - 글만 조회
 	@GetMapping("/detail/{contentId}")
 	public ContentDto getContentById(@PathVariable Long contentId) {
 		return contentService.getContentById(contentId);
@@ -57,7 +58,7 @@ public class ContentController {
 		@RequestParam("groupId") Long groupId,
 		@RequestParam("topicId") Long topicId,
 		@RequestParam("contentText") String contentText,
-		@RequestPart(value = "contentPhoto", required = false) MultipartFile contentPhoto) {
+		@RequestPart(value = "images", required = false) MultipartFile contentPhoto) {
 
 		String photoPath = awsService.saveFile(contentPhoto);
 		Content content = contentService.createContent(groupId, topicId, contentText, photoPath);
@@ -72,7 +73,7 @@ public class ContentController {
 		@PathVariable("groupId") Long groupId,
 		@PathVariable("contentId") Long contentId,
 		@RequestParam String contentText,
-		@RequestPart(value = "contentPhoto", required = false) MultipartFile contentImg) {
+		@RequestPart(value = "images", required = false) MultipartFile contentImg) {
 		String photoPath = awsService.saveFile(contentImg);
 		Content updatedContent = contentService.updateContent(groupId, contentId, contentText, photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
@@ -80,7 +81,16 @@ public class ContentController {
 		return ResponseEntity.ok(response);
 	}
 
-	@Operation(summary = "content 일 조회")
+	// @Operation(summary = "단독 content 조회")
+	// @GetMapping("/get/{contentId}")
+	// public ResponseEntity<Map<String, Object>> getContents(@PathVariable Long contentId) {
+	// 	ContentDto content = contentService.getContent(contentId);
+	// 	Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
+	// 	response.put("data", content);
+	// 	return ResponseEntity.ok(response);
+	// }
+
+	@Operation(summary = "그룹 내 일간 컨텐츠 모두 조회")
 	@GetMapping("/{groupId}/get")
 	public ResponseEntity<Map<String, Object>> getContentsByRegDate(
 		@PathVariable("groupId") Long groupId,
