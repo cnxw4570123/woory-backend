@@ -54,6 +54,15 @@ public class GroupController {
 		response.put("data", groups);
 		return ResponseEntity.ok(response);
 	}
+	// 가족 구성원 조회
+	@Operation(summary = "유저 그룹에 속한 사람인지 판단", description = "로그인 시 로그인한아이디와 그룹아이디로 가족에 속한 사람인지 판단")
+	@GetMapping("/check/{groupId}")
+	public ResponseEntity<Map<String, Object>> CheckUserIncludeGroup(@PathVariable("groupId") Long groupId) {
+		Boolean checked = groupService.CheckUserIncludeGroup(groupId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("가족 정보 조회 성공했습니다");
+		response.put("isInFamily", checked);
+		return ResponseEntity.ok(response);
+	}
 
 	@Operation(summary = "그룹 생성", description = "이름과 파일을 받아서 가족 생성, 파일 미전송 시 기본 파일으로 지정")
 	// 그룹 생성
