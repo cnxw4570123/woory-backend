@@ -236,6 +236,20 @@ public class GroupService {
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		return byUserId;
 	}
+	//그룹에 속한 유저인지 아닌지 확인
+	public Boolean CheckUserIncludeGroup (Long groupId){
+		Long userId = SecurityUtil.getCurrentUserId();
+		Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId);
+		if(byUserUserIdAndGroupGroupId.isPresent()){
+			GroupStatus status = byUserUserIdAndGroupGroupId.get().getStatus();
+			if(status.equals(GroupStatus.MEMBER)||status.equals(GroupStatus.GROUP_LEADER)){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		return false;
+	}
 
 	@Transactional
 	public Group updateGroup(Long groupId, String groupName, String photoPath) {
