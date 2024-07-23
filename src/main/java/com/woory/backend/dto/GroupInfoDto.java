@@ -5,12 +5,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.woory.backend.entity.Group;
 import com.woory.backend.entity.GroupStatus;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@Builder
 public class GroupInfoDto {
 	private Long groupId;
 	private String groupName;
@@ -28,5 +33,13 @@ public class GroupInfoDto {
 	public static Map<GroupStatus, List<GroupInfoDto>> toSeparatedByStatus(List<GroupInfoDto> groupInfoList) {
 		return groupInfoList.stream()
 			.collect(Collectors.groupingBy(GroupInfoDto::getStatus));
+	}
+
+	public static GroupInfoDto fromGroup(Group group) {
+		return GroupInfoDto.builder()
+			.groupId(group.getGroupId())
+			.groupName(group.getGroupName())
+			.groupImage(group.getPhotoPath())
+			.build();
 	}
 }
