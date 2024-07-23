@@ -1,6 +1,7 @@
 package com.woory.backend.controller;
 
 import com.woory.backend.dto.CommentDto;
+import com.woory.backend.dto.CommentReplyDto;
 import com.woory.backend.dto.CommentRequestDto;
 import com.woory.backend.dto.UpdateCommentRequest;
 import com.woory.backend.entity.Comment;
@@ -56,7 +57,7 @@ public class CommentController {
     @Operation(summary = "comment 조회")
     @GetMapping("/{groupId}/{contentId}")
     public ResponseEntity<Map<String, Object>> getCommentsByContentId(@PathVariable Long groupId, @PathVariable Long contentId) {
-        List<CommentDto> comments = commentService.getCommentsByContentId(groupId, contentId);
+        List<CommentReplyDto> comments = commentService.getCommentsByContentId(groupId, contentId);
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 조회되었습니다");
         response.put("data", comments);
         return ResponseEntity.ok(response);

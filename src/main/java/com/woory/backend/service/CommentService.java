@@ -1,6 +1,8 @@
 package com.woory.backend.service;
 
 import com.woory.backend.dto.CommentDto;
+import com.woory.backend.dto.CommentMapper;
+import com.woory.backend.dto.CommentReplyDto;
 import com.woory.backend.dto.CommentRequestDto;
 import com.woory.backend.entity.*;
 import com.woory.backend.error.CustomException;
@@ -72,6 +74,7 @@ public class CommentService {
 				}
 			}
 
+
 			Comment comment = new Comment();
 			comment.setCommentText(commentRequestDto.getCommentText());
 			comment.setCommentDate(commentRequestDto.getCommentDate());
@@ -114,7 +117,7 @@ public class CommentService {
 	}
 
 	// 댓글 조회 메서드 추가
-	public List<CommentDto> getCommentsByContentId(Long groupId, Long contentId) {
+	public List<CommentReplyDto> getCommentsByContentId(Long groupId, Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
@@ -123,10 +126,16 @@ public class CommentService {
 		}
 
 		List<Comment> comments = commentRepository.findByContent_ContentId(contentId);
-		if (comments.isEmpty()) {
-			throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
-		}
-		return comments.stream().map(CommentDto::fromComment).collect(Collectors.toList());
+//		if (comments.isEmpty()) {
+//			throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
+//		}
+//		return comments.stream().map(CommentDto::fromComment).collect(Collectors.toList());
+		return comments.stream()
+				.map(comment -> {
+					boolean isEdit = checkUserEditPermission(userId, comment.getUsers().getUserId());
+					return CommentMapper.toDTO(comment, isEdit);
+				})
+				.collect(Collectors.toList());
 	}
 
 	private void deleteRecursive(Comment comment) {
@@ -137,5 +146,9 @@ public class CommentService {
 		}
 
 		commentRepository.delete(comment);
+	}
+	private boolean checkUserEditPermission(Long currentUserId, Long commentUserId) {
+		// Implement your logic here to check if the current user has permission to edit
+		return currentUserId.equals(commentUserId);
 	}
 }

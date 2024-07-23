@@ -262,7 +262,7 @@ public class ContentService {
 		topicDTO.setIssueDate(content.getTopic().getIssueDate());
 		topicDTO.setTopicByte(content.getTopic().getTopicByte());
 
-		GroupRequestDto groupDTO = new GroupRequestDto();
+		GroupResponseDto groupDTO = new GroupResponseDto();
 		groupDTO.setGroupId(content.getTopic().getGroup().getGroupId());
 		groupDTO.setGroupName(content.getTopic().getGroup().getGroupName());
 		groupDTO.setPhotoPath(content.getTopic().getGroup().getPhotoPath());

@@ -5,7 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GroupRequestDto {
+public class GroupResponseDto {
+    private Long groupId;
     private String groupName;
-    private String images;
+    private String photoPath;
 }

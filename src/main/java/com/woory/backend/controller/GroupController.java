@@ -2,6 +2,7 @@ package com.woory.backend.controller;
 
 import com.woory.backend.dto.DataDto;
 import com.woory.backend.dto.GroupInfoDto;
+import com.woory.backend.dto.GroupRequestDto;
 import com.woory.backend.entity.Group;
 import com.woory.backend.service.AwsService;
 import com.woory.backend.service.GroupService;
@@ -77,13 +78,12 @@ public class GroupController {
 	// 그룹 생성
 	@PostMapping("/create")
 	public ResponseEntity<Map<String, Object>> createGroup(
-		@RequestParam("groupName") String groupName,
-		@RequestPart(value = "images", required = false) MultipartFile groupPhoto) {
-		String photoPath = awsService.saveFile(groupPhoto);
+		@RequestBody GroupRequestDto requestDto) {
+		String photoPath = awsService.saveFile(requestDto.getImages());
 		if (photoPath == null) {
 			photoPath = defaultImage;
 		}
-		Group group = groupService.createGroup(groupName, photoPath);
+		Group group = groupService.createGroup(requestDto.getGroupName(), photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("가족이 생성되었습니다.");
 		response.put("groupId", group.getGroupId());
 		return ResponseEntity.ok(response);
@@ -93,10 +93,9 @@ public class GroupController {
 	@Operation(summary = "가족 수정", description = "가족 이름과 사진을 받아서 가족 수정")
 	public ResponseEntity<Map<String, Object>> updateGroup(
 		@PathVariable("groupId") Long groupId,
-		@RequestParam("groupName") String groupName,
-		@RequestPart(value = "images", required = false) MultipartFile groupPhoto) {
-		String photoPath = awsService.saveFile(groupPhoto);
-		Group updatedGroup = groupService.updateGroup(groupId, groupName, photoPath);
+		@RequestBody GroupRequestDto requestDto) {
+		String photoPath = awsService.saveFile(requestDto.getImages());
+		Group updatedGroup = groupService.updateGroup(groupId, requestDto.getGroupName(), photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("가족이 수정되었습니다");
 		//        response.put("data", updatedGroup);
 		return ResponseEntity.ok(response);
