@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
 import com.woory.backend.entity.User;
@@ -24,6 +25,7 @@ public class UserResponseDto {
 	private long userId;
 	private String nickname;
 	private String profileImgLink;
+	@JsonProperty("isHouseholder")
 	private boolean isHouseHolder;
 
 	public static UserResponseDto fromUserWithCurrentGroup(User user, GroupUser groupUser) {

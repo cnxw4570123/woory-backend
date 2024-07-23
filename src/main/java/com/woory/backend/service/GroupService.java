@@ -138,14 +138,15 @@ public class GroupService {
 	}
 
 	@Transactional
-	public void leaveGroup(Long groupId) {
+	public Boolean leaveGroup(Long groupId) {
 		//로그인된 정보 가져오기
 		Long userId = SecurityUtil.getCurrentUserId();
 		List<GroupUser> groupUsers = activeMember(groupId);
-
+		Boolean checkOnePerson = false;
 		//1명이하이면 그룹떠날시 그룹 삭제 유저그룹에서 삭제
 		if (groupUsers.size() <= 1) {
 			groupRepository.deleteByGroupId(groupId);
+			return null;
 		} else {
 			GroupStatus status = getGroupStatus(groupId, userId);
 			if (status == GroupStatus.GROUP_LEADER) {
@@ -155,13 +156,15 @@ public class GroupService {
 				groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(old.getUser().getUserId(), groupId,
 					old.getStatus());
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
-				return;
 			}
-
 			if (status == GroupStatus.MEMBER) {
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			}
+			if(groupUsers.size() == 1){
+				checkOnePerson = true;
+			}
 		}
+		return checkOnePerson;
 
 	}
 
