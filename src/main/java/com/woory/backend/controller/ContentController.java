@@ -118,7 +118,7 @@ public class ContentController {
 		if (param == null || !param.matches("\\d{4}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
-		List<ContentDto> contents = contentService.getContentsByRegDateLike(groupId, param);
+		List<ContentDto> contents = contentService.getContentsByRegDateMonthLike(groupId,param);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
 		return ResponseEntity.ok(response);
