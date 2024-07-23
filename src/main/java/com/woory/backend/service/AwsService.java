@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
+import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,11 +32,13 @@ public class AwsService {
 	@Value("${spring.servlet.multipart.max-file-size}")
 	private String maxSizeString;
 
-	public String saveFile(MultipartFile file) {
-		if (file == null || file.isEmpty()) {
+	public String saveFile(String base64File) {
+		MultipartFile file = PhotoUtils.base64ToMultipartFile(base64File);
+		if (base64File == null || base64File.isEmpty()) {
+			log.info("요청에 파일 없음 -> 이름만 수정");
 			return null;
 		}
-		String filename = generateRandomFilename(file);
+		String filename = file.getOriginalFilename();
 
 		log.info("File upload started : {}", filename);
 
@@ -57,11 +61,6 @@ public class AwsService {
 
 		log.info("파일 업로드 성공: {}", filename);
 		return amazonS3.getUrl(bucket, filename).toString();
-	}
-
-	public String generateRandomFilename(MultipartFile multipartFile) {
-		String orgFilename = multipartFile.getOriginalFilename();
-		return UUID.randomUUID() + "." + PhotoUtils.validateFileExtension(orgFilename);
 	}
 
 	public void deleteImage(String fileUrl) {
