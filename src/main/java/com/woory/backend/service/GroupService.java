@@ -36,7 +36,6 @@ public class GroupService {
 	private TopicSetRepository topicSetRepository;
 	private final String serverAddress;
 
-
 	@Autowired
 	public GroupService(UserRepository userRepository, GroupRepository groupRepository,
 		GroupUserRepository groupUserRepository,
@@ -57,40 +56,44 @@ public class GroupService {
 		}
 		return myGroups;
 	}
+
 	public DataDto getMyGroupId(Long groupID) {
 		Long userId = SecurityUtil.getCurrentUserId();
-		User user = userRepository.findByUserId(userId)
-				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		// User user = userRepository.findByUserId(userId)
+		// 	.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		GroupUser currentGroupUser = groupUserRepository.findGroupUserWithUserByGroupIdAndUserId(userId, groupID)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		User current = currentGroupUser.getUser();
 		List<GroupUser> groupUserWithoutUser = groupUserRepository.findGroupUserWithoutUser(groupID, userId);
 		UserDetailDto userDetailDto = new UserDetailDto();
-		userDetailDto.setUserId(user.getUserId());
-		userDetailDto.setUserName(user.getNickname());
-		userDetailDto.setProfileUrl(user.getProfileImage());
-		userDetailDto.setHouseholder(true);
+		userDetailDto.setUserId(current.getUserId());
+		userDetailDto.setUserName(current.getNickname());
+		userDetailDto.setProfileUrl(current.getProfileImage());
+		userDetailDto.setHouseholder(currentGroupUser.getStatus() == GroupStatus.GROUP_LEADER);
+
 		List<MemberDetailDto> memberDTOs = new ArrayList<>();
-		for(GroupUser groupUser : groupUserWithoutUser){
+		for (GroupUser groupUser : groupUserWithoutUser) {
 			MemberDetailDto memberDetailDto = new MemberDetailDto();
-			memberDetailDto.setUserId(groupUser.getUser().getUserId());
-			memberDetailDto.setUserName(groupUser.getUser().getNickname());
-			memberDetailDto.setProfileUrl(groupUser.getUser().getProfileImage());
-			memberDetailDto.setHouseholder(true);
+			User user = groupUser.getUser();
+			memberDetailDto.setUserId(user.getUserId());
+			memberDetailDto.setUserName(user.getNickname());
+			memberDetailDto.setProfileUrl(user.getProfileImage());
+			memberDetailDto.setHouseholder(groupUser.getStatus() == GroupStatus.GROUP_LEADER);
 			memberDTOs.add(memberDetailDto);
 		}
-
-
 
 		DataDto dataDto = new DataDto();
 		dataDto.setUser(userDetailDto);
 		dataDto.setMembers(memberDTOs);
 
-
-//		List<GroupInfoDto> myGroups = groupUserRepository.findMyGroupInfoDtoByGrooupId(groupID);
-//		if (myGroups.isEmpty()) {
-//			throw new CustomException(ErrorCode.GROUP_NOT_FOUND);
-//		}
+		//		List<GroupInfoDto> myGroups = groupUserRepository.findMyGroupInfoDtoByGrooupId(groupID);
+		//		if (myGroups.isEmpty()) {
+		//			throw new CustomException(ErrorCode.GROUP_NOT_FOUND);
+		//		}
 		return dataDto;
 	}
-
 
 	public Group createGroup(String groupName, String photoPath) {
 		Group group = new Group();
@@ -134,7 +137,7 @@ public class GroupService {
 		GroupStatus status = getGroupStatus(groupId, loginId);
 		if (status == GroupStatus.GROUP_LEADER) {
 			groupRepository.deleteByGroupId(groupId);
-		}else{
+		} else {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE_GROUP);
 		}
 	}
@@ -160,7 +163,7 @@ public class GroupService {
 				return;
 			}
 
-			if(status == GroupStatus.MEMBER){
+			if (status == GroupStatus.MEMBER) {
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			}
 		}
@@ -202,7 +205,7 @@ public class GroupService {
 		Long userId = SecurityUtil.getCurrentUserId();
 		User byUserId = getUser();
 		int userCount = groupUserRepository.findByUser_UserId(userId).size();
-		if(userCount >= 5){
+		if (userCount >= 5) {
 			throw new CustomException(ErrorCode.GROUP_CREATION_LIMIT_EXCEEDED);
 		}
 
@@ -230,7 +233,7 @@ public class GroupService {
 	private User getUser() {
 		Long userId = SecurityUtil.getCurrentUserId();
 		User byUserId = userRepository.findByUserIdWithGroups(userId)
-		.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		return byUserId;
 	}
 
@@ -249,7 +252,7 @@ public class GroupService {
 			}
 
 			return groupRepository.save(group);
-		}else{
+		} else {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_UPDATE_GROUP); // 권한이 없을 때의 예외 처리
 		}
 

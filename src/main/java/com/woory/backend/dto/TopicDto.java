@@ -16,13 +16,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopicDto {
 	private String topicContent;
 	private Date issueDate;
 	private Long groupId;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private int topicByte;
-	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<ContentDto> contents;
 
 	public static TopicDto fromTopicSetWithGroupIdAndDate(TopicSet topicSet, Date date, long groupId) {
