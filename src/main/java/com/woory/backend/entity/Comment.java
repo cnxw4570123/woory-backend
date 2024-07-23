@@ -25,6 +25,7 @@ public class Comment {
 	@JoinColumn(name = "parent_comment_id")
 	private Comment parentComment;
 
+	@Builder.Default
 	@OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	private List<Comment> replies = new ArrayList<>();
