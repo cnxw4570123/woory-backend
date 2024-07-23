@@ -24,6 +24,7 @@ public class Topic {
 	@Column(name = "topicContent")
 	private String topicContent;
 
+	@Temporal(TemporalType.DATE)
 	@Column(name = "issueDate")
 	private Date issueDate;
 

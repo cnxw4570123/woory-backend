@@ -44,6 +44,9 @@ dependencies {
     implementation 'org.springframework:spring-webflux'
     implementation 'io.projectreactor.netty:reactor-netty'
 
+    // S3
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
     // 데이터베이스
     runtimeOnly 'com.mysql:mysql-connector-j' // RDS
     runtimeOnly 'com.h2database:h2' // 로컬 환경

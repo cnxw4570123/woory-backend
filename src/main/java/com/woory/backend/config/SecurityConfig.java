@@ -26,7 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import lombok.AllArgsConstructor;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+// @EnableWebSecurity(debug = true)
 @AllArgsConstructor
 public class SecurityConfig {
 

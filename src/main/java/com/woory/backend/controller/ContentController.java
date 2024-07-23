@@ -2,159 +2,138 @@ package com.woory.backend.controller;
 
 import com.woory.backend.dto.ContentDto;
 import com.woory.backend.dto.ContentReactionDto;
-import com.woory.backend.entity.Comment;
+
+import com.woory.backend.dto.TopicDto;
 import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
+import com.woory.backend.service.AwsService;
 import com.woory.backend.service.ContentService;
 
+import com.woory.backend.utils.PhotoUtils;
 import com.woory.backend.utils.StatusUtil;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/contents")
 @Tag(name = "글작성 관련", description = "글작성 관련 API")
 public class ContentController {
+	private static final SimpleDateFormat format = new SimpleDateFormat("yy-MM-dd");
 
 	private final ContentService contentService;
+	private final AwsService awsService;
 
 	@Autowired
-	public ContentController(ContentService contentService) {
+	public ContentController(ContentService contentService, AwsService awsService) {
 		this.contentService = contentService;
+		this.awsService = awsService;
+	}
+
+	@GetMapping("/detail/{contentId}")
+	public ContentDto getContentById(@PathVariable Long contentId) {
+		return contentService.getContentById(contentId);
 	}
 
 	@Operation(summary = "content 생성")
 	@PostMapping("/create")
 	public ResponseEntity<Map<String, Object>> createContent(
-			@RequestParam("groupId") Long groupId,
-			@RequestParam("topicId") Long topicId,
-			@RequestParam("contentText") String contentText,
-			@RequestPart(value = "contentPhoto", required = false) MultipartFile contentPhoto) {
+		@RequestParam("groupId") Long groupId,
+		@RequestParam("topicId") Long topicId,
+		@RequestParam("contentText") String contentText,
+		@RequestPart(value = "contentPhoto", required = false) MultipartFile contentPhoto) {
 
-		String photoPath = "";
-		if (contentPhoto != null) {
-			try {
-				photoPath = savePhoto(contentPhoto);
-			} catch (IOException e) {
-				StatusUtil.getPhotoSaveError();
-			}
-		} else {
-			String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
-			photoPath = defaultFile + "default.png";
-		}
-
+		String photoPath = awsService.saveFile(contentPhoto);
 		Content content = contentService.createContent(groupId, topicId, contentText, photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: ");
-//		response.put("data", content);
+		//		response.put("data", content);
 		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "content 수정")
 	@PutMapping("/{groupId}/{contentId}")
 	public ResponseEntity<Map<String, Object>> updateContent(
-			@PathVariable("groupId") Long groupId,
-			@PathVariable("contentId") Long contentId,
-			@RequestParam String contentText,
-			@RequestPart(value = "contentPhoto", required = false) MultipartFile contentImg) {
-
-		String photoPath = "";
-		if (contentImg != null) {
-			try {
-				photoPath = savePhoto(contentImg);
-			} catch (IOException e) {
-				StatusUtil.getPhotoSaveError();
-			}
-		} else {
-			String defaultFile = new File("src/main/resources/images/").getAbsolutePath();
-			photoPath = defaultFile + "default.png";
-		}
-
+		@PathVariable("groupId") Long groupId,
+		@PathVariable("contentId") Long contentId,
+		@RequestParam String contentText,
+		@RequestPart(value = "contentPhoto", required = false) MultipartFile contentImg) {
+		String photoPath = awsService.saveFile(contentImg);
 		Content updatedContent = contentService.updateContent(groupId, contentId, contentText, photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
-//		response.put("data", updatedContent);
+		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);
 	}
-
-
-
 
 	@Operation(summary = "content 일 조회")
-	@GetMapping("/get")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDate(@RequestParam String param) {
-		if (param == null || !param.matches("\\d{4}-\\d{2}-\\d{2}")) {
+	@GetMapping("/{groupId}/get")
+	public ResponseEntity<Map<String, Object>> getContentsByRegDate(
+		@PathVariable("groupId") Long groupId,
+		@RequestParam("day") String day) {
+		LocalDate parse;
+		if (day == null || !day.matches("\\d{4}-\\d{2}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
-		List<ContentDto> contents = contentService.getContentsByRegDateLike(param);
+		try {
+			parse = LocalDate.parse(day);
+		} catch (DateTimeParseException e) {
+			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
+		}
+
+		TopicDto topic = contentService.getTopic(parse, groupId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
-		response.put("data", contents);
+		response.put("data", topic);
 		return ResponseEntity.ok(response);
 	}
+
 	@Operation(summary = "content 월 조회")
 	@GetMapping("/get/month")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(@RequestParam String param) {
+	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(@RequestParam Long groupId,
+		@RequestParam String param) {
 		if (param == null || !param.matches("\\d{4}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
-		List<ContentDto> contents = contentService.getContentsByRegDateMonthLike(param);
+		List<ContentDto> contents = contentService.getContentsByRegDateLike(groupId, param);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
+		return ResponseEntity.ok(response);
+	}
+
+	@GetMapping("/content/reactions/count")
+	public ResponseEntity<Map<String, Object>> getReactionCounts(@RequestParam Long contentId) {
+		Map<ReactionType, Long> reactionCounts = contentService.getReactionCounts(contentId);
+
+		Map<String, Object> response = Map.of(
+			"message", "리액션 개수가 조회되었습니다.",
+			"data", reactionCounts
+		);
+
 		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "컨텐츠 삭제")
 	@DeleteMapping("/delete/{groupId}/{contentId}")
 	public ResponseEntity<Map<String, Object>> deleteContent(
-			@PathVariable Long groupId,
-			@PathVariable Long contentId) {
+		@PathVariable Long groupId,
+		@PathVariable Long contentId) {
 		contentService.deleteContent(groupId, contentId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 삭제되었습니다");
 		return ResponseEntity.ok(response);
-	}
-
-	// 사진 저장 메서드
-	private String savePhoto(MultipartFile photo) throws IOException {
-
-		// 확장자 체크
-		String originalFilename = photo.getOriginalFilename();
-		if (originalFilename == null) {
-			throw new IOException("파일 이름이 유효하지 않습니다.");
-		}
-
-		String fileExtension = getFileExtension(originalFilename);
-		if (!fileExtension.equalsIgnoreCase("png") && !fileExtension.equalsIgnoreCase("jpg")) {
-			throw new IOException("파일 확장자는 png 또는 jpg만 가능합니다.");
-		}
-
-		String folderPath = new File("src/main/resources/images/").getAbsolutePath() + "/";
-		String fileName = UUID.randomUUID() + "_" + originalFilename;
-		File file = new File(folderPath + fileName);
-		photo.transferTo(file); // 파일 저장
-
-		return file.getAbsolutePath(); // 사진 경로 반환
-	}
-
-	// 파일 확장자 추출 메서드
-	private String getFileExtension(String filename) {
-		int lastIndexOfDot = filename.lastIndexOf('.');
-		if (lastIndexOfDot == -1) {
-			return ""; // 확장자가 없는 경우 빈 문자열 반환
-		}
-		return filename.substring(lastIndexOfDot + 1);
 	}
 
 	@PostMapping("/reaction")
@@ -173,11 +152,6 @@ public class ContentController {
 		}
 	}
 
-	/**
-	 * 해당 메서드도 필요가 X
-	 * @param contentId
-	 * @return
-	 */
 	@GetMapping("/reaction")
 	public ResponseEntity<?> getReactions(@RequestParam Long contentId) {
 		List<ContentReactionDto> reactionsByContentId = contentService.getReactionsByContentId(contentId);

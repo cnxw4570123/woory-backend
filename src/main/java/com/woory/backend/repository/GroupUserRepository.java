@@ -27,14 +27,29 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	@Query("select new com.woory.backend.dto.GroupInfoDto(g.groupId, g.groupName, g.photoPath, gu.status) from GroupUser gu join gu.group g on g = gu.group where gu.status != com.woory.backend.entity.GroupStatus.BANNED and gu.user.userId = :userId order by gu.regDate asc")
 	List<GroupInfoDto> findMyGroupInfoDto(@Param("userId") Long userId);
 
+	@Query("select new com.woory.backend.dto.GroupInfoDto(g.groupId, g.groupName, g.photoPath, gu.status) from GroupUser gu join gu.group g on g = gu.group where gu.status != com.woory.backend.entity.GroupStatus.BANNED and gu.group.groupId = :groupId order by gu.regDate asc")
+	List<GroupInfoDto> findMyGroupInfoDtoByGrooupId(@Param("groupId") Long groupId);
+
 	Optional<GroupUser> findByUser_UserIdAndGroup_GroupId(Long userId, Long groupId);
 
 	List<GroupUser> findAllByGroup_GroupId(Long groupId);
 
 	List<GroupUser> findByUser_UserId(Long userId);
+
 	void deleteByGroup_GroupIdAndUser_UserId(Long groupId, Long userId);
 
 	void deleteByGroup_GroupId(Long groupId);
 
 	boolean existsByGroup_GroupId(Long groupId);
+
+	@Query("select gu from GroupUser gu where gu.group.groupId = :groupId and gu.user.userId != :userId ")
+	List<GroupUser> findGroupUserWithoutUser(@Param("groupId") Long groupId, @Param("userId") Long userId);
+  
+  @Query("select gu from GroupUser gu join fetch gu.user u where u.userId = :userId and gu.group.groupId = :groupId")
+	Optional<GroupUser> findGroupUserWithUserByGroupIdAndUserId(
+		@Param("userId") long userId,
+		@Param("groupId") long groupId);
+
+
+
 }
