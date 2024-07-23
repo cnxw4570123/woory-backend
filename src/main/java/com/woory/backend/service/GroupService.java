@@ -1,6 +1,7 @@
 package com.woory.backend.service;
 
 import com.woory.backend.dto.DataDto;
+import com.woory.backend.dto.GroupDto;
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.dto.MemberDetailDto;
 import com.woory.backend.dto.UserDetailDto;
@@ -254,6 +255,12 @@ public class GroupService {
 
 	public List<GroupUser> activeMember(Long groupId) {
 		return groupUserRepository.findActiveGroupUsersByGroupIdOrderByRegDate(groupId);
+	}
+
+	public GroupInfoDto getGroupInfo(long groupId) {
+		Group group = groupRepository.findByGroupId(groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+		return GroupInfoDto.fromGroup(group);
 	}
 
 }
