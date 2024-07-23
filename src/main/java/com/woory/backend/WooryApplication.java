@@ -16,11 +16,6 @@ public class WooryApplication {
 		SpringApplication.run(WooryApplication.class, args);
 	}
 
-	@PostConstruct
-	public void setTimeZone(){
-		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul" ));
-		LocalDateTime time = LocalDateTime.now();
-		System.out.println("time = " + time);
-	}
+	
 
 }
