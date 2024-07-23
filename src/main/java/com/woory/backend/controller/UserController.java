@@ -1,15 +1,12 @@
 package com.woory.backend.controller;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.woory.backend.dto.UserResponseDto;
-import com.woory.backend.error.CustomException;
-import com.woory.backend.error.ErrorCode;
+import com.woory.backend.service.AwsService;
 import com.woory.backend.service.UserService;
 import com.woory.backend.utils.CookieUtil;
-import com.woory.backend.utils.PhotoUtils;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,14 +23,15 @@ import org.springframework.web.multipart.MultipartFile;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("v1/users")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Tag(name = "사용자 관련", description = "사용자 관련 API")
 public class UserController {
-	private UserService userService;
+	private final UserService userService;
+	private final AwsService awsService;
 
 	@GetMapping("/my/{groupId}")
 	@Operation(summary = "회원 조회")
@@ -64,15 +61,11 @@ public class UserController {
 	public ResponseEntity<Map<String, String>> updateGroupUserProfile(
 		@RequestPart("nickname") String nickname,
 		@RequestPart(value = "userPhoto", required = false) MultipartFile image) {
-		try {
-			String photoPath = PhotoUtils.handlePhoto(image);
-			userService.updateProfile(photoPath, nickname);
-			Map<String, String> response = new HashMap<>();
-			response.put("message", "수정이 완료되었습니다.");
-			return ResponseEntity.ok(response);
+		String photoPath = awsService.saveFile(image);
+		userService.updateProfile(photoPath, nickname);
+		Map<String, String> response = new HashMap<>();
+		response.put("message", "수정이 완료되었습니다.");
 
-		} catch (IOException e) {
-			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
-		}
+		return ResponseEntity.ok(response);
 	}
 }
