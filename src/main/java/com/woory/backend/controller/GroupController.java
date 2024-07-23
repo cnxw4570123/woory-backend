@@ -46,7 +46,7 @@ public class GroupController {
 		return ResponseEntity.ok(response);
 	}
 
-	// 그룹 조회
+	// 가족 구성원 조회
 	@GetMapping("/get/{groupId}")
 	public ResponseEntity<Map<String, Object>> getMyGroup(@PathVariable("groupId") Long groupId) {
 		DataDto groups = groupService.getMyGroupId(groupId);
@@ -60,7 +60,7 @@ public class GroupController {
 	@PostMapping("/create")
 	public ResponseEntity<Map<String, Object>> createGroup(
 		@RequestParam("groupName") String groupName,
-		@RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
+		@RequestPart(value = "images", required = false) MultipartFile groupPhoto) {
 		String photoPath = awsService.saveFile(groupPhoto);
 		if (photoPath == null) {
 			photoPath = defaultImage;
@@ -76,7 +76,7 @@ public class GroupController {
 	public ResponseEntity<Map<String, Object>> updateGroup(
 		@PathVariable("groupId") Long groupId,
 		@RequestParam("groupName") String groupName,
-		@RequestPart(value = "groupPhoto", required = false) MultipartFile groupPhoto) {
+		@RequestPart(value = "images", required = false) MultipartFile groupPhoto) {
 		String photoPath = awsService.saveFile(groupPhoto);
 		Group updatedGroup = groupService.updateGroup(groupId, groupName, photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("가족이 수정되었습니다");
