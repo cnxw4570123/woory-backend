@@ -60,7 +60,7 @@ public class UserController {
 	@PutMapping("/update")
 	public ResponseEntity<Map<String, String>> updateGroupUserProfile(
 		@RequestPart("nickname") String nickname,
-		@RequestPart(value = "userPhoto", required = false) MultipartFile image) {
+		@RequestPart(value = "images", required = false) MultipartFile image) {
 		String photoPath = awsService.saveFile(image);
 		userService.updateProfile(photoPath, nickname);
 		Map<String, String> response = new HashMap<>();
