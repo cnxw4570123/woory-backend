@@ -16,6 +16,5 @@ public class WooryApplication {
 		SpringApplication.run(WooryApplication.class, args);
 	}
 
-	
 
 }
