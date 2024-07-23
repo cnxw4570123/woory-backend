@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopicDto {
 	private String topicContent;
+	private Long topicId;
 	private Date issueDate;
 	private Long groupId;
 	private int topicByte;
@@ -37,6 +38,7 @@ public class TopicDto {
 	public static TopicDto fromTopic(Topic topic) {
 		return TopicDto.builder()
 			.topicContent(topic.getTopicContent())
+			.topicId(topic.getTopicId())
 			.issueDate(topic.getIssueDate())
 			.contents(
 				topic.getContent().stream()

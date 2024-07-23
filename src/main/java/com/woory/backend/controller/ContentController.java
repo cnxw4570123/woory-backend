@@ -3,6 +3,7 @@ package com.woory.backend.controller;
 import com.woory.backend.dto.ContentDto;
 import com.woory.backend.dto.ContentReactionDto;
 
+import com.woory.backend.dto.ContentRequestDto;
 import com.woory.backend.dto.TopicDto;
 import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
@@ -54,14 +55,11 @@ public class ContentController {
 
 	@Operation(summary = "content 생성")
 	@PostMapping("/create")
-	public ResponseEntity<Map<String, Object>> createContent(
-		@RequestParam("groupId") Long groupId,
-		@RequestParam("topicId") Long topicId,
-		@RequestParam("contentText") String contentText,
-		@RequestPart(value = "images", required = false) MultipartFile contentPhoto) {
+	public ResponseEntity<Map<String, Object>> createContent(@RequestBody ContentRequestDto requestDto) {
 
-		String photoPath = awsService.saveFile(contentPhoto);
-		Content content = contentService.createContent(groupId, topicId, contentText, photoPath);
+		String photoPath = awsService.saveFile(requestDto.getImages());
+		Content content = contentService.createContent(requestDto.getGroupId(), requestDto.getTopicId(),
+			requestDto.getContentText(), photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: ");
 		//		response.put("data", content);
 		return ResponseEntity.ok(response);
@@ -72,10 +70,10 @@ public class ContentController {
 	public ResponseEntity<Map<String, Object>> updateContent(
 		@PathVariable("groupId") Long groupId,
 		@PathVariable("contentId") Long contentId,
-		@RequestParam String contentText,
-		@RequestPart(value = "images", required = false) MultipartFile contentImg) {
-		String photoPath = awsService.saveFile(contentImg);
-		Content updatedContent = contentService.updateContent(groupId, contentId, contentText, photoPath);
+		@RequestBody ContentRequestDto requestDto) {
+		String photoPath = awsService.saveFile(requestDto.getImages());
+		Content updatedContent = contentService.updateContent(groupId, contentId, requestDto.getContentText(),
+			photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
 		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);
