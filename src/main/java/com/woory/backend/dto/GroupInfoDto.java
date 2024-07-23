@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.woory.backend.entity.GroupStatus;
 
 import lombok.Getter;
@@ -14,6 +15,7 @@ public class GroupInfoDto {
 	private Long groupId;
 	private String groupName;
 	private String groupImage;
+	@JsonIgnore
 	private GroupStatus status;
 
 	public GroupInfoDto(Long groupId, String groupName, String groupImage, GroupStatus groupStatus) {
