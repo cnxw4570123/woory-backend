@@ -113,10 +113,17 @@ public class GroupController {
 	// 그룹 떠나기
 	@Operation(summary = "가족 나가기")
 	@PostMapping("/leave/{groupId}")
-	public ResponseEntity<Map<String, String>> leaveGroup(@PathVariable("groupId") Long groupId) {
-		groupService.leaveGroup(groupId);
-		return StatusUtil.getResponseMessage("가족에서 나왔습니다.");
-	}
+	public ResponseEntity<Map<String, Object>> leaveGroup(@PathVariable("groupId") Long groupId) {
+		Boolean check = groupService.leaveGroup(groupId);
+		Map<String, Object> response;
+		if(check == null){
+			response = StatusUtil.getStatusMessage("가족이 삭제되었습니다.");
+		}else{
+			response = StatusUtil.getStatusMessage("가족에서 나왔습니다.");
+			response.put("isLastMember", check);
+		}
+		return ResponseEntity.ok(response);
+    }
 
 	// 그룹 사용자를 벤하기 (그룹장 전용)
 	@Operation(summary = "가족 구성원 추방")

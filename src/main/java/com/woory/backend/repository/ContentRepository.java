@@ -22,11 +22,17 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     @Query(value = "SELECT * FROM content WHERE DATE_FORMAT(content_reg_date, '%Y-%m') LIKE :date%", nativeQuery = true)
     List<Content> findContentsByRegDateMonthLike(@Param("date") String date);
 
-    @Query(value = "SELECT * FROM content WHERE DATE_FORMAT(content_reg_date, '%Y-%m') LIKE :date% " +
-            "AND content_img_path IS NOT NULL AND content_img_path <> '' " +
-            "ORDER BY content_reg_date DESC",
-            nativeQuery = true)
-    List<Content> findByDateWithImgPath(@Param("date") String date);
+    @Query(value = "SELECT c.content_id, c.topic_id, c.content_img_path, " +
+            "DATE_FORMAT(c.content_reg_date, '%Y-%m-%d') AS content_reg_date, " +
+            "c.content_text, c.userid " +
+            "FROM content c " +
+            "JOIN topic t ON c.topic_id = t.topic_id " +
+            "JOIN group_table g ON t.group_id = g.group_id " +
+            "WHERE g.group_id = :groupId " +
+            "AND DATE_FORMAT(c.content_reg_date, '%Y-%m') LIKE CONCAT(:date, '%') " +
+            "ORDER BY c.content_reg_date ASC", nativeQuery = true)
+    List<Content> findByDateWithImgPath(@Param("groupId") Long groupId, @Param("date") String date);
+
 
 
     @Query(value = "SELECT c.* FROM content c " +

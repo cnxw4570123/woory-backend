@@ -1,5 +1,6 @@
 package com.woory.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class ContentDto {
 	private Long contentId;
 	private String contentText;
 	private String contentImgPath;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 	private Date contentRegDate;
 	private TopicRequestDto topic;
 	private int commentsCount;
@@ -36,6 +38,8 @@ public class ContentDto {
       this.contentImgPath = contentImgPath;
       this.contentRegDate = contentRegDate;
   }
+
+
 
 	public static ContentDto toContentDto(Content content) {
 		return ContentDto.builder()

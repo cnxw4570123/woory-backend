@@ -121,17 +121,50 @@ public class ContentService {
 	}
 
 	public List<ContentDto> getContentsByRegDateLike(Long groupId, String dateStr) {
-		List<Content> contents = contentRepository.findByGroupIdAndRegDate(groupId, dateStr);
+		List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr);
 		return contents.stream()
 			.map(this::convertToDTO1)
 			.collect(Collectors.toList());
 	}
 
-	public List<ContentDto> getContentsByRegDateMonthLike(String dateStr) {
-		List<Content> contents = contentRepository.findByDateWithImgPath(dateStr + "%");
-		return contents.stream()
-			.map(this::convertToDTO)
-			.collect(Collectors.toList());
+	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId,String dateStr) {
+		List<Content> contents = contentRepository.findByDateWithImgPath(groupId,dateStr + "%");
+
+		// 날짜별로 그룹화합니다.
+		Map<String, List<Content>> groupedByDate = contents.stream()
+				.collect(Collectors.groupingBy(t -> t.getContentRegDate().toString() ));
+
+		// ContentDto 리스트로 변환합니다.
+		List<Content> contentsToAdd = new ArrayList<>();
+		for (Map.Entry<String, List<Content>> entry : groupedByDate.entrySet()) {
+			String date = entry.getKey();
+			List<Content> contentList = entry.getValue();
+
+			Content firstContentWithImage = null;
+			Content firstContent = null;
+
+			for (Content content : contentList) {
+				// 날짜별로 첫 번째 콘텐츠를 저장
+				if (firstContent == null) {
+					firstContent = content;
+				}
+
+				// 사진이 있는 경우
+				if (content.getContentImgPath() != null && !content.getContentImgPath().isEmpty()) {
+					if (firstContentWithImage == null) {
+						firstContentWithImage = content;
+					}
+				}
+			}
+			// 사진이 있는 콘텐츠가 있는 경우 그것을 사용하고, 그렇지 않으면 첫 번째 콘텐츠를 사용합니다.
+			Content finalContentToAdd = (firstContentWithImage != null) ? firstContentWithImage : firstContent;
+			contentsToAdd.add(finalContentToAdd);
+
+
+		}
+		return contentsToAdd.stream()
+				.map(this::convertToDTO1)
+				.collect(Collectors.toList());
 	}
 
 	public Map<ReactionType, Long> getReactionCounts(Long contentId) {
