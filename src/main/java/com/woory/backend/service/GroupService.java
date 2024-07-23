@@ -59,8 +59,6 @@ public class GroupService {
 
 	public DataDto getMyGroupId(Long groupID) {
 		Long userId = SecurityUtil.getCurrentUserId();
-		// User user = userRepository.findByUserId(userId)
-		// 	.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		GroupUser currentGroupUser = groupUserRepository.findGroupUserWithUserByGroupIdAndUserId(userId, groupID)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -88,10 +86,6 @@ public class GroupService {
 		dataDto.setUser(userDetailDto);
 		dataDto.setMembers(memberDTOs);
 
-		//		List<GroupInfoDto> myGroups = groupUserRepository.findMyGroupInfoDtoByGrooupId(groupID);
-		//		if (myGroups.isEmpty()) {
-		//			throw new CustomException(ErrorCode.GROUP_NOT_FOUND);
-		//		}
 		return dataDto;
 	}
 
