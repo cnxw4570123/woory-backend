@@ -57,7 +57,7 @@ public class ContentController {
 	public ResponseEntity<Map<String, Object>> createContent(@RequestBody ContentRequestDto requestDto) {
 
 		String photoPath = awsService.saveFile(requestDto.getImages());
-		Content content = contentService.createContent(requestDto.getGroupId(), requestDto.getTopicId(),
+		contentService.createContent(requestDto.getGroupId(), requestDto.getTopicId(),
 			requestDto.getContentText(), photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: ");
 		//		response.put("data", content);
@@ -71,10 +71,10 @@ public class ContentController {
 		@PathVariable("contentId") Long contentId,
 		@RequestBody ContentRequestDto requestDto) {
 		String photoPath = awsService.saveFile(requestDto.getImages());
-		Content updatedContent = contentService.updateContent(groupId, contentId, requestDto.getContentText(),
+		contentService.updateContent(groupId, contentId, requestDto.getContentText(),
 			photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
-		response.put("data", updatedContent);
+//		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);
 	}
 

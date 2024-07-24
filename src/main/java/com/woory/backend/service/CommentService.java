@@ -160,14 +160,12 @@ public class CommentService {
 		}
 
 		List<Comment> comments = commentRepository.findByContent_ContentId(contentId);
-//		if (comments.isEmpty()) {
-//			throw new CustomException(ErrorCode.COMMENT_NOT_FOUND);
-//		}
-//		return comments.stream().map(CommentDto::fromComment).collect(Collectors.toList());
-		return comments.stream()
+		List<Comment> topLevelComments = comments.stream()
+				.filter(comment -> comment.getParentComment() == null)
+				.collect(Collectors.toList());
+		return topLevelComments.stream()
 				.map(comment -> {
-					boolean isEdit = checkUserEditPermission(userId, comment.getUsers().getUserId());
-					return CommentMapper.toDTO(comment, isEdit);
+					return CommentMapper.toDTO(comment,userId);
 				})
 				.collect(Collectors.toList());
 	}

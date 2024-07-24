@@ -1,6 +1,7 @@
 package com.woory.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,25 +31,23 @@ public class ContentDto {
 	private Date contentRegDate;
 	private TopicRequestDto topic;
 	private int commentsCount;
-	private Map<ReactionType, Long> countByReaction;
-  
-  public ContentDto(Long contentId, String contentText, String contentImgPath, Date contentRegDate) {
-      this.contentId = contentId;
-      this.contentText = contentText;
-      this.contentImgPath = contentImgPath;
-      this.contentRegDate = contentRegDate;
-  }
+	private int reactionCount;
 
-
+	public ContentDto(Long contentId, String contentText, String contentImgPath, Date contentRegDate) {
+		this.contentId = contentId;
+		this.contentText = contentText;
+		this.contentImgPath = contentImgPath;
+		this.contentRegDate = contentRegDate;
+	}
 
 	public static ContentDto toContentDto(Content content) {
 		return ContentDto.builder()
-			.contentId(content.getContentId())
-			.contentRegDate(content.getContentRegDate())
-			.contentText(content.getContentText())
-			.commentsCount(content.getComments().size())
-			.contentImgPath(content.getContentImgPath())
-			.countByReaction(ContentReactionDto.toReactionSizeByStatus(content.getContentReactions()))
-			.build();
+				.contentId(content.getContentId())
+				.contentRegDate(content.getContentRegDate())
+				.contentText(content.getContentText())
+				.commentsCount(content.getComments().size())
+				.contentImgPath(content.getContentImgPath())
+				.reactionCount(content.getContentReactions().size())
+				.build();
 	}
 }
