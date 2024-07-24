@@ -14,6 +14,5 @@ public class CommentRequestDto {
     private Long contentId;
     private Long userId;
     private String commentText;
-    private String status;
     private Date commentDate;
 }
