@@ -13,19 +13,16 @@ import com.woory.backend.error.ErrorCode;
 import com.woory.backend.service.AwsService;
 import com.woory.backend.service.ContentService;
 
-import com.woory.backend.utils.PhotoUtils;
 import com.woory.backend.utils.StatusUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -38,6 +35,7 @@ import java.util.Map;
 @Tag(name = "글작성 관련", description = "글작성 관련 API")
 public class ContentController {
 	private static final SimpleDateFormat format = new SimpleDateFormat("yy-MM-dd");
+	private static final Logger log = LoggerFactory.getLogger(ContentController.class);
 
 	private final ContentService contentService;
 	private final AwsService awsService;
@@ -104,7 +102,7 @@ public class ContentController {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
 
-		TopicDto topic = contentService.getTopic(parse, groupId);
+		TopicDto topic = contentService.getTopicWithContents(parse, groupId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", topic);
 		return ResponseEntity.ok(response);
@@ -117,7 +115,7 @@ public class ContentController {
 		if (param == null || !param.matches("\\d{4}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
-		List<ContentDto> contents = contentService.getContentsByRegDateMonthLike(groupId,param);
+		List<ContentDto> contents = contentService.getContentsByRegDateMonthLike(groupId, param);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
 		return ResponseEntity.ok(response);
@@ -146,7 +144,7 @@ public class ContentController {
 	}
 
 	@PostMapping("/reaction")
-	public ResponseEntity<?> addOrUpdateReaction(@RequestBody ReactionReqDto reactionDto){
+	public ResponseEntity<?> addOrUpdateReaction(@RequestBody ReactionReqDto reactionDto) {
 		try {
 			ReactionType reactionType = ReactionType.valueOf(reactionDto.getReaction().toUpperCase());
 			ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(reactionDto.getContentId(),
@@ -161,9 +159,18 @@ public class ContentController {
 	}
 
 	@GetMapping("/reaction")
-	public ResponseEntity<?> getReactions(@RequestParam Long contentId) {
+	public ResponseEntity<?> getReactions(@RequestParam("contentId") Long contentId) {
 		List<ContentReactionDto> reactionsByContentId = contentService.getReactionsByContentId(contentId);
 		return ResponseEntity.ok(reactionsByContentId);
 	}
 
+	@GetMapping("/topic")
+	public ResponseEntity<Map<String, Object>> aa(@RequestParam("groupId") Long groupId,
+		@RequestParam("day") LocalDate day) {
+		TopicDto topic = contentService.getTopicOnly(day, groupId);
+		Map<String, Object> statusMessage = StatusUtil.getStatusMessage("토픽 조회에 성공했습니다.");
+		statusMessage.put("data", topic);
+
+		return ResponseEntity.ok(statusMessage);
+	}
 }

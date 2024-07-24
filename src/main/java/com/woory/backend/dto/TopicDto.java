@@ -16,14 +16,13 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class TopicDto {
 	private String topicContent;
 	private Long topicId;
 	private Date issueDate;
 	private Long groupId;
 	private int topicByte;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<ContentDto> contents;
 
 	public static TopicDto fromTopicSetWithGroupIdAndDate(TopicSet topicSet, Date date, long groupId) {
@@ -35,7 +34,7 @@ public class TopicDto {
 			.build();
 	}
 
-	public static TopicDto fromTopic(Topic topic) {
+	public static TopicDto fromTopicWithContent(Topic topic) {
 		return TopicDto.builder()
 			.topicContent(topic.getTopicContent())
 			.topicId(topic.getTopicId())
@@ -47,4 +46,13 @@ public class TopicDto {
 			)
 			.build();
 	}
+
+	public static TopicDto fromTopic(Topic topic) {
+		return TopicDto.builder()
+			.topicContent(topic.getTopicContent())
+			.topicId(topic.getTopicId())
+			.issueDate(topic.getIssueDate())
+			.build();
+	}
+
 }

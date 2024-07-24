@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PhotoUtils {
 
+	private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 	private static Set<String> allowedImageForm = Set.of("image/png", "image/jpeg", "image/jpg");
 
 	private static String validateFileExtension(String base64File) {
@@ -48,11 +49,14 @@ public class PhotoUtils {
 
 		byte[] bytes = Base64.getDecoder().decode(fileWithoutHeader);
 
+		if(bytes.length > MAX_FILE_SIZE){
+			throw new CustomException(ErrorCode.FILE_SIZE_EXCEED);
+		}
+
 		String extension = validateFileExtension(base64File);
 
 		String name = generateRandomFilename(extension);
 
-		// MediaType.parseMediaType()
 		return new MockMultipartFile(name, name, extension, bytes);
 	}
 
