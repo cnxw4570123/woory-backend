@@ -8,10 +8,10 @@ public class CommentMapper {
 
     public static CommentReplyDto toDTO(Comment comment, boolean isEdit) {
         return CommentReplyDto.builder()
+                .isEdit(isEdit) // Set isEdit value from service layer
                 .userId(comment.getUsers().getUserId())
                 .profileUrl(comment.getUsers().getProfileImage()) // Assuming User has a getProfileUrl() method
                 .name(comment.getUsers().getNickname()) // Assuming User has a getName() method
-                .isEdit(isEdit) // Set isEdit value from service layer
                 .commentId(comment.getCommentId())
                 .comment(comment.getCommentText())
                 .replies(comment.getReplies().stream()
@@ -22,10 +22,10 @@ public class CommentMapper {
 
     public static ReplyDto toReplyDTO(Comment reply, boolean isEdit) {
         return ReplyDto.builder()
+                .isEdit(isEdit) // Set isEdit value from service layer
                 .userId(reply.getUsers().getUserId())
                 .profileUrl(reply.getUsers().getProfileImage()) // Assuming User has a getProfileUrl() method
                 .name(reply.getUsers().getNickname()) // Assuming User has a getName() method
-                .isEdit(isEdit) // Set isEdit value from service layer
                 .commentId(reply.getCommentId())
                 .comment(reply.getCommentText())
                 .build();

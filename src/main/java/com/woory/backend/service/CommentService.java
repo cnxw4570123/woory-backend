@@ -58,6 +58,7 @@ public class CommentService {
 		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
 			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
 		}
+
 		if (contentOptional.isPresent() && userOptional.isPresent()) {
 			Content content = contentOptional.get();
 			User user = userOptional.get();
@@ -75,6 +76,7 @@ public class CommentService {
 			}
 
 
+
 			Comment comment = new Comment();
 			comment.setCommentText(commentRequestDto.getCommentText());
 			comment.setCommentDate(commentRequestDto.getCommentDate());
@@ -86,6 +88,36 @@ public class CommentService {
 		} else {
 			throw new RuntimeException("Content or User not found");
 		}
+	}
+
+	public  Comment addReply(CommentRequestDto commentDto) {
+
+		Optional<User> userOptional = userRepository.findByUserIdWithGroups(commentDto.getUserId());
+		Optional<Content> contentOptional = contentRepository.findByContentId(commentDto.getContentId());
+		Content content = contentOptional
+				.orElseThrow(()-> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		User user = userOptional
+				.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		Comment parentComment = null;
+
+		Optional<Comment> byCommentId = commentRepository.findByCommentId(commentDto.getParentCommentId());
+
+		if (byCommentId.isEmpty()) {
+			throw new CustomException(ErrorCode.PARENT_COMMENT_NOT_FOUND);
+		}
+		parentComment = byCommentId.get();
+		if (parentComment != null && parentComment.getParentComment() != null) {
+			throw new CustomException(ErrorCode.REPLY_TO_REPLY_NOT_ALLOWED);
+		}
+
+		Comment comment = new Comment();
+		comment.setCommentText(commentDto.getCommentText());
+		comment.setCommentDate(commentDto.getCommentDate());
+		comment.setContent(content);
+		comment.setUsers(user);
+		comment.setParentComment(parentComment);
+		return commentRepository.save(comment);
 	}
 
 	@Transactional
@@ -149,6 +181,10 @@ public class CommentService {
 	}
 	private boolean checkUserEditPermission(Long currentUserId, Long commentUserId) {
 		// Implement your logic here to check if the current user has permission to edit
-		return currentUserId.equals(commentUserId);
+		boolean checkPermission = false;
+		if (currentUserId.equals(commentUserId)) {
+			checkPermission = true;
+		}
+		return checkPermission;
 	}
 }
