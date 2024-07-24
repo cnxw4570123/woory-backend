@@ -142,6 +142,7 @@ public class GroupService {
 		Long userId = SecurityUtil.getCurrentUserId();
 		List<GroupUser> groupUsers = activeMember(groupId);
 		Boolean checkOnePerson = false;
+		int cnt = groupUsers.size();
 		//1명이하이면 그룹떠날시 그룹 삭제 유저그룹에서 삭제
 		if (groupUsers.size() <= 1) {
 			groupRepository.deleteByGroupId(groupId);
@@ -155,11 +156,13 @@ public class GroupService {
 				groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(old.getUser().getUserId(), groupId,
 					old.getStatus());
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
+
 			}
 			if (status == GroupStatus.MEMBER) {
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			}
-			if(groupUsers.size() == 1){
+			cnt--;
+			if(cnt == 1){
 				checkOnePerson = true;
 			}
 		}
