@@ -121,18 +121,6 @@ public class ContentController {
 		return ResponseEntity.ok(response);
 	}
 
-	@GetMapping("/content/reactions/count")
-	public ResponseEntity<Map<String, Object>> getReactionCounts(@RequestParam Long contentId) {
-		Map<ReactionType, Long> reactionCounts = contentService.getReactionCounts(contentId);
-
-		Map<String, Object> response = Map.of(
-			"message", "리액션 개수가 조회되었습니다.",
-			"data", reactionCounts
-		);
-
-		return ResponseEntity.ok(response);
-	}
-
 	@Operation(summary = "컨텐츠 삭제")
 	@DeleteMapping("/delete/{groupId}/{contentId}")
 	public ResponseEntity<Map<String, Object>> deleteContent(
@@ -159,9 +147,11 @@ public class ContentController {
 	}
 
 	@GetMapping("/reaction")
-	public ResponseEntity<?> getReactions(@RequestParam("contentId") Long contentId) {
-		List<ContentReactionDto> reactionsByContentId = contentService.getReactionsByContentId(contentId);
-		return ResponseEntity.ok(reactionsByContentId);
+	public ResponseEntity<Map<String, Object>> getReactions(@RequestParam("contentId") Long contentId) {
+		List<ContentReactionDto.ForStatistics> reactionsByContentId = contentService.getReactionsByContentId(contentId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("반응 조회가 완료되었습니다.");
+		response.put("data", reactionsByContentId);
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/topic")
