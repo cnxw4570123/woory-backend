@@ -1,7 +1,6 @@
 package com.woory.backend.service;
 
 import com.woory.backend.dto.DataDto;
-import com.woory.backend.dto.GroupDto;
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.dto.MemberDetailDto;
 import com.woory.backend.dto.UserDetailDto;
@@ -70,7 +69,7 @@ public class GroupService {
 		userDetailDto.setUserId(current.getUserId());
 		userDetailDto.setUserName(current.getNickname());
 		userDetailDto.setProfileUrl(current.getProfileImage());
-		userDetailDto.setHouseholder(currentGroupUser.getStatus() == GroupStatus.GROUP_LEADER);
+		userDetailDto.setIsHouseholder(currentGroupUser.getStatus() == GroupStatus.GROUP_LEADER);
 
 		List<MemberDetailDto> memberDTOs = new ArrayList<>();
 		for (GroupUser groupUser : groupUserWithoutUser) {
@@ -79,7 +78,7 @@ public class GroupService {
 			memberDetailDto.setUserId(user.getUserId());
 			memberDetailDto.setUserName(user.getNickname());
 			memberDetailDto.setProfileUrl(user.getProfileImage());
-			memberDetailDto.setHouseholder(groupUser.getStatus() == GroupStatus.GROUP_LEADER);
+			memberDetailDto.setIsHouseholder(groupUser.getStatus() == GroupStatus.GROUP_LEADER);
 			memberDTOs.add(memberDetailDto);
 		}
 

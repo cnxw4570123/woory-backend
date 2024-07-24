@@ -41,6 +41,12 @@ public class UserService {
 		this.groupUserRepository = groupUserRepository;
 	}
 
+	public UserResponseDto getMyInfo() {
+		User user = userRepository.findById(SecurityUtil.getCurrentUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		return UserResponseDto.fromUser(user);
+	}
+
 	public UserResponseDto getUserInfo(long groupId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 

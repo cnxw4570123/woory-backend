@@ -4,6 +4,7 @@ import com.woory.backend.dto.ContentDto;
 import com.woory.backend.dto.ContentReactionDto;
 
 import com.woory.backend.dto.ContentRequestDto;
+import com.woory.backend.dto.ReactionReqDto;
 import com.woory.backend.dto.TopicDto;
 import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
@@ -145,12 +146,11 @@ public class ContentController {
 	}
 
 	@PostMapping("/reaction")
-	public ResponseEntity<?> addOrUpdateReaction(@RequestParam Long contentId,
-		@RequestParam Long userId,
-		@RequestParam String reaction) {
+	public ResponseEntity<?> addOrUpdateReaction(@RequestBody ReactionReqDto reactionDto){
 		try {
-			ReactionType reactionType = ReactionType.valueOf(reaction.toUpperCase());
-			ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(contentId, userId, reactionType);
+			ReactionType reactionType = ReactionType.valueOf(reactionDto.getReaction().toUpperCase());
+			ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(reactionDto.getContentId(),
+				reactionDto.getUserId(), reactionType);
 			if (updatedReaction == null) {
 				return ResponseEntity.ok("표현이 삭제되었습니다");
 			}

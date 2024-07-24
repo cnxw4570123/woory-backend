@@ -1,7 +1,5 @@
 package com.woory.backend.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,8 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserRequestDto {
-	@JsonProperty("name")
-	private String nickname;
-	private String images;
+public class ReactionReqDto {
+	private Long contentId;
+	private Long userId;
+	private String reaction;
 }
