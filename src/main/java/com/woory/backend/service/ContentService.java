@@ -118,12 +118,12 @@ public class ContentService {
 
 	}
 
-	public List<ContentDto> getContentsByRegDateLike(Long groupId, String dateStr) {
-		List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr);
-		return contents.stream()
-			.map(this::convertToDTO1)
-			.collect(Collectors.toList());
-	}
+	// public List<ContentDto> getContentsByRegDateLike(Long groupId, String dateStr) {
+	// 	List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr);
+	// 	return contents.stream()
+	// 		.map(this::convertToDTO1)
+	// 		.collect(Collectors.toList());
+	// }
 
 	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr) {
 		List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr + "%");
@@ -261,9 +261,9 @@ public class ContentService {
 
 	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {
 		log.info("date = {}", date.toString());
-		Topic topic = topicRepository.findTopicByGroupIdAndIssueDate(groupId, date, date.plusDays(1L))
+		Topic topic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(groupId, date, date.plusDays(1L))
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
-		return TopicDto.fromTopicWithContent(topic);
+		return TopicDto.fromTopicWithContent(SecurityUtil.getCurrentUserId(), topic);
 	}
 
 	public TopicDto getTopicOnly(LocalDate date, Long groupId) {

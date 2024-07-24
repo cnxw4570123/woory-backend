@@ -1,6 +1,5 @@
 package com.woory.backend.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
 import com.woory.backend.entity.User;
@@ -18,14 +17,14 @@ public class UserResponseDto {
 	private long userId;
 	private String nickname;
 	private String profileImgLink;
-	private boolean IsHouseHolder;
+	private boolean IsHouseholder;
 
 	public static UserResponseDto fromUserWithCurrentGroup(User user, GroupUser groupUser) {
 		return UserResponseDto.builder()
 			.userId(user.getUserId())
 			.nickname(user.getNickname())
 			.profileImgLink(user.getProfileImage())
-			.IsHouseHolder(groupUser.getStatus().equals(GroupStatus.GROUP_LEADER))
+			.IsHouseholder(groupUser.getStatus().equals(GroupStatus.GROUP_LEADER))
 			.build();
 	}
 
