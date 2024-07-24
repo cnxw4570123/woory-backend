@@ -8,6 +8,7 @@ import com.woory.backend.dto.UserResponseDto;
 import com.woory.backend.service.AwsService;
 import com.woory.backend.service.UserService;
 import com.woory.backend.utils.CookieUtil;
+import com.woory.backend.utils.StatusUtil;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -32,6 +33,14 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 	private final UserService userService;
 	private final AwsService awsService;
+
+	@GetMapping("/my")
+	public ResponseEntity<Map<String, Object>> myInfo(){
+		Map<String, Object> statusMessage = StatusUtil.getStatusMessage("유저 정보 조회에 성공했습니다.");
+		statusMessage.put("data", userService.getMyInfo());
+		return ResponseEntity.ok(statusMessage);
+	}
+
 
 	@GetMapping("/my/{groupId}")
 	@Operation(summary = "회원 조회")
