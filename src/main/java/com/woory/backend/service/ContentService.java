@@ -12,10 +12,8 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.datetime.DateFormatter;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -283,8 +281,14 @@ public class ContentService {
 		);
 	}
 
-	public TopicDto getTopic(LocalDate date, Long groupId) {
+	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {
 		log.info("date = {}", date.toString());
+		Topic topic = topicRepository.findTopicByGroupIdAndIssueDate(groupId, date, date.plusDays(1L))
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+		return TopicDto.fromTopicWithContent(topic);
+	}
+
+	public TopicDto getTopicOnly(LocalDate date, Long groupId) {
 		Topic topic = topicRepository.findTopicByGroupIdAndIssueDate(groupId, date, date.plusDays(1L))
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		return TopicDto.fromTopic(topic);
