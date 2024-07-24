@@ -75,12 +75,12 @@ public class CommentService {
 					throw new CustomException(ErrorCode.REPLY_TO_REPLY_NOT_ALLOWED);
 				}
 			}
-
+			Date now = new Date();
 
 
 			Comment comment = new Comment();
 			comment.setCommentText(commentRequestDto.getCommentText());
-			comment.setCommentDate(commentRequestDto.getCommentDate());
+			comment.setCommentDate(now);
 			comment.setContent(content);
 			comment.setUsers(user);
 			comment.setParentComment(parentComment);
