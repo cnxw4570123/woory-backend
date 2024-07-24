@@ -43,12 +43,6 @@ public class ContentReactionDto {
 			.collect(Collectors.groupingBy(ContentReactionDto::getReaction));
 	}
 
-	public static Map<ReactionType, Long> toReactionSizeByStatus(List<ContentReaction> reactions) {
-		return reactions.stream()
-			.map(ContentReactionDto::toContentReactionDto)
-			.collect(Collectors.groupingBy(ContentReactionDto::getReaction, Collectors.counting()));
-	}
-
 	public static List<ForStatistics> toReactionForStatistics(Long userId, List<ContentReaction> reactions) {
 		Map<ReactionType, Set<Long>> reactionTypeSetMap = new HashMap<>();
 

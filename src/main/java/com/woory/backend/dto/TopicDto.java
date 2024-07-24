@@ -23,7 +23,7 @@ public class TopicDto {
 	private Date issueDate;
 	private Long groupId;
 	private int topicByte;
-	private List<ContentDto> contents;
+	private List<ContentWithUserDto> contents;
 
 	public static TopicDto fromTopicSetWithGroupIdAndDate(TopicSet topicSet, Date date, long groupId) {
 		return TopicDto.builder()
@@ -34,14 +34,15 @@ public class TopicDto {
 			.build();
 	}
 
-	public static TopicDto fromTopicWithContent(Topic topic) {
+	public static TopicDto fromTopicWithContent(Long userId, Topic topic) {
 		return TopicDto.builder()
 			.topicContent(topic.getTopicContent())
 			.topicId(topic.getTopicId())
+			.topicByte(topic.getTopicByte())
 			.issueDate(topic.getIssueDate())
 			.contents(
 				topic.getContent().stream()
-					.map(ContentDto::toContentDto)
+					.map(c -> ContentWithUserDto.toContentWithUserDto(userId, c))
 					.toList()
 			)
 			.build();
@@ -50,6 +51,7 @@ public class TopicDto {
 	public static TopicDto fromTopic(Topic topic) {
 		return TopicDto.builder()
 			.topicContent(topic.getTopicContent())
+			.topicByte(topic.getTopicByte())
 			.topicId(topic.getTopicId())
 			.issueDate(topic.getIssueDate())
 			.build();
