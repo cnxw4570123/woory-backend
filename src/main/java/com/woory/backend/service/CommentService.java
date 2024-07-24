@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -110,10 +111,11 @@ public class CommentService {
 		if (parentComment != null && parentComment.getParentComment() != null) {
 			throw new CustomException(ErrorCode.REPLY_TO_REPLY_NOT_ALLOWED);
 		}
+		Date now = new Date();
 
 		Comment comment = new Comment();
 		comment.setCommentText(commentDto.getCommentText());
-		comment.setCommentDate(commentDto.getCommentDate());
+		comment.setCommentDate(now);
 		comment.setContent(content);
 		comment.setUsers(user);
 		comment.setParentComment(parentComment);
