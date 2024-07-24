@@ -125,12 +125,12 @@ public class ContentService {
 			.collect(Collectors.toList());
 	}
 
-	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId,String dateStr) {
-		List<Content> contents = contentRepository.findByDateWithImgPath(groupId,dateStr + "%");
+	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr) {
+		List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr + "%");
 
 		// 날짜별로 그룹화합니다.
 		Map<String, List<Content>> groupedByDate = contents.stream()
-				.collect(Collectors.groupingBy(t -> t.getContentRegDate().toString() ));
+			.collect(Collectors.groupingBy(t -> t.getContentRegDate().toString()));
 
 		// ContentDto 리스트로 변환합니다.
 		List<Content> contentsToAdd = new ArrayList<>();
@@ -158,20 +158,10 @@ public class ContentService {
 			Content finalContentToAdd = (firstContentWithImage != null) ? firstContentWithImage : firstContent;
 			contentsToAdd.add(finalContentToAdd);
 
-
 		}
 		return contentsToAdd.stream()
-				.map(this::convertToDTO1)
-				.collect(Collectors.toList());
-	}
-
-	public Map<ReactionType, Long> getReactionCounts(Long contentId) {
-		List<ContentReaction> reactions = contentReactionRepository.findByContent_ContentId(contentId);
-
-		Map<ReactionType, List<ContentReactionDto>> reactionMap = ContentReactionDto.toSeparatedReactions(reactions);
-
-		return reactionMap.entrySet().stream()
-			.collect(Collectors.toMap(Map.Entry::getKey, entry -> (long)entry.getValue().size()));
+			.map(this::convertToDTO1)
+			.collect(Collectors.toList());
 	}
 
 	public ContentDto getContent(Long contentId) {
@@ -185,13 +175,6 @@ public class ContentService {
 		return contentDto;
 	}
 
-	/**
-	 * 리엑션을 추가하면 모아서 전달
-	 * @param contentId
-	 * @param userId
-	 * @param newReaction
-	 * @return
-	 */
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
 		Content content = contentRepository.findByContentId(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
@@ -221,16 +204,11 @@ public class ContentService {
 	 * 이 부분은 사용안 할 것 같음. -> 컨텐츠 조회 시 같이 조회되도록 수정
 	 */
 	//컨텐츠의 리액션 보기
-	public List<ContentReactionDto> getReactionsByContentId(Long contentId) {
-		Content content = contentRepository.findById(contentId)
-			.orElseThrow(() -> new RuntimeException("Content not found"));
-
-		List<ContentReaction> reactions = contentReactionRepository.findByContent_ContentId(contentId);
+	public List<ContentReactionDto.ForStatistics> getReactionsByContentId(Long contentId) {
+		List<ContentReaction> reactions = contentReactionRepository.findByContentIdWithUser(contentId);
 
 		// Convert List<ContentReaction> to List<ContentReactionDto>
-		return reactions.stream()
-			.map(ContentReactionDto::toContentReactionDto)
-			.collect(Collectors.toList());
+		return ContentReactionDto.toReactionForStatistics(SecurityUtil.getCurrentUserId(), reactions);
 	}
 
 	private void removeReaction(ContentReaction contentReaction) {

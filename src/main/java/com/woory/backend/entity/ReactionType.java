@@ -5,5 +5,5 @@ public enum ReactionType {
     LOVE,
     WOW,
     SAD,
-    HAAPPY
+    HAPPY
 }

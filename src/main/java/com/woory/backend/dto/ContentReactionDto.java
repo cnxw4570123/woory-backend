@@ -1,9 +1,14 @@
 package com.woory.backend.dto;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.amazonaws.transform.MapEntry;
 import com.woory.backend.entity.ContentReaction;
 import com.woory.backend.entity.ReactionType;
 
@@ -21,7 +26,6 @@ import lombok.Setter;
 public class ContentReactionDto {
 
 	private Long contentId;
-	//groupUser로 변경 필요 String group
 	private Long userId;
 	private ReactionType reaction;
 
@@ -43,5 +47,36 @@ public class ContentReactionDto {
 		return reactions.stream()
 			.map(ContentReactionDto::toContentReactionDto)
 			.collect(Collectors.groupingBy(ContentReactionDto::getReaction, Collectors.counting()));
+	}
+
+	public static List<ForStatistics> toReactionForStatistics(Long userId, List<ContentReaction> reactions) {
+		Map<ReactionType, Set<Long>> reactionTypeSetMap = new HashMap<>();
+
+		for (ContentReaction cr : reactions) {
+			Set<Long> longs = reactionTypeSetMap.putIfAbsent(cr.getReaction(),
+				new HashSet<>(Set.of(cr.getUser().getUserId())));
+			if (longs == null) {
+				continue;
+			}
+			longs.add(cr.getUser().getUserId());
+		}
+		List<ForStatistics> ret = new ArrayList<>();
+		for (Map.Entry<ReactionType, Set<Long>> entry : reactionTypeSetMap.entrySet()) {
+			Set<Long> value = entry.getValue();
+			ReactionType key = entry.getKey();
+			boolean isActive = value.contains(userId);
+			int size = value.size();
+			ret.add(new ForStatistics(key, size, isActive));
+		}
+		return ret;
+	}
+
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class ForStatistics {
+		private ReactionType reactionType;
+		private long count;
+		private boolean IsActive;
 	}
 }
