@@ -6,23 +6,23 @@ import java.util.stream.Collectors;
 
 public class CommentMapper {
 
-    public static CommentReplyDto toDTO(Comment comment, boolean isEdit) {
+    public static CommentReplyDto toDTO(Comment comment, Long userId) {
         return CommentReplyDto.builder()
-                .isEdit(isEdit) // Set isEdit value from service layer
+                .isEdit(comment.getUsers().getUserId().equals(userId)) // Set isEdit value from service layer
                 .userId(comment.getUsers().getUserId())
                 .profileUrl(comment.getUsers().getProfileImage()) // Assuming User has a getProfileUrl() method
                 .name(comment.getUsers().getNickname()) // Assuming User has a getName() method
                 .commentId(comment.getCommentId())
                 .comment(comment.getCommentText())
                 .replies(comment.getReplies().stream()
-                        .map(reply -> toReplyDTO(reply, isEdit))
+                        .map(reply -> toReplyDTO(reply, userId))
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    public static ReplyDto toReplyDTO(Comment reply, boolean isEdit) {
+    public static ReplyDto toReplyDTO(Comment reply, Long userId) {
         return ReplyDto.builder()
-                .isEdit(isEdit) // Set isEdit value from service layer
+                .isEdit(reply.getUsers().getUserId().equals(userId)) // Set isEdit value from service layer
                 .userId(reply.getUsers().getUserId())
                 .profileUrl(reply.getUsers().getProfileImage()) // Assuming User has a getProfileUrl() method
                 .name(reply.getUsers().getNickname()) // Assuming User has a getName() method

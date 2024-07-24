@@ -48,7 +48,7 @@ public class ContentController {
 
 	// 컨텐츠 조회 - 글만 조회
 	@GetMapping("/detail/{contentId}")
-	public ContentDto getContentById(@PathVariable Long contentId) {
+	public ContentDto getContentById(@PathVariable("contentId") Long contentId) {
 		return contentService.getContentById(contentId);
 	}
 
@@ -57,7 +57,7 @@ public class ContentController {
 	public ResponseEntity<Map<String, Object>> createContent(@RequestBody ContentRequestDto requestDto) {
 
 		String photoPath = awsService.saveFile(requestDto.getImages());
-		Content content = contentService.createContent(requestDto.getGroupId(), requestDto.getTopicId(),
+		contentService.createContent(requestDto.getGroupId(), requestDto.getTopicId(),
 			requestDto.getContentText(), photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: ");
 		//		response.put("data", content);
@@ -71,10 +71,10 @@ public class ContentController {
 		@PathVariable("contentId") Long contentId,
 		@RequestBody ContentRequestDto requestDto) {
 		String photoPath = awsService.saveFile(requestDto.getImages());
-		Content updatedContent = contentService.updateContent(groupId, contentId, requestDto.getContentText(),
+		contentService.updateContent(groupId, contentId, requestDto.getContentText(),
 			photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
-		response.put("data", updatedContent);
+//		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);
 	}
 
@@ -110,8 +110,9 @@ public class ContentController {
 
 	@Operation(summary = "content 월 조회")
 	@GetMapping("/get/month")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(@RequestParam Long groupId,
-		@RequestParam String param) {
+	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(
+		@RequestParam("groupId") Long groupId,
+		@RequestParam("param") String param) {
 		if (param == null || !param.matches("\\d{4}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
@@ -124,8 +125,8 @@ public class ContentController {
 	@Operation(summary = "컨텐츠 삭제")
 	@DeleteMapping("/delete/{groupId}/{contentId}")
 	public ResponseEntity<Map<String, Object>> deleteContent(
-		@PathVariable Long groupId,
-		@PathVariable Long contentId) {
+		@PathVariable("groupId") Long groupId,
+		@PathVariable("contentId") Long contentId) {
 		contentService.deleteContent(groupId, contentId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 삭제되었습니다");
 		return ResponseEntity.ok(response);
