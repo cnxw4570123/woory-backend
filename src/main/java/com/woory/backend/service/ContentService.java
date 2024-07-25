@@ -92,8 +92,9 @@ public class ContentService {
 	@Transactional
 	public void deleteContent(Long groupId, Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
-		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND)).getStatus();
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+
 		Content content = contentRepository.findById(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 
@@ -101,9 +102,7 @@ public class ContentService {
 		if (!content.getUsers().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE);
 		}
-		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE);
-		}
+
 		contentRepository.delete(content);
 	}
 
@@ -113,17 +112,14 @@ public class ContentService {
 
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+
 		Content content = contentRepository.findById(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-		GroupStatus status = getGroupStatus(userId, groupId);
 
 		if (!content.getUsers().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_UPDATE);
 		}
 
-		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new CustomException(ErrorCode.NO_PERMISSION_TO_UPDATE);
-		}
 		content.setContentText(contentText);
 		if (contentImg != null) {
 			content.setContentImgPath(contentImg); // 사진 경로 수정
@@ -186,7 +182,7 @@ public class ContentService {
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		Long groupId = content.getTopic().getGroup().getGroupId();
 		checkUserGroup(groupId, currentUserId);
-		return ContentWithUserDto.toContentWithUserDto(currentUserId, content);
+		return ContentWithUserDto.toContentWithUserDtoWithoutCounts(currentUserId, content);
 
 	}
 
@@ -309,7 +305,7 @@ public class ContentService {
 
 	private void checkUserGroup(Long groupId, Long currentUserId) {
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(currentUserId, groupId)
-				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
 	public TopicDto getTopicOnly(LocalDate date, Long groupId) {

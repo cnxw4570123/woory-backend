@@ -88,7 +88,7 @@ public class ContentController {
 
 	 @Operation(summary = "단독 content 조회")
 	 @GetMapping("/get/{contentId}")
-	 public ResponseEntity<Map<String, Object>> getContents(@PathVariable Long contentId) {
+	 public ResponseEntity<Map<String, Object>> getContents(@PathVariable("contentId") Long contentId) {
 		 ContentWithUserDto content = contentService.getContent(contentId);
 	 	Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 	 	response.put("content", content);

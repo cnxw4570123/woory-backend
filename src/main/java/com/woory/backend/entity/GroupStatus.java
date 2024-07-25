@@ -1,9 +1,7 @@
 package com.woory.backend.entity;
 
 public enum GroupStatus {
-	NON_MEMBER(0),
 	MEMBER(1),
-	BANNED(2),
 	GROUP_LEADER(3);
 
 	private final int value;
