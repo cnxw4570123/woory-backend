@@ -141,6 +141,8 @@ public class ContentService {
 
 	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr) {
 		List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr + "%");
+		Long currentUserId = SecurityUtil.getCurrentUserId();
+		checkUserGroup(groupId, currentUserId);
 
 		// 날짜별로 그룹화합니다.
 		Map<String, List<Content>> groupedByDate = contents.stream()
@@ -180,9 +182,11 @@ public class ContentService {
 
 	public ContentWithUserDto getContent(Long contentId) {
 		Long currentUserId = SecurityUtil.getCurrentUserId();
-		ContentWithUserDto contentWithUserDto = new ContentWithUserDto();
 		Content content = contentRepository.findByContentId(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		Long topicId = content.getTopic().getTopicId();
+		Long groupId = groupRepository.findByTopic_TopicId(topicId).get().getGroupId();
+		checkUserGroup(groupId, currentUserId);
 		return ContentWithUserDto.toContentWithUserDto(currentUserId, content);
 
 	}
@@ -281,6 +285,8 @@ public class ContentService {
 
 	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {
 		log.info("date = {}", date.toString());
+		Long currentUserId = SecurityUtil.getCurrentUserId();
+		checkUserGroup(groupId, currentUserId);
 		Group group = groupRepository.findByGroupId(groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		// 그룹 생성일 이전이라면
@@ -301,6 +307,11 @@ public class ContentService {
 			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.plusDays(1L));
 
 		return TopicDto.fromTopicWithContent(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay);
+	}
+
+	private void checkUserGroup(Long groupId, Long currentUserId) {
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(currentUserId, groupId)
+				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
 	public TopicDto getTopicOnly(LocalDate date, Long groupId) {
