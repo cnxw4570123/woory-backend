@@ -283,14 +283,12 @@ public class ContentService {
 			throw new CustomException(ErrorCode.CAN_NOT_VIEW_BEFORE_GROUP_REG_DATE);
 		}
 
-		Optional<Topic> optionalTopic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(
-			groupId, date);
-		if (optionalTopic.isEmpty()) {
+		Topic topic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(
+			groupId, date).orElseGet(() -> {
 			TopicSet topicSet = topicSetRepository.findRandomTopic();
 			Topic topic2 = Topic.fromTopicSetWithDateAndGroup(group, topicSet, java.sql.Date.valueOf(date));
-			return TopicDto.fromTopicOnly(topicRepository.save(topic2));
-		}
-		Topic topic = optionalTopic.get();
+			return topicRepository.save(topic2);
+		});
 
 		boolean hasPrevDay
 			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.minusDays(1L));
