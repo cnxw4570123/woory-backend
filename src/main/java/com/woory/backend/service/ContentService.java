@@ -164,15 +164,13 @@ public class ContentService {
 			.collect(Collectors.toList());
 	}
 
-	public ContentDto getContent(Long contentId) {
+	public ContentWithUserDto getContent(Long contentId) {
+		Long currentUserId = SecurityUtil.getCurrentUserId();
+		ContentWithUserDto contentWithUserDto = new ContentWithUserDto();
 		Content content = contentRepository.findByContentId(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-		ContentDto contentDto = new ContentDto();
-		contentDto.setContentId(content.getContentId());
-		contentDto.setContentRegDate(content.getContentRegDate());
-		contentDto.setContentText(content.getContentText());
-		contentDto.setContentImgPath(content.getContentImgPath());
-		return contentDto;
+		return ContentWithUserDto.toContentWithUserDto(currentUserId,content);
+
 	}
 
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
@@ -261,7 +259,7 @@ public class ContentService {
 
 	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {
 		log.info("date = {}", date.toString());
-		Topic topic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(groupId, date, date.plusDays(1L))
+		Topic topic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(groupId, date)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		return TopicDto.fromTopicWithContent(SecurityUtil.getCurrentUserId(), topic);
 	}
