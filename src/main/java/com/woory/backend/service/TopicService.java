@@ -38,7 +38,7 @@ public class TopicService {
 		this.topicSetRepository = topicSetRepository;
 	}
 
-	@Scheduled(cron = "0 0 0 * * *", zone = "KST") // 매일 0시에 실행
+	@Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul") // 매일 0시에 실행
 	public void generateTopics() {
 		log.info("토픽 생성 시작");
 		// 새 토픽 생성

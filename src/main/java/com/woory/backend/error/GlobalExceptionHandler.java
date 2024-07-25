@@ -1,5 +1,8 @@
 package com.woory.backend.error;
 
+import java.time.DateTimeException;
+import java.time.format.DateTimeParseException;
+
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +19,7 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(errorCode.getStatus()));
 	}
 
-	@ExceptionHandler(FileSizeLimitExceededException.class)
+	@ExceptionHandler(DateTimeException.class)
 	public ResponseEntity<ErrorResponse> FileException(Exception ex) {
 		return new ResponseEntity<>(ErrorResponse.of(ErrorCode.FILE_SIZE_EXCEED), HttpStatus.BAD_REQUEST);
 	}

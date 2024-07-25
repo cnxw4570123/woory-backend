@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -118,6 +120,7 @@ public class GroupService {
 			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
 		Topic topic = Topic.fromTopicSetWithDateAndGroup(group, topicSet, now);
 
+		group.setGroupRegDate(LocalDate.ofInstant(now.toInstant(), ZoneId.systemDefault()));
 		group.setGroupUsers(List.of(groupUser));
 		group.setTopic(List.of(topic));
 
@@ -162,7 +165,7 @@ public class GroupService {
 				groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 			}
 			cnt--;
-			if(cnt == 1){
+			if (cnt == 1) {
 				checkOnePerson = true;
 			}
 		}
@@ -236,15 +239,17 @@ public class GroupService {
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		return byUserId;
 	}
+
 	//그룹에 속한 유저인지 아닌지 확인
-	public Boolean CheckUserIncludeGroup (Long groupId){
+	public Boolean CheckUserIncludeGroup(Long groupId) {
 		Long userId = SecurityUtil.getCurrentUserId();
-		Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId);
-		if(byUserUserIdAndGroupGroupId.isPresent()){
+		Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId,
+			groupId);
+		if (byUserUserIdAndGroupGroupId.isPresent()) {
 			GroupStatus status = byUserUserIdAndGroupGroupId.get().getStatus();
-			if(status.equals(GroupStatus.MEMBER)||status.equals(GroupStatus.GROUP_LEADER)){
+			if (status.equals(GroupStatus.MEMBER) || status.equals(GroupStatus.GROUP_LEADER)) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}
 		}
