@@ -74,7 +74,7 @@ public class ContentController {
 		return ResponseEntity.ok(response);
 	}
 
-	@Operation(summary = "content 수정")
+	@Operation(summary = "content 수정할 데이터 가져오기")
 	@GetMapping("/modify/{contentId}")
 	public ResponseEntity<Map<String, Object>> modifyContent(
 			@PathVariable("contentId") Long contentId){
