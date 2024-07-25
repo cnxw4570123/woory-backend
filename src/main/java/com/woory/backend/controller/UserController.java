@@ -3,6 +3,7 @@ package com.woory.backend.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.woory.backend.dto.UserMyPageResponseDto;
 import com.woory.backend.dto.UserRequestDto;
 import com.woory.backend.dto.UserResponseDto;
 import com.woory.backend.service.AwsService;
@@ -27,7 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("v1/users")
+@RequestMapping("/v1/users")
 @RequiredArgsConstructor
 @Tag(name = "사용자 관련", description = "사용자 관련 API")
 public class UserController {
@@ -44,7 +45,7 @@ public class UserController {
 
 	@GetMapping("/my/{groupId}")
 	@Operation(summary = "회원 조회")
-	public ResponseEntity<UserResponseDto> my(@PathVariable("groupId") long groupId) {
+	public ResponseEntity<UserMyPageResponseDto> my(@PathVariable("groupId") long groupId) {
 		return ResponseEntity.ok(userService.getUserInfo(groupId));
 	}
 

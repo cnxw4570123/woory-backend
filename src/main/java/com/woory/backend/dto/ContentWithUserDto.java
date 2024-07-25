@@ -22,16 +22,14 @@ import lombok.Setter;
 public class ContentWithUserDto {
 	private Long userId;
 	private String name;
-	private String profileImg;
+	private String profileUrl;
 	private boolean IsEdit;
 	private Long contentId;
 	private String contentText;
 	private String contentImgPath;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 	private Date contentRegDate;
-	@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 	private int commentsCount;
-	@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 	private int reactionCount;
 
 	public static ContentWithUserDto toContentWithUserDto(Long userId, Content content) {
@@ -39,17 +37,19 @@ public class ContentWithUserDto {
 		Long contentUserId = user.getUserId();
 		String nickname = user.getNickname();
 		String profileImage = user.getProfileImage();
+		int commentsCount = content.getComments().size();
+		int size = content.getContentReactions().size();
 		return ContentWithUserDto.builder()
 			.userId(contentUserId)
 			.name(nickname)
-			.profileImg(profileImage)
+			.profileUrl(profileImage)
 			.contentId(content.getContentId())
 			.contentImgPath(content.getContentImgPath())
 			.contentText(content.getContentText())
 			.contentRegDate(content.getContentRegDate())
 			.IsEdit(userId.equals(contentUserId))
-			.commentsCount(content.getComments().size())
-			.reactionCount(content.getContentReactions().size())
+			.commentsCount(commentsCount)
+			.reactionCount(size)
 			.build();
 	}
 

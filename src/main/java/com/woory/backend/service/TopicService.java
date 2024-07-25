@@ -5,6 +5,9 @@ import java.util.List;
 
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ import jakarta.transaction.Transactional;
 @Transactional
 public class TopicService {
 
+	private static final Logger log = LoggerFactory.getLogger(TopicService.class);
 	private final TopicRepository topicRepository;
 	private final GroupRepository groupRepository;
 	private final TopicSetRepository topicSetRepository;
@@ -34,8 +38,9 @@ public class TopicService {
 		this.topicSetRepository = topicSetRepository;
 	}
 
-	@Scheduled(cron = "0 0 0 * * *") // 매일 0시에 실행
+	@Scheduled(cron = "0 0 0 * * *", zone = "KST") // 매일 0시에 실행
 	public void generateTopics() {
+		log.info("토픽 생성 시작");
 		// 새 토픽 생성
 		long topic = TopicManager.pollTopicOfToday();
 

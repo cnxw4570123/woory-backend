@@ -169,8 +169,17 @@ public class ContentService {
 		ContentWithUserDto contentWithUserDto = new ContentWithUserDto();
 		Content content = contentRepository.findByContentId(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-		return ContentWithUserDto.toContentWithUserDto(currentUserId,content);
+		return ContentWithUserDto.toContentWithUserDto(currentUserId, content);
 
+	}
+	public ContentUpdateDto getModifyContentInf(Long contentId) {
+		Long currentUserId = SecurityUtil.getCurrentUserId();
+		ContentWithUserDto contentWithUserDto = new ContentWithUserDto();
+		Content content = contentRepository.findByContentId(contentId)
+				.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		Long topicId = content.getTopic().getTopicId();
+		Topic topic = topicRepository.findByTopicId(topicId).orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
+		return ContentUpdateDto.ModifyForm(topic, content);
 	}
 
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
@@ -198,9 +207,6 @@ public class ContentService {
 
 	}
 
-	/**
-	 * 이 부분은 사용안 할 것 같음. -> 컨텐츠 조회 시 같이 조회되도록 수정
-	 */
 	//컨텐츠의 리액션 보기
 	public List<ContentReactionDto.ForStatistics> getReactionsByContentId(Long contentId) {
 		List<ContentReaction> reactions = contentReactionRepository.findByContentIdWithUser(contentId);
@@ -265,7 +271,7 @@ public class ContentService {
 	}
 
 	public TopicDto getTopicOnly(LocalDate date, Long groupId) {
-		Topic topic = topicRepository.findTopicByGroupIdAndIssueDate(groupId, date, date.plusDays(1L))
+		Topic topic = topicRepository.findTopicByGroupIdAndIssueDate(groupId, date)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		return TopicDto.fromTopic(topic);
 	}

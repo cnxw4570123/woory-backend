@@ -16,7 +16,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class TopicManager {
 	private static final Random randomTopic = new Random(System.currentTimeMillis());
 	private static final Path TOPIC_PATH = Paths.get("src/main/resources/topics.txt");
@@ -62,11 +65,18 @@ public class TopicManager {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+		log.info("topic initialized = {}", topicIndex);
 		return topicIndex;
 	}
 
 	public static int getTopicOfToday() {
-		return topicOfLast7Days.peekLast().getTopicIndex();
+		int topicIndex = -1;
+		try {
+			topicIndex = topicOfLast7Days.peekLast().getTopicIndex();
+		} catch (NullPointerException e){
+			log.error("토픽 뽑는 중 문제 발생");
+		}
+		return topicIndex;
 	}
 
 	public static int pollTopicOfToday() {
@@ -78,6 +88,7 @@ public class TopicManager {
 			topic = randomTopic.nextInt(TOPIC_COUNT);
 		} while (topicOfLast7Days.contains(topic));
 
+		log.info("topic 생성 => {}", topic);
 		topicOfLast7Days.add(new TopicByDate(topic));
 		writeTopicsAsFile();
 		return topic;
