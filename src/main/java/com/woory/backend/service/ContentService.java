@@ -184,8 +184,7 @@ public class ContentService {
 		Long currentUserId = SecurityUtil.getCurrentUserId();
 		Content content = contentRepository.findByContentId(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-		Long topicId = content.getTopic().getTopicId();
-		Long groupId = groupRepository.findByTopic_TopicId(topicId).get().getGroupId();
+		Long groupId = content.getTopic().getGroup().getGroupId();
 		checkUserGroup(groupId, currentUserId);
 		return ContentWithUserDto.toContentWithUserDto(currentUserId, content);
 
