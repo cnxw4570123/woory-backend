@@ -80,7 +80,7 @@ public class ContentController {
 			@PathVariable("contentId") Long contentId){
 		ContentUpdateDto modifyContentInf = contentService.getModifyContentInf(contentId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠의 정보입니다..");
-		response.put("contents", modifyContentInf);
+		response.put("data", modifyContentInf);
 		return ResponseEntity.ok(response);
 	}
 
