@@ -26,6 +26,7 @@ public enum ErrorCode {
 	NO_PERMISSION_TO_UPDATE(403, "CONTENT_003", "컨텐츠를 수정할 권한이 없습니다"),
 	INVALID_DATE_FORMAT(400, "CONTENT_004", "날짜표기가 아닌 데이터입니다."),
 	CONTENT_NOT_FOUND(404, "CONTENT_005", "해당 컨텐츠를 찾을 수 없습니다."),
+	CONTENT_ALREADY_EXISTS(404,"CONTENT_006" , "이미 작성한 글이 있습니다."),
 
 	GROUP_CREATION_LIMIT_EXCEEDED(400, "GROUP_001", "사용자는 5개 이상의 가족그룹을 가질수 없습니다."),
 	NO_PERMISSION_TO_DELETE_GROUP(403, "GROUP_002", "가족을 삭제할 권한을 가지고 있지 않습니다."),

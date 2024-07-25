@@ -58,9 +58,14 @@ public class ContentService {
 		User user = userRepository.findByUserIdWithGroups(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+				.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		Topic topic = topicRepository.findById(topicId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
+		// 사용자가 이미 해당 주제에 콘텐츠를 작성했는지 확인
+		boolean userHasContentForTopic = contentRepository.existsByTopic_TopicIdAndUsers_UserId(topicId, userId);
+		if (userHasContentForTopic) {
+			throw new CustomException(ErrorCode.CONTENT_ALREADY_EXISTS);
+		}
 
 		// Content 생성 및 저장 로직
 		Content content = new Content();
