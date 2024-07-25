@@ -67,7 +67,7 @@ public class ContentService {
 		User user = userRepository.findByUserIdWithGroups(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-				.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		Topic topic = topicRepository.findById(topicId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
 		// 사용자가 이미 해당 주제에 콘텐츠를 작성했는지 확인
@@ -295,8 +295,7 @@ public class ContentService {
 			return topicRepository.save(topic2);
 		});
 
-		boolean hasPrevDay
-			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.minusDays(1L));
+		boolean hasPrevDay = topicRepository.existsByGroupRegDate(groupId, date);
 		boolean hasNextDay
 			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.plusDays(1L));
 
