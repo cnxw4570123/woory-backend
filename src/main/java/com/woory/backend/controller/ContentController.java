@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -106,6 +107,10 @@ public class ContentController {
 			parse = LocalDate.parse(day);
 		} catch (DateTimeParseException e) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
+		}
+
+		if(parse.isAfter(LocalDate.now())){
+			throw new CustomException(ErrorCode.CAN_NOT_VIEW_AFTER_TODAY);
 		}
 
 		TopicDto topic = contentService.getTopicWithContents(parse, groupId);

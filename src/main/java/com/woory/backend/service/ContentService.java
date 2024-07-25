@@ -14,14 +14,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 @Service
 public class ContentService {
 
 	private static final Logger log = LoggerFactory.getLogger(ContentService.class);
+	private final TopicSetRepository topicSetRepository;
+	private final GroupRepository groupRepository;
 	private ContentRepository contentRepository;
 	private UserRepository userRepository;
 	private GroupUserRepository groupUserRepository;
@@ -29,15 +36,17 @@ public class ContentService {
 	private final ContentReactionRepository contentReactionRepository;
 
 	@Autowired
-	public ContentService(UserRepository userRepository, GroupRepository groupRepository,
+	public ContentService(UserRepository userRepository,
 		ContentRepository contentRepository, GroupUserRepository groupUserRepository,
-		TopicRepository topicRepository, ContentReactionRepository contentReactionRepository) {
+		TopicRepository topicRepository, ContentReactionRepository contentReactionRepository,
+		TopicSetRepository topicSetRepository, GroupRepository groupRepository) {
 		this.userRepository = userRepository;
 		this.contentRepository = contentRepository;
 		this.groupUserRepository = groupUserRepository;
 		this.topicRepository = topicRepository;
 		this.contentReactionRepository = contentReactionRepository;
-
+		this.topicSetRepository = topicSetRepository;
+		this.groupRepository = groupRepository;
 	}
 
 	public ContentDto getContentById(Long contentId) {
@@ -172,13 +181,15 @@ public class ContentService {
 		return ContentWithUserDto.toContentWithUserDto(currentUserId, content);
 
 	}
+
 	public ContentUpdateDto getModifyContentInf(Long contentId) {
 		Long currentUserId = SecurityUtil.getCurrentUserId();
 		ContentWithUserDto contentWithUserDto = new ContentWithUserDto();
 		Content content = contentRepository.findByContentId(contentId)
-				.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		Long topicId = content.getTopic().getTopicId();
-		Topic topic = topicRepository.findByTopicId(topicId).orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
+		Topic topic = topicRepository.findByTopicId(topicId)
+			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
 		return ContentUpdateDto.ModifyForm(topic, content);
 	}
 
@@ -265,9 +276,28 @@ public class ContentService {
 
 	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {
 		log.info("date = {}", date.toString());
-		Topic topic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(groupId, date)
+		Group group = groupRepository.findByGroupId(groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
-		return TopicDto.fromTopicWithContent(SecurityUtil.getCurrentUserId(), topic);
+		// 그룹 생성일 이전이라면
+		if (group.getGroupRegDate().isAfter(date)) {
+			throw new CustomException(ErrorCode.CAN_NOT_VIEW_BEFORE_GROUP_REG_DATE);
+		}
+
+		Optional<Topic> optionalTopic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(
+			groupId, date);
+		if (optionalTopic.isEmpty()) {
+			TopicSet topicSet = topicSetRepository.findRandomTopic();
+			Topic topic2 = Topic.fromTopicSetWithDateAndGroup(group, topicSet, java.sql.Date.valueOf(date));
+			return TopicDto.fromTopicOnly(topicRepository.save(topic2));
+		}
+		Topic topic = optionalTopic.get();
+
+		boolean hasPrevDay
+			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.minusDays(1L));
+		boolean hasNextDay
+			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.plusDays(1L));
+
+		return TopicDto.fromTopicWithContent(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay);
 	}
 
 	public TopicDto getTopicOnly(LocalDate date, Long groupId) {
@@ -275,5 +305,4 @@ public class ContentService {
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		return TopicDto.fromTopic(topic);
 	}
-
 }
