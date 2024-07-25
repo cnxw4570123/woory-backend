@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +110,7 @@ public class ContentController {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
 
-		if(parse.isAfter(LocalDate.now())){
+		if(parse.isAfter(LocalDateTime.now().plusHours(9L).toLocalDate())){
 			throw new CustomException(ErrorCode.CAN_NOT_VIEW_AFTER_TODAY);
 		}
 
