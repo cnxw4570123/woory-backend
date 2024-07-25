@@ -29,7 +29,9 @@ public class ContentWithUserDto {
 	private String contentImgPath;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 	private Date contentRegDate;
+	@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 	private int commentsCount;
+	@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 	private int reactionCount;
 
 	public static ContentWithUserDto toContentWithUserDto(Long userId, Content content) {
@@ -42,6 +44,7 @@ public class ContentWithUserDto {
 			.name(nickname)
 			.profileImg(profileImage)
 			.contentId(content.getContentId())
+			.contentImgPath(content.getContentImgPath())
 			.contentText(content.getContentText())
 			.contentRegDate(content.getContentRegDate())
 			.IsEdit(userId.equals(contentUserId))

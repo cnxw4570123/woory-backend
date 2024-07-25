@@ -1,11 +1,7 @@
 package com.woory.backend.controller;
 
-import com.woory.backend.dto.ContentDto;
-import com.woory.backend.dto.ContentReactionDto;
+import com.woory.backend.dto.*;
 
-import com.woory.backend.dto.ContentRequestDto;
-import com.woory.backend.dto.ReactionReqDto;
-import com.woory.backend.dto.TopicDto;
 import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
 import com.woory.backend.error.CustomException;
@@ -78,14 +74,14 @@ public class ContentController {
 		return ResponseEntity.ok(response);
 	}
 
-	// @Operation(summary = "단독 content 조회")
-	// @GetMapping("/get/{contentId}")
-	// public ResponseEntity<Map<String, Object>> getContents(@PathVariable Long contentId) {
-	// 	ContentDto content = contentService.getContent(contentId);
-	// 	Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
-	// 	response.put("data", content);
-	// 	return ResponseEntity.ok(response);
-	// }
+	 @Operation(summary = "단독 content 조회")
+	 @GetMapping("/get/{contentId}")
+	 public ResponseEntity<Map<String, Object>> getContents(@PathVariable Long contentId) {
+		 ContentWithUserDto content = contentService.getContent(contentId);
+	 	Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
+	 	response.put("content", content);
+	 	return ResponseEntity.ok(response);
+	 }
 
 	@Operation(summary = "그룹 내 일간 컨텐츠 모두 조회")
 	@GetMapping("/{groupId}/get")
