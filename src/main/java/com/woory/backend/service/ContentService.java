@@ -259,7 +259,7 @@ public class ContentService {
 
 	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {
 		log.info("date = {}", date.toString());
-		Topic topic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(groupId, date, date.plusDays(1L))
+		Topic topic = topicRepository.findTopicByGroupIdAndIssueDateWithContent(groupId, date)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		return TopicDto.fromTopicWithContent(SecurityUtil.getCurrentUserId(), topic);
 	}

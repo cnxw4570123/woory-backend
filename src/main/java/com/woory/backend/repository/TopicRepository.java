@@ -17,11 +17,10 @@ public interface TopicRepository extends JpaRepository<Topic, Long>, BatchTopicR
 	Optional<Topic> findTopicByGroupIdAndIssueDate(@Param("groupId") Long groupId, @Param("date") LocalDate start,
 		@Param("end") LocalDate end);
 
-	@Query("select t from Topic t where t.group.groupId = :groupId and t.issueDate between :date and :end")
+	@Query("select t from Topic t where t.group.groupId = :groupId and t.issueDate = :date")
 	@EntityGraph(attributePaths = {"content", "content.users"})
 	Optional<Topic> findTopicByGroupIdAndIssueDateWithContent(@Param("groupId") Long groupId,
-		@Param("date") LocalDate start,
-		@Param("end") LocalDate end);
+		@Param("date") LocalDate start);
 
 
 	// @Query(value = "SELECT * FROM TOPIC T LEFT JOIN CONTENT C ON T.TOPIC_ID = C.TOPIC_ID WHERE T.GROUP_ID = :groupId AND T.ISSUE_DATE = :DATE", nativeQuery = true)
