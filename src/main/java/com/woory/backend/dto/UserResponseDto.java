@@ -17,14 +17,14 @@ public class UserResponseDto {
 	private long userId;
 	private String nickname;
 	private String profileImgLink;
-	private boolean IsHouseholder;
+//	private boolean IsHouseholder;
 
-	public static UserResponseDto fromUserWithCurrentGroup(User user, GroupUser groupUser) {
+	public static UserResponseDto fromUserWithCurrentGroup(User user, GroupUser groupUser ) {
 		return UserResponseDto.builder()
 			.userId(user.getUserId())
 			.nickname(user.getNickname())
 			.profileImgLink(user.getProfileImage())
-			.IsHouseholder(groupUser.getStatus().equals(GroupStatus.GROUP_LEADER))
+//			.IsHouseholder(groupUser.getStatus().equals(GroupStatus.GROUP_LEADER))
 			.build();
 	}
 

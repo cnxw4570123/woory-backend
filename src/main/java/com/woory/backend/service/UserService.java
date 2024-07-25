@@ -3,6 +3,7 @@ package com.woory.backend.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.woory.backend.dto.UserMyPageResponseDto;
 import com.woory.backend.entity.GroupUser;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
@@ -47,15 +48,22 @@ public class UserService {
 		return UserResponseDto.fromUser(user);
 	}
 
-	public UserResponseDto getUserInfo(long groupId) {
+	public UserMyPageResponseDto getUserInfo(long groupId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 
 		GroupUser groupUser = groupUserRepository.findGroupUserWithUserByGroupIdAndUserId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+		List<GroupUser> allByGroupGroupId = groupUserRepository.findAllByGroup_GroupId(groupId);
+		int size = allByGroupGroupId.size();
+		boolean isLastMember = false;
+		if (size == 1) {
+			isLastMember = true;
+		};
+
 
 		User user = groupUser.getUser();
 
-		return UserResponseDto.fromUserWithCurrentGroup(user, groupUser);
+		return UserMyPageResponseDto.fromUserWithCurrentGroup(user, groupUser, isLastMember);
 	}
 
 	public void deleteAccount() {
