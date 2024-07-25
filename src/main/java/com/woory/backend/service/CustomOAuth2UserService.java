@@ -65,7 +65,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 				User user = new User();
 				user.setUsername(username);
 				user.setEmail(oAuth2Response.getEmail());
-				user.setProfileImage(userDefaultImg);
+				user.setProfileImage(oAuth2Response.getProfileImage().isEmpty() ? userDefaultImg :
+					oAuth2Response.getProfileImage());
 				user.setRole("ROLE_USER");
 				user.setNickname(oAuth2Response.getName());
 				return user;
