@@ -1,5 +1,6 @@
 package com.woory.backend.dto;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -16,14 +17,27 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopicDto {
 	private String topicContent;
 	private Long topicId;
 	private Date issueDate;
 	private Long groupId;
 	private int topicByte;
+	private boolean hasPrevDay;
+	private boolean hasNextDay;
+	private boolean IsPosted;
 	private List<ContentWithUserDto> contents;
+
+	public static TopicDto fromTopicOnly(Topic topic) {
+		return TopicDto.builder()
+			.topicContent(topic.getTopicContent())
+			.topicByte(topic.getTopicByte())
+			.topicId(topic.getTopicId())
+			.issueDate(topic.getIssueDate())
+			.contents(Collections.emptyList())
+			.build();
+	}
 
 	public static TopicDto fromTopicSetWithGroupIdAndDate(TopicSet topicSet, Date date, long groupId) {
 		return TopicDto.builder()
@@ -34,17 +48,22 @@ public class TopicDto {
 			.build();
 	}
 
-	public static TopicDto fromTopicWithContent(Long userId, Topic topic) {
-		return TopicDto.builder()
+	public static TopicDto fromTopicWithContent(Long userId, Topic topic, boolean hasPrevDay, boolean hasNextDay) {
+		TopicDtoBuilder contents1 = TopicDto.builder()
 			.topicContent(topic.getTopicContent())
 			.topicId(topic.getTopicId())
 			.topicByte(topic.getTopicByte())
 			.issueDate(topic.getIssueDate())
+			.hasNextDay(hasNextDay)
+			.hasPrevDay(hasPrevDay)
 			.contents(
 				topic.getContent().stream()
 					.map(c -> ContentWithUserDto.toContentWithUserDto(userId, c))
 					.toList()
-			)
+			);
+
+		return contents1.IsPosted(contents1.contents.stream()
+				.anyMatch(ContentWithUserDto::isIsEdit))
 			.build();
 	}
 
