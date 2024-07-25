@@ -15,6 +15,7 @@ import java.util.Optional;
 @Repository
 public interface ContentRepository extends JpaRepository<Content, Long> {
     Optional<Content> findByContentId(Long contentId);
+    boolean existsByTopic_TopicIdAndUsers_UserId(Long topicId, Long userId);
 
 
     @Query(value = "SELECT * FROM content WHERE DATE_FORMAT(content_reg_date, '%Y-%m-%d') LIKE :date%", nativeQuery = true)
@@ -32,6 +33,8 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
             "AND DATE_FORMAT(c.content_reg_date, '%Y-%m') LIKE CONCAT(:date, '%') " +
             "ORDER BY c.content_reg_date ASC", nativeQuery = true)
     List<Content> findByDateWithImgPath(@Param("groupId") Long groupId, @Param("date") String date);
+
+
 
 
 
