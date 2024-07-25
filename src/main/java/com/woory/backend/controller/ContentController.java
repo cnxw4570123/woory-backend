@@ -74,6 +74,16 @@ public class ContentController {
 		return ResponseEntity.ok(response);
 	}
 
+	@Operation(summary = "content 수정할 데이터 가져오기")
+	@GetMapping("/modify/{contentId}")
+	public ResponseEntity<Map<String, Object>> modifyContent(
+			@PathVariable("contentId") Long contentId){
+		ContentUpdateDto modifyContentInf = contentService.getModifyContentInf(contentId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠의 정보입니다..");
+		response.put("data", modifyContentInf);
+		return ResponseEntity.ok(response);
+	}
+
 	 @Operation(summary = "단독 content 조회")
 	 @GetMapping("/get/{contentId}")
 	 public ResponseEntity<Map<String, Object>> getContents(@PathVariable Long contentId) {

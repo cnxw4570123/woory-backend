@@ -172,6 +172,15 @@ public class ContentService {
 		return ContentWithUserDto.toContentWithUserDto(currentUserId,content);
 
 	}
+	public ContentUpdateDto getModifyContentInf(Long contentId) {
+		Long currentUserId = SecurityUtil.getCurrentUserId();
+		ContentWithUserDto contentWithUserDto = new ContentWithUserDto();
+		Content content = contentRepository.findByContentId(contentId)
+				.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		Long topicId = content.getTopic().getTopicId();
+		Topic topic = topicRepository.findByTopicId(topicId).orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
+		return ContentUpdateDto.ModifyForm(topic, content);
+	}
 
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
 		Content content = contentRepository.findByContentId(contentId)
