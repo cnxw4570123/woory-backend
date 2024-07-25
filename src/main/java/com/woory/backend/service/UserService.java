@@ -71,12 +71,13 @@ public class UserService {
 
 		User user = userRepository.findByUserIdWithGroups(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+		List<GroupUser> byUserUserId = groupUserRepository.findByUser_UserId(userId);
 
 		if (user.getUsername().startsWith("kakao")) {
 			String kakaoId = user.getUsername().split("kakao ")[1];
 			unlinkKakao(kakaoId);
 		}
-
+		groupUserRepository.deleteAll(byUserUserId);
 		userRepository.delete(user);
 	}
 
