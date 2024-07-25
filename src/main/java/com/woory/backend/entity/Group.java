@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,9 @@ public class Group {
 
 	@Column(name = "photoPath")
 	private String photoPath;
+
+	@Temporal(TemporalType.DATE)
+	private LocalDate groupRegDate;
 
 	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<GroupUser> groupUsers = new ArrayList<>();
