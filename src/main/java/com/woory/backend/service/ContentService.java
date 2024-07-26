@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.http.util.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -85,13 +84,14 @@ public class ContentService {
 
 		Content content = contentRepository.findById(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		String contentImgPath = content.getContentImgPath();
 
 		//본인의 것만 삭제하기 위해서
 		if (!content.getUsers().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE);
 		}
 		contentRepository.delete(content);
-		awsService.deleteImage(content.getContentImgPath());
+		awsService.deleteImage(contentImgPath);
 	}
 
 	@Transactional
