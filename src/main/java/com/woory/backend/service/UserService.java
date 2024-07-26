@@ -77,10 +77,10 @@ public class UserService {
 	public void deleteAccount() {
 		User user = handleGroupWhileDeletingUser();
 
-		// if (user.getUsername().startsWith("kakao")) {
-		// 	String kakaoId = user.getUsername().split("kakao ")[1];
-		// 	unlinkKakao(kakaoId);
-		// }
+		if (user.getUsername().startsWith("kakao")) {
+			String kakaoId = user.getUsername().split("kakao ")[1];
+			unlinkKakao(kakaoId);
+		}
 	}
 
 	@Transactional
