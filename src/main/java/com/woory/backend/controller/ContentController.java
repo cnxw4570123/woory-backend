@@ -35,6 +35,7 @@ public class ContentController {
 	private static final Logger log = LoggerFactory.getLogger(ContentController.class);
 
 	private final ContentService contentService;
+
 	@Autowired
 	public ContentController(ContentService contentService) {
 		this.contentService = contentService;
@@ -138,18 +139,14 @@ public class ContentController {
 	}
 
 	@PostMapping("/reaction")
-	public ResponseEntity<?> addOrUpdateReaction(@RequestBody ReactionReqDto reactionDto) {
-		try {
-			ReactionType reactionType = ReactionType.valueOf(reactionDto.getReaction().toUpperCase());
-			ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(reactionDto.getContentId(),
-				SecurityUtil.getCurrentUserId(), reactionType);
-			if (updatedReaction == null) {
-				return ResponseEntity.ok("표현이 삭제되었습니다");
-			}
-			return ResponseEntity.ok("표현이 추가되었습니다.");
-		} catch (Exception e) {
-			return ResponseEntity.badRequest().body(e.getMessage());
+	public ResponseEntity<Map<String, Object>> addOrUpdateReaction(@RequestBody ReactionReqDto reactionDto) {
+		ReactionType reactionType = ReactionType.valueOf(reactionDto.getReaction().toUpperCase());
+		ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(reactionDto.getContentId(),
+			SecurityUtil.getCurrentUserId(), reactionType);
+		if (updatedReaction == null) {
+			return ResponseEntity.ok(StatusUtil.getStatusMessage("표현이 삭제되었습니다"));
 		}
+		return ResponseEntity.ok(StatusUtil.getStatusMessage("표현이 추가되었습니다."));
 	}
 
 	@GetMapping("/reaction")

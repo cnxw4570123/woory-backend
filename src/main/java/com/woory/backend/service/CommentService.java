@@ -35,8 +35,12 @@ public class CommentService {
 	}
 
 	@Transactional
-	public Comment addComment(Long groupId, CommentRequestDto commentRequestDto) {
-		GroupUser groupUser = groupUserRepository.findByUser_UserIdAndGroup_GroupId(
+	public Comment addComment(CommentRequestDto commentRequestDto) {
+		Long groupId = contentRepository.findByContentId(commentRequestDto.getContentId())
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+			.getTopic().getGroup().getGroupId();
+
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(
 				commentRequestDto.getUserId(), groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
 
@@ -82,13 +86,21 @@ public class CommentService {
 	public void deleteCommentAndReplies(Long commentId) {
 		Comment comment = commentRepository.findByCommentId(commentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+		User writtenUser = comment.getUsers();
+		if(!writtenUser.getUserId().equals(SecurityUtil.getCurrentUserId())){
+			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
+		}
 		// deleteRecursive(comment);
 		commentRepository.delete(comment);
 	}
 
 	@Transactional
-	public CommentDto updateComment(Long groupId, Long commentId, String newText) {
+	public CommentDto updateComment(Long commentId, String newText) {
 		Long userId = SecurityUtil.getCurrentUserId();
+		Long groupId = commentRepository.findByCommentId(commentId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+			.getContent().getTopic().getGroup().getGroupId();
 		Comment comment = commentRepository.findByCommentId(commentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
@@ -104,8 +116,12 @@ public class CommentService {
 	}
 
 	// 댓글 조회 메서드 추가
-	public List<CommentReplyDto> getCommentsByContentId(Long groupId, Long contentId) {
+	public List<CommentReplyDto> getCommentsByContentId(Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
+		Long groupId = contentRepository.findByContentId(contentId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+			.getTopic().getGroup().getGroupId();
+
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
 

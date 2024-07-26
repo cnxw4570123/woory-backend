@@ -80,7 +80,7 @@ public class ContentService {
 	public void deleteContent(Long groupId, Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
 
 		Content content = contentRepository.findById(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
@@ -198,25 +198,46 @@ public class ContentService {
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
 		Content content = contentRepository.findContentWithTopic(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+
+		Long groupId = content.getTopic().getGroup().getGroupId();
+
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
+
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-		contentReactionRepository.findContentReactionByContent_ContentIdAndUser_UserId(
-			contentId, userId).ifPresent(cr -> {
-			if (cr.getReaction().equals(newReaction)) {
-				removeReaction(cr);
-			}
-		});
+		Optional<ContentReaction> reaction = contentReactionRepository.findContentReactionByContent_ContentIdAndUser_UserId(
+			contentId, userId);
 
-		ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
-		contentReactionRepository.save(contentReaction);
+		// 리액션을 한 번도 누르지 않았다면
+		if (reaction.isEmpty()) {
+			ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
+			contentReactionRepository.save(contentReaction);
+			return ContentReactionDto.toContentReactionDto(contentReaction);
+		}
+		// 이미 누른 것
+		ContentReaction contentReaction = reaction.get();
+		// 같은 리액션 또 누르면 -> 삭제
+		if (contentReaction.getReaction().equals(newReaction)) {
+			removeReaction(contentReaction);
+			return null;
+		}
 
-		return ContentReactionDto.toContentReactionDto(contentReaction);
-
+		contentReaction.setReaction(newReaction);
+		return ContentReactionDto.toContentReactionDto(contentReactionRepository.save(contentReaction));
 	}
 
 	//컨텐츠의 리액션 보기
 	public List<ContentReactionDto.ForStatistics> getReactionsByContentId(Long contentId) {
+		Content content = contentRepository.findByContentId(contentId)
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+
+		Long groupId = content.getTopic().getGroup().getGroupId();
+
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(SecurityUtil.getCurrentUserId(), groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
+
 		List<ContentReaction> reactions = contentReactionRepository.findByContentIdWithUser(contentId);
 
 		// Convert List<ContentReaction> to List<ContentReactionDto>
@@ -298,7 +319,7 @@ public class ContentService {
 
 	private void checkUserGroup(Long groupId, Long currentUserId) {
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(currentUserId, groupId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
 	}
 
 	public TopicDto getTopicOnly(LocalDate date, Long groupId) {
