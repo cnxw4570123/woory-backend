@@ -67,7 +67,7 @@ public class ContentService {
 		// 사진을 보넀을 경우
 		if (!TextUtils.isEmpty(images)) {
 			String newPhotoPath = awsService.saveFile(images);
-			content.setContentText(newPhotoPath);
+			content.setContentImgPath(newPhotoPath);
 		}
 
 		content.setUsers(user);
@@ -117,7 +117,7 @@ public class ContentService {
 		}
 		// images가 delete로 온다 -> 기존 사진을 삭제하려는 경우
 		if (newPhoto.equals("delete")) {
-			content.setContentText(null);
+			content.setContentImgPath(null);
 			awsService.deleteImage(contentImgPath);
 			return contentRepository.save(content);
 		}
