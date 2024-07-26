@@ -26,18 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AwsService {
 	private final AmazonS3 amazonS3;
-
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
-	@Value("${spring.servlet.multipart.max-file-size}")
-	private String maxSizeString;
 
 	public String saveFile(String base64File) {
-		MultipartFile file = PhotoUtils.base64ToMultipartFile(base64File);
 		if (base64File == null || base64File.isEmpty()) {
 			log.info("요청에 파일 없음 -> 이름만 수정");
 			return null;
 		}
+
+		MultipartFile file = PhotoUtils.base64ToMultipartFile(base64File);
 		String filename = file.getOriginalFilename();
 
 		log.info("File upload started : {}", filename);
@@ -64,14 +62,18 @@ public class AwsService {
 	}
 
 	public void deleteImage(String fileUrl) {
+		// 기존 이미지가 없는 경우 삭제하지 않고 넘어감.
+		if(TextUtils.isEmpty(fileUrl)){
+			return;
+		}
 		String[] urlParts = fileUrl.split("/");
-		String fileBucket = urlParts[2].split("\\.")[0];
+		String fileBucket = urlParts[3] + "/" + urlParts[4];
 
 		if (!fileBucket.equals(bucket)) {
 			throw new CustomException(ErrorCode.FILE_DOES_NOT_EXIST);
 		}
 
-		String objectKey = String.join("/", Arrays.copyOfRange(urlParts, 3, urlParts.length));
+		String objectKey = String.join("/", Arrays.copyOfRange(urlParts, 5, urlParts.length));
 
 		if (!amazonS3.doesObjectExist(bucket, objectKey)) {
 			throw new CustomException(ErrorCode.FILE_DOES_NOT_EXIST);

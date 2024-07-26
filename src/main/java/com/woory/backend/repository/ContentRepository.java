@@ -15,6 +15,8 @@ import java.util.Optional;
 
 @Repository
 public interface ContentRepository extends JpaRepository<Content, Long> {
+	@Query("select c from Content c join fetch c.users where c.contentId = :contentId")
+	Optional<Content> findContentWithUserByContentId(@Param("contentId") Long contentId);
 	Optional<Content> findByContentId(Long contentId);
 
 	boolean existsByTopic_TopicIdAndUsers_UserId(Long topicId, Long userId);
