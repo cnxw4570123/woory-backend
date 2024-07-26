@@ -2,7 +2,6 @@ package com.woory.backend.controller;
 
 import com.woory.backend.dto.*;
 
-import com.woory.backend.entity.Content;
 import com.woory.backend.entity.ReactionType;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
@@ -20,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,12 +34,9 @@ public class ContentController {
 	private static final Logger log = LoggerFactory.getLogger(ContentController.class);
 
 	private final ContentService contentService;
-	private final AwsService awsService;
-
 	@Autowired
-	public ContentController(ContentService contentService, AwsService awsService) {
+	public ContentController(ContentService contentService) {
 		this.contentService = contentService;
-		this.awsService = awsService;
 	}
 
 	// 컨텐츠 조회 - 글만 조회
@@ -53,10 +48,8 @@ public class ContentController {
 	@Operation(summary = "content 생성")
 	@PostMapping("/create")
 	public ResponseEntity<Map<String, Object>> createContent(@RequestBody ContentRequestDto requestDto) {
-
-		String photoPath = awsService.saveFile(requestDto.getImages());
 		contentService.createContent(requestDto.getGroupId(), requestDto.getTopicId(),
-			requestDto.getContentText(), photoPath);
+			requestDto.getContentText(), requestDto.getImages());
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: ");
 		//		response.put("data", content);
 		return ResponseEntity.ok(response);
@@ -68,9 +61,8 @@ public class ContentController {
 		@PathVariable("groupId") Long groupId,
 		@PathVariable("contentId") Long contentId,
 		@RequestBody ContentRequestDto requestDto) {
-		String photoPath = awsService.saveFile(requestDto.getImages());
 		contentService.updateContent(groupId, contentId, requestDto.getContentText(),
-			photoPath);
+			requestDto.getImages());
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
 		//		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);

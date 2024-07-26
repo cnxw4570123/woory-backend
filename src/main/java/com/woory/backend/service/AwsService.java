@@ -26,18 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class AwsService {
 	private final AmazonS3 amazonS3;
-
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
-	@Value("${spring.servlet.multipart.max-file-size}")
-	private String maxSizeString;
 
 	public String saveFile(String base64File) {
-		MultipartFile file = PhotoUtils.base64ToMultipartFile(base64File);
 		if (base64File == null || base64File.isEmpty()) {
 			log.info("요청에 파일 없음 -> 이름만 수정");
 			return null;
 		}
+
+		MultipartFile file = PhotoUtils.base64ToMultipartFile(base64File);
 		String filename = file.getOriginalFilename();
 
 		log.info("File upload started : {}", filename);
