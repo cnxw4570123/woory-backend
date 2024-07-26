@@ -196,25 +196,20 @@ public class ContentService {
 	}
 
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
-		Content content = contentRepository.findByContentId(contentId)
+		Content content = contentRepository.findContentWithTopic(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-
-		Optional<ContentReaction> byId = contentReactionRepository.findContentReactionByContent_ContentIdAndUser_UserId(
-			contentId, userId);
-
-		if (byId.isPresent()) {
-			ContentReaction contentReaction = byId.get();
-			if (contentReaction.getReaction() == newReaction) {
-				removeReaction(contentReaction);
-				return null;
-			}
-		}
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		contentReactionRepository.findContentReactionByContent_ContentIdAndUser_UserId(
+			contentId, userId).ifPresent(cr -> {
+			if (cr.getReaction().equals(newReaction)) {
+				removeReaction(cr);
+			}
+		});
+
 		ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
 		contentReactionRepository.save(contentReaction);
-
-		contentRepository.save(content);
 
 		return ContentReactionDto.toContentReactionDto(contentReaction);
 
