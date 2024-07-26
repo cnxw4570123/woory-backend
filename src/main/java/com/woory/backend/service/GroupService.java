@@ -236,7 +236,7 @@ public class GroupService {
 
 	private User getUser() {
 		Long userId = SecurityUtil.getCurrentUserId();
-		return userRepository.findByUserIdWithGroups(userId)
+		return userRepository.findByUserIdWithGroupUsers(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
