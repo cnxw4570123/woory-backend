@@ -43,7 +43,7 @@ public class CommentController {
     }
     @Operation(summary = "comment 삭제")
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable Long commentId) {
+    public ResponseEntity<Map<String, String>> deleteComment(@PathVariable("commentId") Long commentId) {
         commentService.deleteCommentAndReplies(commentId);
         return StatusUtil.getResponseMessage("댓글 삭제");
     }
@@ -51,7 +51,7 @@ public class CommentController {
     @PutMapping("/{commentId}")
 //    @PutMapping("/{groupId}/{commentId}")
     public ResponseEntity<Map<String, Object>> updateComment(
-            @PathVariable Long commentId,
+            @PathVariable("commentId") Long commentId,
             @RequestBody UpdateCommentRequest updateRequest) {
 
         CommentDto updatedComment = commentService.updateComment(commentId, updateRequest.getNewText());
@@ -62,7 +62,7 @@ public class CommentController {
     @Operation(summary = "comment 조회")
     @GetMapping("/{contentId}")
 //    @GetMapping("/{groupId}/{contentId}")
-    public ResponseEntity<Map<String, Object>> getCommentsByContentId(@PathVariable Long contentId) {
+    public ResponseEntity<Map<String, Object>> getCommentsByContentId(@PathVariable("contentId") Long contentId) {
         List<CommentReplyDto> comments = commentService.getCommentsByContentId(contentId);
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 조회되었습니다");
         response.put("data", comments);
