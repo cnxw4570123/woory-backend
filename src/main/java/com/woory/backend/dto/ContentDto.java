@@ -8,14 +8,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.woory.backend.entity.Content;
-import com.woory.backend.entity.ContentReaction;
-import com.woory.backend.entity.ReactionType;
 
 @Getter
 @Setter
