@@ -1,6 +1,7 @@
 package com.woory.backend.repository;
 
 import com.woory.backend.dto.GroupInfoDto;
+import com.woory.backend.entity.Group;
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
 
@@ -19,6 +20,10 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	@Query("UPDATE GroupUser gu SET gu.status = :newStatus WHERE gu.group.groupId = :groupId AND gu.user.userId = :userId")
 	void updateStatusByGroup_GroupIdAndUser_UserId(@Param("groupId") Long groupId, @Param("userId") Long userId,
 		@Param("newStatus") GroupStatus newStatus);
+
+	@Modifying(clearAutomatically = true)
+	@Query("delete from GroupUser gu where gu.user.userId = :userId")
+	void deleteGroupUsersAssociatedWithUser(@Param("userId") Long userId);
 
 	@Query("select gu from GroupUser gu where gu.group.groupId = :groupId order by gu.regDate asc")
 	List<GroupUser> findGroupUsersByGroupIdOrderByRegDate(@Param("groupId") Long groupId);
@@ -50,4 +55,6 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 		@Param("userId") long userId,
 		@Param("groupId") long groupId);
 
+	@Query("select gu from GroupUser gu join fetch gu.group where gu.user.userId = :userId")
+	List<GroupUser> findGroupUsersWithGroupByUserId(@Param("userId") Long userId);
 }
