@@ -62,14 +62,18 @@ public class AwsService {
 	}
 
 	public void deleteImage(String fileUrl) {
+		// 기존 이미지가 없는 경우 삭제하지 않고 넘어감.
+		if(TextUtils.isEmpty(fileUrl)){
+			return;
+		}
 		String[] urlParts = fileUrl.split("/");
-		String fileBucket = urlParts[2].split("\\.")[0];
+		String fileBucket = urlParts[3] + "/" + urlParts[4];
 
 		if (!fileBucket.equals(bucket)) {
 			throw new CustomException(ErrorCode.FILE_DOES_NOT_EXIST);
 		}
 
-		String objectKey = String.join("/", Arrays.copyOfRange(urlParts, 3, urlParts.length));
+		String objectKey = String.join("/", Arrays.copyOfRange(urlParts, 5, urlParts.length));
 
 		if (!amazonS3.doesObjectExist(bucket, objectKey)) {
 			throw new CustomException(ErrorCode.FILE_DOES_NOT_EXIST);
