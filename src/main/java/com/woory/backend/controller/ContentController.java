@@ -72,28 +72,28 @@ public class ContentController {
 		contentService.updateContent(groupId, contentId, requestDto.getContentText(),
 			photoPath);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
-//		response.put("data", updatedContent);
+		//		response.put("data", updatedContent);
 		return ResponseEntity.ok(response);
 	}
 
 	@Operation(summary = "content 수정할 데이터 가져오기")
 	@GetMapping("/modify/{contentId}")
 	public ResponseEntity<Map<String, Object>> modifyContent(
-			@PathVariable("contentId") Long contentId){
+		@PathVariable("contentId") Long contentId) {
 		ContentUpdateDto modifyContentInf = contentService.getModifyContentInf(contentId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠의 정보입니다..");
 		response.put("data", modifyContentInf);
 		return ResponseEntity.ok(response);
 	}
 
-	 @Operation(summary = "단독 content 조회")
-	 @GetMapping("/get/{contentId}")
-	 public ResponseEntity<Map<String, Object>> getContents(@PathVariable("contentId") Long contentId) {
-		 ContentWithUserDto content = contentService.getContent(contentId);
-	 	Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
-	 	response.put("content", content);
-	 	return ResponseEntity.ok(response);
-	 }
+	@Operation(summary = "단독 content 조회")
+	@GetMapping("/get/{contentId}")
+	public ResponseEntity<Map<String, Object>> getContents(@PathVariable("contentId") Long contentId) {
+		ContentWithUserAndTopicDto content = contentService.getContent(contentId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
+		response.put("data", content);
+		return ResponseEntity.ok(response);
+	}
 
 	@Operation(summary = "그룹 내 일간 컨텐츠 모두 조회")
 	@GetMapping("/{groupId}/get")
@@ -110,7 +110,7 @@ public class ContentController {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
 
-		if(parse.isAfter(LocalDateTime.now().plusHours(9L).toLocalDate())){
+		if (parse.isAfter(LocalDateTime.now().plusHours(9L).toLocalDate())) {
 			throw new CustomException(ErrorCode.CAN_NOT_VIEW_AFTER_TODAY);
 		}
 
