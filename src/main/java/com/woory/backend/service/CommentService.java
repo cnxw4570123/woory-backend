@@ -39,7 +39,10 @@ public class CommentService {
 	}
 
 	@Transactional
-	public Comment addComment(Long groupId, CommentRequestDto commentRequestDto) {
+	public Comment addComment(CommentRequestDto commentRequestDto) {
+		Long groupId = contentRepository.findByContentId(commentRequestDto.getContentId())
+				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+				.getTopic().getGroup().getGroupId();
 		Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(
 				commentRequestDto.getUserId(), groupId);
 
@@ -50,15 +53,13 @@ public class CommentService {
 		if (contentOptional.isEmpty()) {
 			throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
 		}
-		Optional<User> userOptional = userRepository.findByUserIdWithGroups(commentRequestDto.getUserId());
+		Optional<User> userOptional = userRepository.findByUserIdWithGroupUsers(commentRequestDto.getUserId());
 		if (userOptional.isEmpty()) {
 			throw new CustomException(ErrorCode.USER_NOT_FOUND);
 		}
 		GroupStatus status = byUserUserIdAndGroupGroupId
 			.orElseThrow(() -> new NoSuchElementException("가족에서 확인되지 않는 유저입니다.")).getStatus();
-		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
-		}
+
 
 		if (contentOptional.isPresent() && userOptional.isPresent()) {
 			Content content = contentOptional.get();
@@ -93,7 +94,7 @@ public class CommentService {
 
 	public  Comment addReply(CommentRequestDto commentDto) {
 
-		Optional<User> userOptional = userRepository.findByUserIdWithGroups(commentDto.getUserId());
+		Optional<User> userOptional = userRepository.findByUserIdWithGroupUsers(commentDto.getUserId());
 		Optional<Content> contentOptional = contentRepository.findByContentId(commentDto.getContentId());
 		Content content = contentOptional
 				.orElseThrow(()-> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
@@ -130,16 +131,16 @@ public class CommentService {
 	}
 
 	@Transactional
-	public CommentDto updateComment(Long groupId, Long commentId, String newText) {
+	public CommentDto updateComment(Long commentId, String newText) {
 		Long userId = SecurityUtil.getCurrentUserId();
+		Long groupId = commentRepository.findByCommentId(commentId)
+				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+				.getContent().getTopic().getGroup().getGroupId();
 		Comment comment = commentRepository.findByCommentId(commentId)
 				.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
 
-		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
-		}
 
 		if (!comment.getUsers().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
@@ -151,13 +152,13 @@ public class CommentService {
 	}
 
 	// 댓글 조회 메서드 추가
-	public List<CommentReplyDto> getCommentsByContentId(Long groupId, Long contentId) {
+	public List<CommentReplyDto> getCommentsByContentId(Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
+		Long groupId = contentRepository.findByContentId(contentId)
+				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+				.getTopic().getGroup().getGroupId();
 		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
-		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new CustomException(ErrorCode.USER_BANNED_OR_NON_MEMBER);
-		}
 
 		List<Comment> comments = commentRepository.findByContent_ContentId(contentId);
 		List<Comment> topLevelComments = comments.stream()
