@@ -34,6 +34,4 @@ public class GroupUser {
 
     @Column(name = "lastUpdatedDate")
     private Date lastUpdatedDate;
-
-    private String image;
 }
