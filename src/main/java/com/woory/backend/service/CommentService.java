@@ -15,11 +15,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -43,8 +39,10 @@ public class CommentService {
 		Long groupId = contentRepository.findByContentId(commentRequestDto.getContentId())
 				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
 				.getTopic().getGroup().getGroupId();
-		Optional<GroupUser> byUserUserIdAndGroupGroupId = groupUserRepository.findByUser_UserIdAndGroup_GroupId(
-				commentRequestDto.getUserId(), groupId);
+		GroupUser groupUser = groupUserRepository.findByUser_UserIdAndGroup_GroupId(
+				commentRequestDto.getUserId(), groupId)
+    Content content = contentRepository.findByContentId(commentRequestDto.getContentId())
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 
 		if (byUserUserIdAndGroupGroupId.isEmpty()) {
 			throw new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP);
@@ -61,73 +59,48 @@ public class CommentService {
 			.orElseThrow(() -> new NoSuchElementException("가족에서 확인되지 않는 유저입니다.")).getStatus();
 
 
-		if (contentOptional.isPresent() && userOptional.isPresent()) {
-			Content content = contentOptional.get();
-			User user = userOptional.get();
+		User user = userRepository.findByUserIdWithGroupUsers(commentRequestDto.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-			Comment parentComment = null;
-			if (commentRequestDto.getParentCommentId() != null) {
-				Optional<Comment> byCommentId = commentRepository.findByCommentId(commentRequestDto.getParentCommentId());
-				if (byCommentId.isEmpty()) {
-					throw new CustomException(ErrorCode.PARENT_COMMENT_NOT_FOUND);
-				}
-				parentComment = byCommentId.get();
-				if (parentComment != null && parentComment.getParentComment() != null) {
-					throw new CustomException(ErrorCode.REPLY_TO_REPLY_NOT_ALLOWED);
-				}
+		Comment parentComment = null;
+		if (commentRequestDto.getParentCommentId() != null) {
+			parentComment = commentRepository.findByCommentId(commentRequestDto.getParentCommentId())
+				.orElseThrow(() -> new CustomException(ErrorCode.PARENT_COMMENT_NOT_FOUND));
+
+			if (parentComment.getParentComment() != null) {
+				throw new CustomException(ErrorCode.REPLY_TO_REPLY_NOT_ALLOWED);
 			}
-			Date now = new Date();
-
-
-			Comment comment = new Comment();
-			comment.setCommentText(commentRequestDto.getCommentText());
-			comment.setCommentDate(now);
-			comment.setContent(content);
-			comment.setUsers(user);
-			comment.setParentComment(parentComment);
-
-			return commentRepository.save(comment);
-		} else {
-			throw new RuntimeException("Content or User not found");
 		}
+
+		return commentRepository.save(Comment.toComment(commentRequestDto, parentComment, content, user));
+
+
 	}
 
-	public  Comment addReply(CommentRequestDto commentDto) {
-
-		Optional<User> userOptional = userRepository.findByUserIdWithGroupUsers(commentDto.getUserId());
-		Optional<Content> contentOptional = contentRepository.findByContentId(commentDto.getContentId());
-		Content content = contentOptional
-				.orElseThrow(()-> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-		User user = userOptional
-				.orElseThrow(()-> new CustomException(ErrorCode.USER_NOT_FOUND));
+	public Comment addReply(CommentRequestDto commentDto) {
+		Content content = contentRepository.findByContentId(commentDto.getContentId())
+			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		User user = userRepository.findByUserIdWithGroupUsers(commentDto.getUserId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Comment parentComment = null;
 
-		Optional<Comment> byCommentId = commentRepository.findByCommentId(commentDto.getParentCommentId());
+		parentComment = commentRepository.findByCommentId(commentDto.getParentCommentId())
+			.orElseThrow(() -> new CustomException(ErrorCode.PARENT_COMMENT_NOT_FOUND));
 
-		if (byCommentId.isEmpty()) {
-			throw new CustomException(ErrorCode.PARENT_COMMENT_NOT_FOUND);
-		}
-		parentComment = byCommentId.get();
-		if (parentComment != null && parentComment.getParentComment() != null) {
+		if (parentComment.getParentComment() != null) {
 			throw new CustomException(ErrorCode.REPLY_TO_REPLY_NOT_ALLOWED);
 		}
-		Date now = new Date();
 
-		Comment comment = new Comment();
-		comment.setCommentText(commentDto.getCommentText());
-		comment.setCommentDate(now);
-		comment.setContent(content);
-		comment.setUsers(user);
-		comment.setParentComment(parentComment);
-		return commentRepository.save(comment);
+		return commentRepository.save(Comment.toComment(commentDto, parentComment, content, user));
 	}
 
 	@Transactional
 	public void deleteCommentAndReplies(Long commentId) {
 		Comment comment = commentRepository.findByCommentId(commentId)
-				.orElseThrow(() -> new RuntimeException("댓글을 찾을 수 없습니다."));
-		deleteRecursive(comment);
+			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+		// deleteRecursive(comment);
+		commentRepository.delete(comment);
 	}
 
 	@Transactional
@@ -137,9 +110,9 @@ public class CommentService {
 				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
 				.getContent().getTopic().getGroup().getGroupId();
 		Comment comment = commentRepository.findByCommentId(commentId)
-				.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
-		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
+           .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
 
 
 		if (!comment.getUsers().getUserId().equals(userId)) {
@@ -157,18 +130,19 @@ public class CommentService {
 		Long groupId = contentRepository.findByContentId(contentId)
 				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
 				.getTopic().getGroup().getGroupId();
-		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP)).getStatus();
+	
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
+
 
 		List<Comment> comments = commentRepository.findByContent_ContentId(contentId);
 		List<Comment> topLevelComments = comments.stream()
-				.filter(comment -> comment.getParentComment() == null)
-				.collect(Collectors.toList());
+			.filter(comment -> comment.getParentComment() == null)
+			.toList();
 		return topLevelComments.stream()
-				.map(comment -> {
-					return CommentMapper.toDTO(comment,userId);
-				})
-				.collect(Collectors.toList());
+			.map(comment -> {
+				return CommentMapper.toDTO(comment, userId);
+			}).toList();
 	}
 
 	private void deleteRecursive(Comment comment) {
@@ -180,6 +154,7 @@ public class CommentService {
 
 		commentRepository.delete(comment);
 	}
+
 	private boolean checkUserEditPermission(Long currentUserId, Long commentUserId) {
 		// Implement your logic here to check if the current user has permission to edit
 		boolean checkPermission = false;

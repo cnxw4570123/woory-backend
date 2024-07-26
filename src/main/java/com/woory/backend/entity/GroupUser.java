@@ -26,7 +26,7 @@ public class GroupUser {
     private Group group;
 
     @Column(name = "status")
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private GroupStatus status;
 
     @Column(name = "regDate")
@@ -34,6 +34,4 @@ public class GroupUser {
 
     @Column(name = "lastUpdatedDate")
     private Date lastUpdatedDate;
-
-    private String image;
 }

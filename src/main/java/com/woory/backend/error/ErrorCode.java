@@ -32,6 +32,7 @@ public enum ErrorCode {
 
 	GROUP_CREATION_LIMIT_EXCEEDED(400, "GROUP_001", "사용자는 5개 이상의 가족그룹을 가질수 없습니다."),
 	NO_PERMISSION_TO_DELETE_GROUP(403, "GROUP_002", "가족을 삭제할 권한을 가지고 있지 않습니다."),
+	NO_PERMISSION_TO_KICK_MEMBER(403, "GROUP_003", "가족을 추방할 권한이 없습니다."),
 	USER_ALREADY_MEMBER(400, "GROUP_003", "사용자는 이미 가족에 포함되어있습니다."),
 	NO_PERMISSION_TO_UPDATE_GROUP(400, "GROUP_004", "가족을 수정할 권한이 없습니다."),
 	// UserService,

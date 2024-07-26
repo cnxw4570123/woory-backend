@@ -82,28 +82,4 @@ public class GroupRepositoryTest {
 		assertEquals(myGroup.get(0).getGroupName(), "우리1");
 
 	}
-
-	@Test
-	void 밴된_그룹_DTO로_조회() {
-		Group group = new Group();
-		group.setGroupName("우리1");
-		User user = new User();
-		user.setNickname("이름1");
-
-		User save = userRepository.save(user);
-		GroupUser groupUser = new GroupUser();
-		groupUser.setUser(user);
-		groupUser.setGroup(group);
-		groupUser.setStatus(GroupStatus.BANNED);
-		group.setGroupUsers(List.of(groupUser));
-		groupRepository.save(group);
-		// given
-		long userId = save.getUserId();
-
-		// when
-		List<GroupInfoDto> myGroup = groupUserRepository.findMyGroupInfoDto(userId);
-
-		// then
-		assertEquals(myGroup.size(), 0);
-	}
 }

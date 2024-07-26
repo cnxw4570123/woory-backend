@@ -48,7 +48,7 @@ public class TopicDto {
 			.build();
 	}
 
-	public static TopicDto fromTopicWithContent(Long userId, Topic topic, boolean hasPrevDay, boolean hasNextDay) {
+	public static TopicDto fromTopicWithContents(Long userId, Topic topic, boolean hasPrevDay, boolean hasNextDay) {
 		TopicDtoBuilder contents1 = TopicDto.builder()
 			.topicContent(topic.getTopicContent())
 			.topicId(topic.getTopicId())
@@ -75,5 +75,4 @@ public class TopicDto {
 			.issueDate(topic.getIssueDate())
 			.build();
 	}
-
 }

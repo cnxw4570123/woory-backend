@@ -8,46 +8,30 @@ import com.woory.backend.repository.*;
 import com.woory.backend.utils.SecurityUtil;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
+import org.apache.http.util.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ContentService {
 
 	private static final Logger log = LoggerFactory.getLogger(ContentService.class);
 	private final TopicSetRepository topicSetRepository;
 	private final GroupRepository groupRepository;
-	private ContentRepository contentRepository;
-	private UserRepository userRepository;
-	private GroupUserRepository groupUserRepository;
-	private TopicRepository topicRepository;
+	private final ContentRepository contentRepository;
+	private final UserRepository userRepository;
+	private final GroupUserRepository groupUserRepository;
+	private final TopicRepository topicRepository;
 	private final ContentReactionRepository contentReactionRepository;
-
-	@Autowired
-	public ContentService(UserRepository userRepository,
-		ContentRepository contentRepository, GroupUserRepository groupUserRepository,
-		TopicRepository topicRepository, ContentReactionRepository contentReactionRepository,
-		TopicSetRepository topicSetRepository, GroupRepository groupRepository) {
-		this.userRepository = userRepository;
-		this.contentRepository = contentRepository;
-		this.groupUserRepository = groupUserRepository;
-		this.topicRepository = topicRepository;
-		this.contentReactionRepository = contentReactionRepository;
-		this.topicSetRepository = topicSetRepository;
-		this.groupRepository = groupRepository;
-	}
+	private final AwsService awsService;
 
 	public ContentDto getContentById(Long contentId) {
 		Content content = contentRepository.findByContentId(contentId)
@@ -62,12 +46,12 @@ public class ContentService {
 	}
 
 	@Transactional
-	public Content createContent(Long groupId, Long topicId, String contentText, String contentImgPath) {
+	public Content createContent(Long groupId, Long topicId, String contentText, String images) {
 		Long userId = SecurityUtil.getCurrentUserId();
-		User user = userRepository.findByUserIdWithGroups(userId)
+		User user = userRepository.findByUserIdWithGroupUsers(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-				.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		Topic topic = topicRepository.findById(topicId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
 		// 사용자가 이미 해당 주제에 콘텐츠를 작성했는지 확인
@@ -79,9 +63,12 @@ public class ContentService {
 		// Content 생성 및 저장 로직
 		Content content = new Content();
 		content.setContentText(contentText);
-		if (contentImgPath != null) {
-			content.setContentImgPath(contentImgPath);
+		// 사진을 보넀을 경우
+		if (!TextUtils.isEmpty(images)) {
+			String newPhotoPath = awsService.saveFile(images);
+			content.setContentImgPath(newPhotoPath);
 		}
+
 		content.setUsers(user);
 		content.setTopic(topic);
 		content.setContentRegDate(new Date());
@@ -92,52 +79,59 @@ public class ContentService {
 	@Transactional
 	public void deleteContent(Long groupId, Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
-		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
-			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND)).getStatus();
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+
 		Content content = contentRepository.findById(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		String contentImgPath = content.getContentImgPath();
 
 		//본인의 것만 삭제하기 위해서
 		if (!content.getUsers().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE);
 		}
-		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new CustomException(ErrorCode.NO_PERMISSION_TO_DELETE);
-		}
 		contentRepository.delete(content);
+		awsService.deleteImage(contentImgPath);
 	}
 
 	@Transactional
-	public Content updateContent(Long groupId, Long contentId, String contentText, String contentImg) {
+	public Content updateContent(Long groupId, Long contentId, String contentText, String newPhoto) {
 		Long userId = SecurityUtil.getCurrentUserId();
 
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
-		Content content = contentRepository.findById(contentId)
+
+		Content content = contentRepository.findContentWithUserByContentId(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-		GroupStatus status = getGroupStatus(userId, groupId);
 
 		if (!content.getUsers().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_UPDATE);
 		}
-
-		if (status == GroupStatus.BANNED || status == GroupStatus.NON_MEMBER) {
-			throw new CustomException(ErrorCode.NO_PERMISSION_TO_UPDATE);
-		}
 		content.setContentText(contentText);
-		if (contentImg != null) {
-			content.setContentImgPath(contentImg); // 사진 경로 수정
+
+		String contentImgPath = content.getContentImgPath();
+
+		// images가 null값으로 온다 -> 텍스트만 수정하는 경우
+		if (TextUtils.isEmpty(newPhoto)) {
+			return contentRepository.save(content);
 		}
-		return contentRepository.save(content);
+		// images가 delete로 온다 -> 기존 사진을 삭제하려는 경우
+		if (newPhoto.equals("delete")) {
+			content.setContentImgPath(null);
+			awsService.deleteImage(contentImgPath);
+			return contentRepository.save(content);
+		}
+
+		// images가 base64 파일로 오는 경우 -> 기존 사진을 수정
+		// 혹시 모를 오류가 발생하더라도
+		String newPhotoPath = awsService.saveFile(newPhoto);
+		content.setContentImgPath(newPhotoPath); // 사진 경로 수정
+		Content save = contentRepository.save(content);
+		awsService.deleteImage(contentImgPath);
+
+		return save;
 
 	}
-
-	// public List<ContentDto> getContentsByRegDateLike(Long groupId, String dateStr) {
-	// 	List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr);
-	// 	return contents.stream()
-	// 		.map(this::convertToDTO1)
-	// 		.collect(Collectors.toList());
-	// }
 
 	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr) {
 		List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr + "%");
@@ -180,14 +174,14 @@ public class ContentService {
 			.collect(Collectors.toList());
 	}
 
-	public ContentWithUserDto getContent(Long contentId) {
+	public ContentWithUserAndTopicDto getContent(Long contentId) {
 		Long currentUserId = SecurityUtil.getCurrentUserId();
-		Content content = contentRepository.findByContentId(contentId)
+		Content content = contentRepository.findContentWithTopic(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+
 		Long groupId = content.getTopic().getGroup().getGroupId();
 		checkUserGroup(groupId, currentUserId);
-		return ContentWithUserDto.toContentWithUserDto(currentUserId, content);
-
+		return ContentWithUserAndTopicDto.fromTopicAndContent(currentUserId, content, content.getTopic());
 	}
 
 	public ContentUpdateDto getModifyContentInf(Long contentId) {
@@ -202,25 +196,20 @@ public class ContentService {
 	}
 
 	public ContentReactionDto addOrUpdateReaction(Long contentId, Long userId, ReactionType newReaction) {
-		Content content = contentRepository.findByContentId(contentId)
+		Content content = contentRepository.findContentWithTopic(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-
-		Optional<ContentReaction> byId = contentReactionRepository.findContentReactionByContent_ContentIdAndUser_UserId(
-			contentId, userId);
-
-		if (byId.isPresent()) {
-			ContentReaction contentReaction = byId.get();
-			if (contentReaction.getReaction() == newReaction) {
-				removeReaction(contentReaction);
-				return null;
-			}
-		}
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		contentReactionRepository.findContentReactionByContent_ContentIdAndUser_UserId(
+			contentId, userId).ifPresent(cr -> {
+			if (cr.getReaction().equals(newReaction)) {
+				removeReaction(cr);
+			}
+		});
+
 		ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
 		contentReactionRepository.save(contentReaction);
-
-		contentRepository.save(content);
 
 		return ContentReactionDto.toContentReactionDto(contentReaction);
 
@@ -300,17 +289,16 @@ public class ContentService {
 			return topicRepository.save(topic2);
 		});
 
-		boolean hasPrevDay
-			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.minusDays(1L));
+		boolean hasPrevDay = topicRepository.existsByGroupRegDate(groupId, date);
 		boolean hasNextDay
 			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.plusDays(1L));
 
-		return TopicDto.fromTopicWithContent(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay);
+		return TopicDto.fromTopicWithContents(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay);
 	}
 
 	private void checkUserGroup(Long groupId, Long currentUserId) {
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(currentUserId, groupId)
-				.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 	}
 
 	public TopicDto getTopicOnly(LocalDate date, Long groupId) {
