@@ -13,6 +13,6 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUsername(String username);
 	Optional<User> findByUserId(Long userId);
-	@Query("select u from User u left join fetch u.groupUsers gu where u.userId = :userId and (gu is null or gu.status != com.woory.backend.entity.GroupStatus.BANNED)")
+	@Query("select u from User u left join fetch u.groupUsers gu where u.userId = :userId")
 	Optional<User> findByUserIdWithGroups(@Param("userId") long id);
 }

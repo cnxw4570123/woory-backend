@@ -177,17 +177,18 @@ public class GroupService {
 		Long loginId = SecurityUtil.getCurrentUserId();
 		//로그인한사람이 그룹장이면 벤이 가능
 		GroupStatus status = getGroupStatus(groupId, loginId);
-		if (status == GroupStatus.GROUP_LEADER) {
-			groupUserRepository.updateStatusByGroup_GroupIdAndUser_UserId(groupId, userId, GroupStatus.BANNED);
+		if (status != GroupStatus.GROUP_LEADER) {
+			throw new CustomException(ErrorCode.NO_PERMISSION_TO_KICK_MEMBER);
 		}
+		groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 	}
 
 	private GroupStatus getGroupStatus(Long groupId, Long loginId) {
-		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(loginId, groupId)
+		return groupUserRepository.findByUser_UserIdAndGroup_GroupId(loginId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND)).getStatus();
-		return status;
 	}
 
+	@Deprecated
 	public String generateInviteLink(Long groupId) {
 		//로그인한 유저
 		Long userId = SecurityUtil.getCurrentUserId();
@@ -201,7 +202,7 @@ public class GroupService {
 	@Transactional
 	public void joinGroup(Long groupId) {
 		if (!groupRepository.existsById(groupId)) {
-			throw new IllegalArgumentException("Invalid group ID");
+			throw new CustomException(ErrorCode.GROUP_NOT_FOUND);
 		}
 
 		// 로그인된 유저 가져오기
@@ -235,9 +236,8 @@ public class GroupService {
 
 	private User getUser() {
 		Long userId = SecurityUtil.getCurrentUserId();
-		User byUserId = userRepository.findByUserIdWithGroups(userId)
+		return userRepository.findByUserIdWithGroups(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-		return byUserId;
 	}
 
 	//그룹에 속한 유저인지 아닌지 확인
@@ -278,7 +278,7 @@ public class GroupService {
 	}
 
 	public List<GroupUser> activeMember(Long groupId) {
-		return groupUserRepository.findActiveGroupUsersByGroupIdOrderByRegDate(groupId);
+		return groupUserRepository.findGroupUsersByGroupIdOrderByRegDate(groupId);
 	}
 
 	public GroupInfoDto getGroupInfo(long groupId) {

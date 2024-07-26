@@ -1,6 +1,7 @@
 package com.woory.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.woory.backend.dto.CommentRequestDto;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -53,5 +54,15 @@ public class Comment {
 	public void removeReply(Comment reply) {
 		replies.remove(reply);
 		reply.setParentComment(null);
+	}
+
+	public static Comment toComment(CommentRequestDto requestDto, Comment parentComment, Content content, User user) {
+		return Comment.builder()
+			.commentText(requestDto.getCommentText())
+			.content(content)
+			.parentComment(parentComment)
+			.users(user)
+			.commentDate(new Date())
+			.build();
 	}
 }
