@@ -28,7 +28,7 @@ public enum ErrorCode {
 	CONTENT_NOT_FOUND(404, "CONTENT_005", "해당 컨텐츠를 찾을 수 없습니다."),
 	CAN_NOT_VIEW_AFTER_TODAY(400, "CONTENT_006", "해당 날짜의 토픽은 아직 생성되지 않았습니다."),
 	CAN_NOT_VIEW_BEFORE_GROUP_REG_DATE(400, "CONTENT_007", "그룹 생성일 이전의 토픽은 조회할 수 없습니다."),
-	CONTENT_ALREADY_EXISTS(404,"CONTENT_008" , "이미 작성한 글이 있습니다."),
+	CONTENT_ALREADY_EXISTS(400, "CONTENT_008", "이미 작성한 글이 있습니다."),
 
 	GROUP_CREATION_LIMIT_EXCEEDED(400, "GROUP_001", "사용자는 5개 이상의 가족그룹을 가질수 없습니다."),
 	NO_PERMISSION_TO_DELETE_GROUP(403, "GROUP_002", "가족을 삭제할 권한을 가지고 있지 않습니다."),

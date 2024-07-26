@@ -37,27 +37,15 @@ public class CommentService {
 	@Transactional
 	public Comment addComment(CommentRequestDto commentRequestDto) {
 		Long groupId = contentRepository.findByContentId(commentRequestDto.getContentId())
-				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
-				.getTopic().getGroup().getGroupId();
-		GroupUser groupUser = groupUserRepository.findByUser_UserIdAndGroup_GroupId(
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+			.getTopic().getGroup().getGroupId();
+
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(
 				commentRequestDto.getUserId(), groupId)
-    Content content = contentRepository.findByContentId(commentRequestDto.getContentId())
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
+
+		Content content = contentRepository.findByContentId(commentRequestDto.getContentId())
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-
-		if (byUserUserIdAndGroupGroupId.isEmpty()) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP);
-		}
-		Optional<Content> contentOptional = contentRepository.findByContentId(commentRequestDto.getContentId());
-		if (contentOptional.isEmpty()) {
-			throw new CustomException(ErrorCode.CONTENT_NOT_FOUND);
-		}
-		Optional<User> userOptional = userRepository.findByUserIdWithGroupUsers(commentRequestDto.getUserId());
-		if (userOptional.isEmpty()) {
-			throw new CustomException(ErrorCode.USER_NOT_FOUND);
-		}
-		GroupStatus status = byUserUserIdAndGroupGroupId
-			.orElseThrow(() -> new NoSuchElementException("가족에서 확인되지 않는 유저입니다.")).getStatus();
-
 
 		User user = userRepository.findByUserIdWithGroupUsers(commentRequestDto.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
@@ -73,7 +61,6 @@ public class CommentService {
 		}
 
 		return commentRepository.save(Comment.toComment(commentRequestDto, parentComment, content, user));
-
 
 	}
 
@@ -99,6 +86,11 @@ public class CommentService {
 	public void deleteCommentAndReplies(Long commentId) {
 		Comment comment = commentRepository.findByCommentId(commentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+
+		User writtenUser = comment.getUsers();
+		if(!writtenUser.getUserId().equals(SecurityUtil.getCurrentUserId())){
+			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
+		}
 		// deleteRecursive(comment);
 		commentRepository.delete(comment);
 	}
@@ -107,13 +99,12 @@ public class CommentService {
 	public CommentDto updateComment(Long commentId, String newText) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		Long groupId = commentRepository.findByCommentId(commentId)
-				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
-				.getContent().getTopic().getGroup().getGroupId();
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+			.getContent().getTopic().getGroup().getGroupId();
 		Comment comment = commentRepository.findByCommentId(commentId)
-           .orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
-
 
 		if (!comment.getUsers().getUserId().equals(userId)) {
 			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
@@ -128,12 +119,11 @@ public class CommentService {
 	public List<CommentReplyDto> getCommentsByContentId(Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		Long groupId = contentRepository.findByContentId(contentId)
-				.orElseThrow(()-> new CustomException(ErrorCode.GROUP_NOT_FOUND))
-				.getTopic().getGroup().getGroupId();
-	
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
+			.getTopic().getGroup().getGroupId();
+
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
-
 
 		List<Comment> comments = commentRepository.findByContent_ContentId(contentId);
 		List<Comment> topLevelComments = comments.stream()
