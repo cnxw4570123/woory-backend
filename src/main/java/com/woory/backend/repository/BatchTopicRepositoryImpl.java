@@ -28,7 +28,7 @@ public class BatchTopicRepositoryImpl implements BatchTopicRepository{
 	public int[] saveAll(List<TopicDto> topics) {
 		log.info("토픽 배치 저장 실행");
 		return jdbcTemplate.batchUpdate(
-			"INSERT INTO TOPIC(topic_content, issue_date, group_id, topic_byte) VALUES(:topicContent, :issueDate, :groupId, :topicByte)",
+			"INSERT INTO topic(topic_content, issue_date, group_id, topic_byte) VALUES(:topicContent, :issueDate, :groupId, :topicByte)",
 			SqlParameterSourceUtils.createBatch(topics)
 		);
 	}
