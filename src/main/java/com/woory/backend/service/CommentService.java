@@ -15,10 +15,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CommentService {
@@ -46,7 +43,7 @@ public class CommentService {
 		Content content = contentRepository.findByContentId(commentRequestDto.getContentId())
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 
-		User user = userRepository.findByUserIdWithGroups(commentRequestDto.getUserId())
+		User user = userRepository.findByUserIdWithGroupUsers(commentRequestDto.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Comment parentComment = null;
@@ -66,7 +63,7 @@ public class CommentService {
 	public Comment addReply(CommentRequestDto commentDto) {
 		Content content = contentRepository.findByContentId(commentDto.getContentId())
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-		User user = userRepository.findByUserIdWithGroups(commentDto.getUserId())
+		User user = userRepository.findByUserIdWithGroupUsers(commentDto.getUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Comment parentComment = null;

@@ -32,6 +32,7 @@ public class Group {
 	private LocalDate groupRegDate;
 
 	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OrderBy("regDate asc")
 	private List<GroupUser> groupUsers = new ArrayList<>();
 
 	@OneToMany(mappedBy = "group", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
