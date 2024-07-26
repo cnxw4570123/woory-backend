@@ -5,6 +5,7 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.woory.backend.entity.Content;
+import com.woory.backend.entity.Topic;
 import com.woory.backend.entity.User;
 
 import lombok.AllArgsConstructor;
@@ -19,7 +20,9 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ContentWithUserDto {
+public class ContentWithUserAndTopicDto {
+	private Long topicId;
+	private String topicContent;
 	private Long userId;
 	private String name;
 	private String profileUrl;
@@ -29,28 +32,24 @@ public class ContentWithUserDto {
 	private String contentImgPath;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 	private Date contentRegDate;
-	private Integer commentsCount;
-	private Integer reactionCount;
 
-	public static ContentWithUserDto toContentWithUserDto(Long userId, Content content) {
+	public static ContentWithUserAndTopicDto fromTopicAndContent(Long curUserId, Content content, Topic t) {
 		User user = content.getUsers();
-		Long contentUserId = user.getUserId();
+		Long userId1 = user.getUserId();
 		String nickname = user.getNickname();
 		String profileImage = user.getProfileImage();
-		int commentsCount = content.getComments().size();
-		int size = content.getContentReactions().size();
-		return ContentWithUserDto.builder()
-			.userId(contentUserId)
+		return ContentWithUserAndTopicDto.builder()
+			.topicId(t.getTopicId())
+			.topicContent(t.getTopicContent())
+			.userId(userId1)
 			.name(nickname)
 			.profileUrl(profileImage)
-			.contentId(content.getContentId())
 			.contentImgPath(content.getContentImgPath())
 			.contentText(content.getContentText())
 			.contentRegDate(content.getContentRegDate())
-			.IsEdit(userId.equals(contentUserId))
-			.commentsCount(commentsCount)
-			.reactionCount(size)
+			.IsEdit(userId1.equals(curUserId))
 			.build();
-	}
 
+
+	}
 }

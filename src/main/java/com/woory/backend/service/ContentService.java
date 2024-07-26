@@ -171,14 +171,14 @@ public class ContentService {
 			.collect(Collectors.toList());
 	}
 
-	public ContentWithUserDto getContent(Long contentId) {
+	public ContentWithUserAndTopicDto getContent(Long contentId) {
 		Long currentUserId = SecurityUtil.getCurrentUserId();
-		Content content = contentRepository.findByContentId(contentId)
+		Content content = contentRepository.findContentWithTopic(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+
 		Long groupId = content.getTopic().getGroup().getGroupId();
 		checkUserGroup(groupId, currentUserId);
-		return ContentWithUserDto.toContentWithUserDtoWithoutCounts(currentUserId, content);
-
+		return ContentWithUserAndTopicDto.fromTopicAndContent(currentUserId, content, content.getTopic());
 	}
 
 	public ContentUpdateDto getModifyContentInf(Long contentId) {
@@ -295,7 +295,7 @@ public class ContentService {
 		boolean hasNextDay
 			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.plusDays(1L));
 
-		return TopicDto.fromTopicWithContent(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay);
+		return TopicDto.fromTopicWithContents(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay);
 	}
 
 	private void checkUserGroup(Long groupId, Long currentUserId) {
