@@ -8,6 +8,7 @@ import com.woory.backend.error.ErrorCode;
 import com.woory.backend.service.AwsService;
 import com.woory.backend.service.ContentService;
 
+import com.woory.backend.utils.SecurityUtil;
 import com.woory.backend.utils.StatusUtil;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -141,7 +142,7 @@ public class ContentController {
 		try {
 			ReactionType reactionType = ReactionType.valueOf(reactionDto.getReaction().toUpperCase());
 			ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(reactionDto.getContentId(),
-				reactionDto.getUserId(), reactionType);
+				SecurityUtil.getCurrentUserId(), reactionType);
 			if (updatedReaction == null) {
 				return ResponseEntity.ok("표현이 삭제되었습니다");
 			}
