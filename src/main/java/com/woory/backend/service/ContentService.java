@@ -14,13 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,7 +59,7 @@ public class ContentService {
 	@Transactional
 	public Content createContent(Long groupId, Long topicId, String contentText, String contentImgPath) {
 		Long userId = SecurityUtil.getCurrentUserId();
-		User user = userRepository.findByUserIdWithGroups(userId)
+		User user = userRepository.findByUserIdWithGroupUsers(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
