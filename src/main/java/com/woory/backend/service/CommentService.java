@@ -36,18 +36,17 @@ public class CommentService {
 
 	@Transactional
 	public Comment addComment(CommentRequestDto commentRequestDto) {
-		Long groupId = contentRepository.findByContentId(commentRequestDto.getContentId())
-			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
-			.getTopic().getGroup().getGroupId();
-
-		groupUserRepository.findByUser_UserIdAndGroup_GroupId(
-				commentRequestDto.getUserId(), groupId)
-			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
-
 		Content content = contentRepository.findByContentId(commentRequestDto.getContentId())
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
+		Long groupId = content.getTopic().getGroup().getGroupId();
 
-		User user = userRepository.findByUserIdWithGroupUsers(commentRequestDto.getUserId())
+		Long userId = SecurityUtil.getCurrentUserId();
+
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(
+				userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
+
+		User user = userRepository.findByUserIdWithGroupUsers(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		Comment parentComment = null;
@@ -67,8 +66,13 @@ public class CommentService {
 	public Comment addReply(CommentRequestDto commentDto) {
 		Content content = contentRepository.findByContentId(commentDto.getContentId())
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
-		User user = userRepository.findByUserIdWithGroupUsers(commentDto.getUserId())
+		Long groupId = content.getTopic().getGroup().getGroupId();
+
+		User user = userRepository.findByUserIdWithGroupUsers(SecurityUtil.getCurrentUserId())
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(user.getUserId(), groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
 
 		Comment parentComment = null;
 
@@ -88,7 +92,7 @@ public class CommentService {
 			.orElseThrow(() -> new CustomException(ErrorCode.COMMENT_NOT_FOUND));
 
 		User writtenUser = comment.getUsers();
-		if(!writtenUser.getUserId().equals(SecurityUtil.getCurrentUserId())){
+		if (!writtenUser.getUserId().equals(SecurityUtil.getCurrentUserId())) {
 			throw new CustomException(ErrorCode.NOT_COMMENT_AUTHOR);
 		}
 		// deleteRecursive(comment);
