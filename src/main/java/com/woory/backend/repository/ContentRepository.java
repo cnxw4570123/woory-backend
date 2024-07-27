@@ -46,6 +46,5 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
 		"AND DATE_FORMAT(c.content_reg_date, '%Y-%m') = :regDate", nativeQuery = true)
 	List<Content> findByGroupIdAndRegDate(@Param("groupId") Long groupId, @Param("regDate") String regDate);
 
-	@Modifying(clearAutomatically = true)
 	List<Content> findByUsers_UserIdAndTopic_Group_GroupId(Long userId, Long groupId);
 }
