@@ -17,7 +17,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 	void deleteByGroupId(Long groupId);
 
 	boolean existsById(Long groupId);
-
 	Optional<Group> findByGroupId(Long groupId);
 
 	@Query("SELECT g FROM Group g JOIN g.topic t WHERE t.topicId = :topicId")
