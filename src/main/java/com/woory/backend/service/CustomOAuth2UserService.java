@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -30,12 +31,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 	private static final Logger log = LoggerFactory.getLogger(CustomOAuth2UserService.class);
 	private final UserRepository userRepository;
 	private final String userDefaultImg;
+	private final AwsService awsService;
 
 	@Autowired
 	public CustomOAuth2UserService(UserRepository userRepository,
+		AwsService awsService,
 		@Value("${service.default.profileImg}") String profileImg) {
 		this.userRepository = userRepository;
 		this.userDefaultImg = profileImg;
+		this.awsService = awsService;
 	}
 
 	@Override
@@ -66,7 +70,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 				user.setUsername(username);
 				user.setEmail(oAuth2Response.getEmail());
 				user.setProfileImage(oAuth2Response.getProfileImage().isEmpty() ? userDefaultImg :
-					oAuth2Response.getProfileImage());
+					awsService.saveFileFromUrl(oAuth2Response.getProfileImage()));
 				user.setRole("ROLE_USER");
 				user.setNickname(oAuth2Response.getName());
 				return user;
