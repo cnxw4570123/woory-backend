@@ -4,6 +4,7 @@ import com.woory.backend.dto.CommentDto;
 import com.woory.backend.dto.CommentMapper;
 import com.woory.backend.dto.CommentReplyDto;
 import com.woory.backend.dto.CommentRequestDto;
+import com.woory.backend.dto.ReplyDto;
 import com.woory.backend.entity.*;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
@@ -35,7 +36,7 @@ public class CommentService {
 	}
 
 	@Transactional
-	public Comment addComment(CommentRequestDto commentRequestDto) {
+	public ReplyDto addComment(CommentRequestDto commentRequestDto) {
 		Content content = contentRepository.findByContentId(commentRequestDto.getContentId())
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		Long groupId = content.getTopic().getGroup().getGroupId();
@@ -59,11 +60,12 @@ public class CommentService {
 			}
 		}
 
-		return commentRepository.save(Comment.toComment(commentRequestDto, parentComment, content, user));
+		Comment save = commentRepository.save(Comment.toComment(commentRequestDto, parentComment, content, user));
+		return CommentMapper.toReplyDTO(save, userId);
 
 	}
 
-	public Comment addReply(CommentRequestDto commentDto) {
+	public ReplyDto addReply(CommentRequestDto commentDto) {
 		Content content = contentRepository.findByContentId(commentDto.getContentId())
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		Long groupId = content.getTopic().getGroup().getGroupId();
@@ -83,7 +85,8 @@ public class CommentService {
 			throw new CustomException(ErrorCode.REPLY_TO_REPLY_NOT_ALLOWED);
 		}
 
-		return commentRepository.save(Comment.toComment(commentDto, parentComment, content, user));
+		Comment save = commentRepository.save(Comment.toComment(commentDto, parentComment, content, user));
+		return CommentMapper.toReplyDTO(save, user.getUserId());
 	}
 
 	@Transactional
@@ -100,7 +103,7 @@ public class CommentService {
 	}
 
 	@Transactional
-	public CommentDto updateComment(Long commentId, String newText) {
+	public ReplyDto updateComment(Long commentId, String newText) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		Long groupId = commentRepository.findByCommentId(commentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
@@ -116,7 +119,7 @@ public class CommentService {
 
 		comment.setCommentText(newText);
 		Comment savedComment = commentRepository.save(comment);
-		return CommentDto.fromComment(savedComment);
+		return CommentMapper.toReplyDTO(savedComment, userId);
 	}
 
 	// 댓글 조회 메서드 추가

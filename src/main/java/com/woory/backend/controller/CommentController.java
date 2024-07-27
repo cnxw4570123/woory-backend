@@ -3,6 +3,7 @@ package com.woory.backend.controller;
 import com.woory.backend.dto.CommentDto;
 import com.woory.backend.dto.CommentReplyDto;
 import com.woory.backend.dto.CommentRequestDto;
+import com.woory.backend.dto.ReplyDto;
 import com.woory.backend.dto.UpdateCommentRequest;
 import com.woory.backend.service.CommentService;
 import com.woory.backend.utils.StatusUtil;
@@ -30,15 +31,17 @@ public class CommentController {
     @PostMapping("/add")
 //    @PostMapping("/add/{groupId}")변경경
     public ResponseEntity<Map<String, Object>> addComment(@RequestBody CommentRequestDto commentRequestDto) {
-        commentService.addComment(commentRequestDto);
+        ReplyDto commentReplyDto = commentService.addComment(commentRequestDto);
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 추가되었습니다");
+        response.put("data", commentReplyDto);
         return ResponseEntity.ok(response);
     }
     @Operation(summary = "comment 댓글 쓰기")
     @PostMapping("/add/reply")
     public ResponseEntity<Map<String, Object>> addreply(@RequestBody CommentRequestDto commentDto) {
-        commentService.addReply(commentDto);
+        ReplyDto commentReplyDto = commentService.addReply(commentDto);
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 추가되었습니다");
+        response.put("data", commentReplyDto);
         return ResponseEntity.ok(response);
     }
     @Operation(summary = "comment 삭제")
@@ -54,7 +57,7 @@ public class CommentController {
             @PathVariable("commentId") Long commentId,
             @RequestBody UpdateCommentRequest updateRequest) {
 
-        CommentDto updatedComment = commentService.updateComment(commentId, updateRequest.getNewText());
+        ReplyDto updatedComment = commentService.updateComment(commentId, updateRequest.getNewText());
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 수정되었습니다");
         response.put("data", updatedComment);
         return ResponseEntity.ok(response);
