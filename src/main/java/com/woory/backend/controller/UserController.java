@@ -36,17 +36,18 @@ public class UserController {
 	private final AwsService awsService;
 
 	@GetMapping("/my")
-	public ResponseEntity<Map<String, Object>> myInfo(){
+	public ResponseEntity<Map<String, Object>> myInfo() {
 		Map<String, Object> statusMessage = StatusUtil.getStatusMessage("유저 정보 조회에 성공했습니다.");
 		statusMessage.put("data", userService.getMyInfo());
 		return ResponseEntity.ok(statusMessage);
 	}
 
-
 	@GetMapping("/my/{groupId}")
 	@Operation(summary = "회원 조회")
-	public ResponseEntity<UserMyPageResponseDto> my(@PathVariable("groupId") long groupId) {
-		return ResponseEntity.ok(userService.getUserInfo(groupId));
+	public ResponseEntity<Map<String, Object>> my(@PathVariable("groupId") long groupId) {
+		Map<String, Object> response = StatusUtil.getStatusMessage("유저 정보 조회에 성공했습니다.");
+		response.put("data", userService.getUserInfo(groupId));
+		return ResponseEntity.ok(response);
 	}
 
 	@GetMapping("/logout")
