@@ -15,7 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,6 +57,12 @@ public class ContentService {
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		Topic topic = topicRepository.findById(topicId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(topic.getIssueDate());
+		LocalDate localDate = calendar.toInstant().atZone(ZoneId.of("Asia/Seoul")).toLocalDate();
+
+		canPostContent(localDate);
 		// 사용자가 이미 해당 주제에 콘텐츠를 작성했는지 확인
 		boolean userHasContentForTopic = contentRepository.existsByTopic_TopicIdAndUsers_UserId(topicId, userId);
 		if (userHasContentForTopic) {
@@ -326,5 +335,12 @@ public class ContentService {
 		Topic topic = topicRepository.findTopicByGroupIdAndIssueDate(groupId, date)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		return TopicDto.fromTopic(topic);
+	}
+
+	private void canPostContent(LocalDate issueDate) {
+		LocalDate today = LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toLocalDate();
+		if (today.isAfter(issueDate)) {
+			throw new CustomException(ErrorCode.CAN_NOT_POST_AFTER_DAY);
+		}
 	}
 }

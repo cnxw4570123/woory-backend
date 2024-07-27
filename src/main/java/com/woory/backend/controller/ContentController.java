@@ -5,7 +5,6 @@ import com.woory.backend.dto.*;
 import com.woory.backend.entity.ReactionType;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
-import com.woory.backend.service.AwsService;
 import com.woory.backend.service.ContentService;
 
 import com.woory.backend.utils.SecurityUtil;
@@ -16,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
@@ -94,21 +95,22 @@ public class ContentController {
 	public ResponseEntity<Map<String, Object>> getContentsByRegDate(
 		@PathVariable("groupId") Long groupId,
 		@RequestParam("day") String day) {
-		LocalDate parse;
+		LocalDate searchDate;
 		if (day == null || !day.matches("\\d{4}-\\d{2}-\\d{2}")) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
 		try {
-			parse = LocalDate.parse(day);
+			searchDate = LocalDate.parse(day);
 		} catch (DateTimeParseException e) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
 
-		if (parse.isAfter(LocalDateTime.now().plusHours(9L).toLocalDate())) {
+		LocalDate asiaNow = LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toLocalDate();
+		if (searchDate.isAfter(asiaNow)) {
 			throw new CustomException(ErrorCode.CAN_NOT_VIEW_AFTER_TODAY);
 		}
 
-		TopicDto topic = contentService.getTopicWithContents(parse, groupId);
+		TopicDto topic = contentService.getTopicWithContents(searchDate, groupId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", topic);
 		return ResponseEntity.ok(response);

@@ -19,6 +19,7 @@ public enum ErrorCode {
 	PARENT_COMMENT_NOT_FOUND(404, "COMMENT_006", "부모 댓글을 찾을 수 없습니다."),
 
 	TOPIC_NOT_FOUND(404, "TOPIC_001", "토픽 세트를 찾을 수 없습니다."),
+	CAN_NOT_POST_AFTER_DAY(403, "CONTENT_009", "토픽 생성일이 지난 후에는 글을 생성할 수 없습니다."),
 	// ContentService
 
 	GROUP_NOT_FOUND(404, "CONTENT_001", "해당 사용자 또는 가족을 찾을 수 없습니다."),
