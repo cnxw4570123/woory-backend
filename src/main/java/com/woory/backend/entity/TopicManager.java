@@ -7,6 +7,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -46,7 +48,7 @@ public class TopicManager {
 			topics = new ArrayList<>();
 		}
 
-		LocalDate now = LocalDate.now();
+		LocalDate now = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDate();
 
 		Deque<TopicByDate> topicIndex = new ArrayDeque<>(topics);
 		if (topicIndex.isEmpty() || topicIndex.peekLast().getDate().isBefore(now)) {

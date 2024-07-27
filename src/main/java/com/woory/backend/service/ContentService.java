@@ -15,10 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -338,7 +337,7 @@ public class ContentService {
 	}
 
 	private void canPostContent(LocalDate issueDate) {
-		LocalDate today = LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toLocalDate();
+		LocalDate today = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDate();
 		if (today.isAfter(issueDate)) {
 			throw new CustomException(ErrorCode.CAN_NOT_POST_AFTER_DAY);
 		}
