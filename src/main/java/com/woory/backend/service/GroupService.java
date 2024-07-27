@@ -4,19 +4,10 @@ import com.woory.backend.dto.DataDto;
 import com.woory.backend.dto.GroupInfoDto;
 import com.woory.backend.dto.MemberDetailDto;
 import com.woory.backend.dto.UserDetailDto;
-import com.woory.backend.entity.Group;
-import com.woory.backend.entity.GroupStatus;
-import com.woory.backend.entity.GroupUser;
-import com.woory.backend.entity.Topic;
-import com.woory.backend.entity.TopicManager;
-import com.woory.backend.entity.TopicSet;
-import com.woory.backend.entity.User;
+import com.woory.backend.entity.*;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
-import com.woory.backend.repository.GroupRepository;
-import com.woory.backend.repository.GroupUserRepository;
-import com.woory.backend.repository.TopicSetRepository;
-import com.woory.backend.repository.UserRepository;
+import com.woory.backend.repository.*;
 import com.woory.backend.utils.SecurityUtil;
 
 import jakarta.transaction.Transactional;
@@ -36,17 +27,20 @@ public class GroupService {
 	private GroupRepository groupRepository;
 	private GroupUserRepository groupUserRepository;
 	private TopicSetRepository topicSetRepository;
+	private ContentRepository contentRepository;
 	private final String serverAddress;
 
 	@Autowired
 	public GroupService(UserRepository userRepository, GroupRepository groupRepository,
 		GroupUserRepository groupUserRepository,
 		TopicSetRepository topicSetRepository,
+		ContentRepository contentRepository,
 		@Value("${server.ip}") String serverAddress) {
 		this.userRepository = userRepository;
 		this.groupRepository = groupRepository;
 		this.groupUserRepository = groupUserRepository;
 		this.topicSetRepository = topicSetRepository;
+		this.contentRepository = contentRepository;
 		this.serverAddress = serverAddress;
 	}
 
@@ -179,6 +173,13 @@ public class GroupService {
 		GroupStatus status = getGroupStatus(groupId, loginId);
 		if (status != GroupStatus.GROUP_LEADER) {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_KICK_MEMBER);
+		}
+		List<Content> contents = contentRepository.findByUsers_UserIdAndTopic_Group_GroupId(userId, groupId);
+		for (Content content : contents) {
+//			// 관련된 댓글 삭제
+//			commentRepository.deleteByContent_ContentId(content.getContentId());
+			// Content 삭제
+			contentRepository.delete(content);
 		}
 		groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 	}
