@@ -1,6 +1,5 @@
 package com.woory.backend.controller;
 
-import com.woory.backend.dto.CommentDto;
 import com.woory.backend.dto.CommentReplyDto;
 import com.woory.backend.dto.CommentRequestDto;
 import com.woory.backend.dto.ReplyDto;
@@ -31,7 +30,7 @@ public class CommentController {
     @PostMapping("/add")
 //    @PostMapping("/add/{groupId}")변경경
     public ResponseEntity<Map<String, Object>> addComment(@RequestBody CommentRequestDto commentRequestDto) {
-        ReplyDto commentReplyDto = commentService.addComment(commentRequestDto);
+        CommentReplyDto commentReplyDto = commentService.addComment(commentRequestDto);
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 추가되었습니다");
         response.put("data", commentReplyDto);
         return ResponseEntity.ok(response);
@@ -57,7 +56,7 @@ public class CommentController {
             @PathVariable("commentId") Long commentId,
             @RequestBody UpdateCommentRequest updateRequest) {
 
-        ReplyDto updatedComment = commentService.updateComment(commentId, updateRequest.getNewText());
+        Map<String, String> updatedComment = commentService.updateComment(commentId, updateRequest.getNewText());
         Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 수정되었습니다");
         response.put("data", updatedComment);
         return ResponseEntity.ok(response);
@@ -71,7 +70,5 @@ public class CommentController {
         response.put("data", comments);
         return ResponseEntity.ok(response);
     }
-
-
 
 }
