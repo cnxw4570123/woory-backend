@@ -65,10 +65,10 @@ public class CommentController {
     @GetMapping("/{contentId}")
 //    @GetMapping("/{groupId}/{contentId}")
     public ResponseEntity<Map<String, Object>> getCommentsByContentId(@PathVariable("contentId") Long contentId) {
-        List<CommentReplyDto> comments = commentService.getCommentsByContentId(contentId);
-        Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 조회되었습니다");
-        response.put("data", comments);
-        return ResponseEntity.ok(response);
+        // List<CommentReplyDto> comments = commentService.getCommentsByContentId(contentId);
+        // Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 조회되었습니다");
+        // response.put("data", comments);
+        return ResponseEntity.ok(commentService.getCommentsByContentId(contentId));
     }
 
 }

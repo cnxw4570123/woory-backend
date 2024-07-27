@@ -10,6 +10,7 @@ import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
 import com.woory.backend.repository.*;
 import com.woory.backend.utils.SecurityUtil;
+import com.woory.backend.utils.StatusUtil;
 
 import jakarta.transaction.Transactional;
 
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -126,23 +128,27 @@ public class CommentService {
 	}
 
 	// 댓글 조회 메서드 추가
-	public List<CommentReplyDto> getCommentsByContentId(Long contentId) {
+	public Map<String, Object> getCommentsByContentId(Long contentId) {
 		Long userId = SecurityUtil.getCurrentUserId();
+		User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 		Long groupId = contentRepository.findByContentId(contentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
 			.getTopic().getGroup().getGroupId();
-
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
-
 		List<Comment> comments = commentRepository.findByContent_ContentId(contentId);
 		List<Comment> topLevelComments = comments.stream()
 			.filter(comment -> comment.getParentComment() == null)
 			.toList();
-		return topLevelComments.stream()
+		List<CommentReplyDto> list = topLevelComments.stream()
 			.map(comment -> {
 				return CommentMapper.toDTO(comment, userId);
 			}).toList();
+
+		Map<String, Object> response = StatusUtil.getStatusMessage("댓글이 조회되었습니다");
+		response.put("name", user.getNickname());
+		response.put("data", list);
+		return response;
 	}
 
 	private void deleteRecursive(Comment comment) {
