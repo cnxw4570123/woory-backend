@@ -3,6 +3,7 @@ package com.woory.backend.repository;
 import com.woory.backend.entity.Content;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -45,4 +46,6 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
 		"AND DATE_FORMAT(c.content_reg_date, '%Y-%m') = :regDate", nativeQuery = true)
 	List<Content> findByGroupIdAndRegDate(@Param("groupId") Long groupId, @Param("regDate") String regDate);
 
+	@Modifying(clearAutomatically = true)
+	List<Content> findByUsers_UserIdAndTopic_Group_GroupId(Long userId, Long groupId);
 }
