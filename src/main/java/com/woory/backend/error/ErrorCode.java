@@ -10,8 +10,8 @@ public enum ErrorCode {
 	INVALID_FILE_NAME(400, "COMMON_005", "파일 이름이 유효하지 않습니다."),
 	ERROR_SAVING_FILE(500, "COMMON_006", "파일 저장중 문제가 발생했습니다."),
 	ERROR_DELETING_FILE(500, "COMMON_007", "파일 삭제중 문제가 발생했습니다."),
-	// CommentService
-	USER_NOT_FOUND_IN_GROUP(404, "COMMENT_001", "가족에서 사용자를 찾을수 없습니다."),
+	USER_NOT_FOUND_IN_GROUP(404, "COMMON_008", "가족에서 사용자를 찾을수 없습니다."),
+	// CommentService,
 	USER_BANNED_OR_NON_MEMBER(403, "COMMENT_002", "가족에 속한 사용자가 아닙니다."),
 	COMMENT_NOT_FOUND(404, "COMMENT_003", "해당 댓글을 찾을 수 없습니다."),
 	REPLY_TO_REPLY_NOT_ALLOWED(400, "COMMENT_004", "대댓글에 대댓글은 할 수 없습니다."),
