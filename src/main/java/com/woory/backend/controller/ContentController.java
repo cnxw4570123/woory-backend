@@ -105,8 +105,9 @@ public class ContentController {
 		} catch (DateTimeParseException e) {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
-
+		log.info("조회하려는 날짜 = {}", searchDate);
 		LocalDate asiaNow = LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toLocalDate();
+		log.info("현재 날짜 = {}", asiaNow.toString());
 		if (searchDate.isAfter(asiaNow)) {
 			throw new CustomException(ErrorCode.CAN_NOT_VIEW_AFTER_TODAY);
 		}
