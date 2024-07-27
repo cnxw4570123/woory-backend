@@ -2,6 +2,8 @@ package com.woory.backend.entity;
 
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +23,7 @@ public class TopicByDate {
 
 	public TopicByDate(int index) {
 		this.topicIndex = index;
-		this.date = LocalDate.now();
+		this.date = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDate();
 	}
 
 	public String toString() {

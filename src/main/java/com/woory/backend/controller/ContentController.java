@@ -22,8 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +106,7 @@ public class ContentController {
 			throw new CustomException(ErrorCode.INVALID_DATE_FORMAT);
 		}
 		log.info("조회하려는 날짜 = {}", searchDate);
-		LocalDate asiaNow = LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toLocalDate();
+		LocalDate asiaNow = ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDate();
 		log.info("현재 날짜 = {}", asiaNow.toString());
 		if (searchDate.isAfter(asiaNow)) {
 			throw new CustomException(ErrorCode.CAN_NOT_VIEW_AFTER_TODAY);
