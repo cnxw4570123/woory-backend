@@ -16,7 +16,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CommentService {
@@ -36,7 +38,7 @@ public class CommentService {
 	}
 
 	@Transactional
-	public ReplyDto addComment(CommentRequestDto commentRequestDto) {
+	public CommentReplyDto addComment(CommentRequestDto commentRequestDto) {
 		Content content = contentRepository.findByContentId(commentRequestDto.getContentId())
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		Long groupId = content.getTopic().getGroup().getGroupId();
@@ -61,7 +63,7 @@ public class CommentService {
 		}
 
 		Comment save = commentRepository.save(Comment.toComment(commentRequestDto, parentComment, content, user));
-		return CommentMapper.toReplyDTO(save, userId);
+		return CommentMapper.toDTO(save, userId);
 
 	}
 
@@ -103,7 +105,7 @@ public class CommentService {
 	}
 
 	@Transactional
-	public ReplyDto updateComment(Long commentId, String newText) {
+	public Map<String, String> updateComment(Long commentId, String newText) {
 		Long userId = SecurityUtil.getCurrentUserId();
 		Long groupId = commentRepository.findByCommentId(commentId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND))
@@ -119,7 +121,8 @@ public class CommentService {
 
 		comment.setCommentText(newText);
 		Comment savedComment = commentRepository.save(comment);
-		return CommentMapper.toReplyDTO(savedComment, userId);
+
+		return Collections.singletonMap("comment", savedComment.getCommentText());
 	}
 
 	// 댓글 조회 메서드 추가
