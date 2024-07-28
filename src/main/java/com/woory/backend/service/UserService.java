@@ -109,6 +109,7 @@ public class UserService {
 				// 멤버면
 				if (userHistory.getStatus().equals(GroupStatus.MEMBER)) {
 					// groupUserRepository.delete(userHistory); 삭제 부분 제거
+					userHistory.setGroup(null);
 					break;
 				}
 
