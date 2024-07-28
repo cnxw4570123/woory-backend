@@ -25,6 +25,4 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
 
 	@Query("select g from Group g left join fetch g.groupUsers where g in (select gu.group from GroupUser gu where gu.user = :user)")
 	List<Group> findGroupHasUser(@Param("user") User user);
-
-	void deleteByGroup_GroupIdAndUser_UserId(Long groupId, Long userId);
 }
