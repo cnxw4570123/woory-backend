@@ -16,4 +16,6 @@ public interface ContentReactionRepository extends JpaRepository<ContentReaction
 	List<ContentReaction> findByContentIdWithUser(@Param("contentId") Long contentId);
 
 	Optional<ContentReaction> findContentReactionByContent_ContentIdAndUser_UserId(Long contentId, Long userId);
+
+	void deleteByContent_ContentIdAndUsers_UserId(Long contentId, Long userId);
 }

@@ -28,12 +28,16 @@ public class GroupService {
 	private GroupUserRepository groupUserRepository;
 	private TopicSetRepository topicSetRepository;
 	private ContentRepository contentRepository;
+	private ContentReactionRepository contentReactionRepository;
+	private CommentRepository commentRepository;
 	private final String serverAddress;
 
 	@Autowired
 	public GroupService(UserRepository userRepository, GroupRepository groupRepository,
 		GroupUserRepository groupUserRepository,
 		TopicSetRepository topicSetRepository,
+		ContentReactionRepository contentReactionRepository,
+		CommentRepository commentRepository,
 		ContentRepository contentRepository,
 		@Value("${server.ip}") String serverAddress) {
 		this.userRepository = userRepository;
@@ -41,6 +45,8 @@ public class GroupService {
 		this.groupUserRepository = groupUserRepository;
 		this.topicSetRepository = topicSetRepository;
 		this.contentRepository = contentRepository;
+		this.commentRepository = commentRepository;
+		this.contentReactionRepository = contentReactionRepository;
 		this.serverAddress = serverAddress;
 	}
 
@@ -174,12 +180,16 @@ public class GroupService {
 		if (status != GroupStatus.GROUP_LEADER) {
 			throw new CustomException(ErrorCode.NO_PERMISSION_TO_KICK_MEMBER);
 		}
-		List<Content> contents = contentRepository.findByUsers_UserIdAndTopic_Group_GroupId(userId, groupId);
+		List<Content> contents = contentRepository.findByTopic_Group_GroupId(groupId);
 		for (Content content : contents) {
-//			// 관련된 댓글 삭제
-//			commentRepository.deleteByContent_ContentId(content.getContentId());
-			// Content 삭제
-			contentRepository.delete(content);
+			// 사용자가 작성한 댓글 삭제
+			commentRepository.deleteByContent_ContentIdAndUsers_UserId(content.getContentId(), userId);
+			// 사용자가 반응한 Reaction 삭제
+			contentReactionRepository.deleteByContent_ContentIdAndUsers_UserId(content.getContentId(), userId);
+			// 사용자가 작성한 Content 삭제
+			if (content.getUsers().getUserId().equals(userId)) {
+				contentRepository.delete(content);
+			}
 		}
 		groupUserRepository.deleteByGroup_GroupIdAndUser_UserId(groupId, userId);
 	}
