@@ -49,6 +49,4 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
 	List<Content> findByUsers_UserIdAndTopic_Group_GroupId(Long userId, Long groupId);
 
 	List<Content> findByTopic_Group_GroupId(Long groupId);
-
-	void deleteByContent_ContentIdAndUsers_UserId(Long contentId, Long userId);
 }

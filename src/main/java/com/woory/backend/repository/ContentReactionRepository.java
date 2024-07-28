@@ -17,5 +17,5 @@ public interface ContentReactionRepository extends JpaRepository<ContentReaction
 
 	Optional<ContentReaction> findContentReactionByContent_ContentIdAndUser_UserId(Long contentId, Long userId);
 
-	void deleteByContent_ContentIdAndUsers_UserId(Long contentId, Long userId);
+	void deleteContentReactionByContent_ContentIdAndUser_UserId(Long contentId, Long userId);
 }
