@@ -68,7 +68,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			.orElseGet(() -> {
 				User user = new User();
 				user.setUsername(username);
-				user.setEmail(oAuth2Response.getEmail());
+				// user.setEmail(oAuth2Response.getEmail());
 				user.setProfileImage(oAuth2Response.getProfileImage().isEmpty() ? userDefaultImg :
 					awsService.saveFileFromUrl(oAuth2Response.getProfileImage()));
 				user.setRole("ROLE_USER");
@@ -77,7 +77,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 			});
 
 		byUsername.setUsername(username);
-		byUsername.setEmail(oAuth2Response.getEmail());
+		// byUsername.setEmail(oAuth2Response.getEmail());
 		return new CustomOAuth2User(UserDto.fromUser(userRepository.save(byUsername)));
 	}
 
