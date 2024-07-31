@@ -37,6 +37,6 @@ public class GroupUser {
     @Column(name = "lastUpdatedDate")
     private Date lastUpdatedDate;
 
-    @OneToMany(mappedBy = "groupUser")
+    @OneToMany(mappedBy = "groupUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Favorite> favorites = new ArrayList<>();
 }
