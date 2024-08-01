@@ -36,6 +36,7 @@ public class Topic {
 
 	@Builder.Default
 	@OneToMany(mappedBy = "topic", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@OrderBy("contentRegDate asc")
 	private List<Content> content = new ArrayList<>();
 
 	public static Topic fromTopicSetWithDateAndGroup(Group group, TopicSet topicSet, Date date) {
