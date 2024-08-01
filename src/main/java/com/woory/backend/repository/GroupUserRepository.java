@@ -1,7 +1,6 @@
 package com.woory.backend.repository;
 
 import com.woory.backend.dto.GroupInfoDto;
-import com.woory.backend.entity.Group;
 import com.woory.backend.entity.GroupStatus;
 import com.woory.backend.entity.GroupUser;
 
@@ -32,9 +31,6 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	@Query("select new com.woory.backend.dto.GroupInfoDto(g.groupId, g.groupName, g.photoPath, gu.status) from GroupUser gu join gu.group g on g = gu.group and gu.user.userId = :userId order by gu.regDate asc")
 	List<GroupInfoDto> findMyGroupInfoDto(@Param("userId") Long userId);
 
-	@Query("select new com.woory.backend.dto.GroupInfoDto(g.groupId, g.groupName, g.photoPath, gu.status) from GroupUser gu join gu.group g on g = gu.group and gu.group.groupId = :groupId order by gu.regDate asc")
-	List<GroupInfoDto> findMyGroupInfoDtoByGrooupId(@Param("groupId") Long groupId);
-
 	Optional<GroupUser> findByUser_UserIdAndGroup_GroupId(Long userId, Long groupId);
 
 	List<GroupUser> findAllByGroup_GroupId(Long groupId);
@@ -43,10 +39,6 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 
 	void deleteByGroup_GroupIdAndUser_UserId(Long groupId, Long userId);
 
-	void deleteByGroup_GroupId(Long groupId);
-
-	boolean existsByGroup_GroupId(Long groupId);
-
 	@Query("select gu from GroupUser gu where gu.group.groupId = :groupId and gu.user.userId != :userId")
 	List<GroupUser> findGroupUserWithoutUser(@Param("groupId") Long groupId, @Param("userId") Long userId);
 
@@ -54,7 +46,4 @@ public interface GroupUserRepository extends JpaRepository<GroupUser, Long> {
 	Optional<GroupUser> findGroupUserWithUserByGroupIdAndUserId(
 		@Param("userId") long userId,
 		@Param("groupId") long groupId);
-
-	@Query("select gu from GroupUser gu join fetch gu.group where gu.user.userId = :userId")
-	List<GroupUser> findGroupUsersWithGroupByUserId(@Param("userId") Long userId);
 }
