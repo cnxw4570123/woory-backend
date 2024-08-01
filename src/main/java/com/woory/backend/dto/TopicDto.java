@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TopicDto {
 	private String topicContent;
+	private boolean IsFavorite;
 	private Long topicId;
 	private Date issueDate;
 	private Long groupId;
@@ -48,10 +49,11 @@ public class TopicDto {
 			.build();
 	}
 
-	public static TopicDto fromTopicWithContents(Long userId, Topic topic, boolean hasPrevDay, boolean hasNextDay) {
+	public static TopicDto fromTopicWithContents(Long userId, Topic topic, boolean hasPrevDay, boolean hasNextDay, boolean isFavorite) {
 		TopicDtoBuilder contents1 = TopicDto.builder()
 			.topicContent(topic.getTopicContent())
 			.topicId(topic.getTopicId())
+			.IsFavorite(isFavorite)
 			.topicByte(topic.getTopicByte())
 			.issueDate(topic.getIssueDate())
 			.hasNextDay(hasNextDay)
