@@ -34,8 +34,12 @@ public class Topic {
 	@JoinColumn(name = "group_id")
 	private Group group;
 
+	@OneToMany(mappedBy = "topic")
+	private List<Favorite> favorites = new ArrayList<>();
+
 	@Builder.Default
 	@OneToMany(mappedBy = "topic", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@OrderBy("contentRegDate asc")
 	private List<Content> content = new ArrayList<>();
 
 	public static Topic fromTopicSetWithDateAndGroup(Group group, TopicSet topicSet, Date date) {

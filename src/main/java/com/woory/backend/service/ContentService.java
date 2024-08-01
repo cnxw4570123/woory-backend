@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ContentService {
 
 	private static final Logger log = LoggerFactory.getLogger(ContentService.class);
@@ -34,6 +35,7 @@ public class ContentService {
 	private final TopicRepository topicRepository;
 	private final ContentReactionRepository contentReactionRepository;
 	private final AwsService awsService;
+	private final FavoriteRepository favoriteRepository;
 
 	public ContentDto getContentById(Long contentId) {
 		Content content = contentRepository.findByContentId(contentId)
@@ -261,35 +263,6 @@ public class ContentService {
 		contentRepository.save(content);
 	}
 
-	private GroupStatus getGroupStatus(Long userId, Long groupId) {
-		GroupStatus status = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId).get().getStatus();
-		return status;
-	}
-
-	private ContentDto convertToDTO(Content content) {
-		ContentDto dto = new ContentDto();
-		dto.setContentId(content.getContentId());
-		dto.setContentText(content.getContentText());
-		dto.setContentImgPath(content.getContentImgPath());
-		dto.setContentRegDate(content.getContentRegDate());
-
-		TopicRequestDto topicDTO = new TopicRequestDto();
-		topicDTO.setTopicId(content.getTopic().getTopicId());
-		topicDTO.setTopicContent(content.getTopic().getTopicContent());
-		topicDTO.setIssueDate(content.getTopic().getIssueDate());
-		topicDTO.setTopicByte(content.getTopic().getTopicByte());
-
-		GroupResponseDto groupDTO = new GroupResponseDto();
-		groupDTO.setGroupId(content.getTopic().getGroup().getGroupId());
-		groupDTO.setGroupName(content.getTopic().getGroup().getGroupName());
-		groupDTO.setPhotoPath(content.getTopic().getGroup().getPhotoPath());
-
-		topicDTO.setGroup(groupDTO);
-		dto.setTopic(topicDTO);
-
-		return dto;
-	}
-
 	private ContentDto convertToDTO1(Content content) {
 		return new ContentDto(
 			content.getContentId(),
@@ -341,5 +314,53 @@ public class ContentService {
 		if (today.isAfter(issueDate)) {
 			throw new CustomException(ErrorCode.CAN_NOT_POST_AFTER_DAY);
 		}
+	}
+
+	public List<FavoriteDto> getFavorites(Long groupId) {
+		Long userId = SecurityUtil.getCurrentUserId();
+		GroupUser groupUser = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_GROUPS_NOT_FOUND));
+
+		List<Topic> topics = favoriteRepository.findAllWithTopicByGroupUser(groupUser)
+			.stream()
+			.map(Favorite::getTopic)
+			.toList();
+
+		List<Topic> topicWithContents = topicRepository.findAllWithContentsByTopics(topics);
+
+		List<FavoriteDto> result = new ArrayList<>();
+		for (Topic t : topicWithContents) {
+			String contentImg = t.getContent().stream()
+				.map(Content::getContentImgPath)
+				.filter(Objects::nonNull).findFirst()
+				.orElseGet(() -> null);
+
+			result.add(new FavoriteDto(t.getTopicId(), t.getIssueDate(), contentImg, t.getTopicContent()));
+		}
+
+		return result;
+  }
+
+	public void addOrDeleteHeart(Long groupId, Long topicId) {
+		Long userId = SecurityUtil.getCurrentUserId();
+		GroupUser groupUser = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
+
+		Topic topic = topicRepository.findTopicWithContentsByTopicId(topicId)
+			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
+
+		// 만약 존재하면 지움.
+		if (favoriteRepository.existsByTopicAndGroupUser(topic, groupUser)) {
+			favoriteRepository.deleteFavoriteByTopicAndGroupUser(topic, groupUser);
+			return;
+		}
+
+		Favorite fav = Favorite.builder()
+			.topic(topic)
+			.groupUser(groupUser)
+			.groupId(groupId)
+			.build();
+
+		favoriteRepository.save(fav);
 	}
 }
