@@ -13,11 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -153,6 +151,14 @@ public class GroupController {
 	public ResponseEntity<Map<String, String>> joinGroup(@PathVariable("groupId") Long groupId) {
 		groupService.joinGroup(groupId);
 		return StatusUtil.getResponseMessage("가족에 참여했습니다.");
+	}
+
+	@GetMapping("/{groupId}/name")
+	public Map<String, Object> getGroupName(@PathVariable("groupId") Long groupId) {
+		String groupName = groupService.getGroupName(groupId);
+		Map<String, Object> response = StatusUtil.getStatusMessage("그룹 이름 조회에 성공했습니다.");
+		response.put("data", groupName);
+		return response;
 	}
 
 }
