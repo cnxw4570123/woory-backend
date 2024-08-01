@@ -298,4 +298,14 @@ public class GroupService {
 		return GroupInfoDto.fromGroup(group);
 	}
 
+	public String getGroupName(Long groupId) {
+		groupUserRepository.findByUser_UserIdAndGroup_GroupId(SecurityUtil.getCurrentUserId(), groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
+
+		Group group = groupRepository.findByGroupId(groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
+
+		return group.getGroupName();
+	}
+
 }
