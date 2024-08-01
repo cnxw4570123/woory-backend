@@ -11,7 +11,6 @@ import lombok.Setter;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.woory.backend.entity.Content;
 
 @Getter
 @Setter
@@ -25,25 +24,11 @@ public class ContentDto {
 	private String contentImgPath;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 	private Date contentRegDate;
-	private TopicRequestDto topic;
-	private int commentsCount;
-	private int reactionCount;
+	private boolean IsFavorite;
 
-	public ContentDto(Long contentId, String contentText, String contentImgPath, Date contentRegDate) {
-		this.contentId = contentId;
-		this.contentText = contentText;
+	public ContentDto(String contentImgPath, Date contentRegDate, boolean isFavorite) {
 		this.contentImgPath = contentImgPath;
 		this.contentRegDate = contentRegDate;
-	}
-
-	public static ContentDto toContentDto(Content content) {
-		return ContentDto.builder()
-				.contentId(content.getContentId())
-				.contentRegDate(content.getContentRegDate())
-				.contentText(content.getContentText())
-				.commentsCount(content.getComments().size())
-				.contentImgPath(content.getContentImgPath())
-				.reactionCount(content.getContentReactions().size())
-				.build();
+		IsFavorite = isFavorite;
 	}
 }
