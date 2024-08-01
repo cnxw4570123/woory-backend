@@ -162,7 +162,7 @@ public class ContentController {
 	}
 
 	@GetMapping("/topic")
-	public ResponseEntity<Map<String, Object>> aa(@RequestParam("groupId") Long groupId,
+	public ResponseEntity<Map<String, Object>> getTodaysTopic(@RequestParam("groupId") Long groupId,
 		@RequestParam("day") LocalDate day) {
 		TopicDto topic = contentService.getTopicOnly(day, groupId);
 		Map<String, Object> statusMessage = StatusUtil.getStatusMessage("토픽 조회에 성공했습니다.");
@@ -177,7 +177,7 @@ public class ContentController {
 		contentService.addOrDeleteHeart(groupId, topicId);
 		return StatusUtil.getStatusMessage("마음 추가/삭제에 성공했습니다.");
 	}
-
+  
 	@GetMapping("{groupId}/favorites")
 	public Map<String, Object> getFavoritesInThisGroup(@PathVariable("groupId") Long groupId) {
 		List<FavoriteDto> favorites = contentService.getFavorites(groupId);

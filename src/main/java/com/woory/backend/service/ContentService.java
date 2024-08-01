@@ -339,5 +339,28 @@ public class ContentService {
 		}
 
 		return result;
+  }
+
+	public void addOrDeleteHeart(Long groupId, Long topicId) {
+		Long userId = SecurityUtil.getCurrentUserId();
+		GroupUser groupUser = groupUserRepository.findByUser_UserIdAndGroup_GroupId(userId, groupId)
+			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
+
+		Topic topic = topicRepository.findTopicWithContentsByTopicId(topicId)
+			.orElseThrow(() -> new CustomException(ErrorCode.TOPIC_NOT_FOUND));
+
+		// 만약 존재하면 지움.
+		if (favoriteRepository.existsByTopicAndGroupUser(topic, groupUser)) {
+			favoriteRepository.deleteFavoriteByTopicAndGroupUser(topic, groupUser);
+			return;
+		}
+
+		Favorite fav = Favorite.builder()
+			.topic(topic)
+			.groupUser(groupUser)
+			.groupId(groupId)
+			.build();
+
+		favoriteRepository.save(fav);
 	}
 }

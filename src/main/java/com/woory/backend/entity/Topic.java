@@ -34,6 +34,9 @@ public class Topic {
 	@JoinColumn(name = "group_id")
 	private Group group;
 
+	@OneToMany(mappedBy = "topic")
+	private List<Favorite> favorites = new ArrayList<>();
+
 	@Builder.Default
 	@OneToMany(mappedBy = "topic", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@OrderBy("contentRegDate asc")
