@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -34,4 +36,7 @@ public class GroupUser {
 
     @Column(name = "lastUpdatedDate")
     private Date lastUpdatedDate;
+
+    @OneToMany(mappedBy = "groupUser", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Favorite> favorites = new ArrayList<>();
 }
