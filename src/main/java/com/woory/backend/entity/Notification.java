@@ -81,9 +81,10 @@ public class Notification {
 			.build();
 	}
 
-	public static Notification fromCreatingComment(Long groupId, Long commentUserId, Long commentId, Long userId, Date now) {
+	public static Notification fromCreatingComment(Long groupId, Long contentId, Long commentUserId, Long commentId, Long userId, Date now) {
 		return Notification.builder()
 			.groupId(groupId)
+			.contentId(contentId) // 원 글로 이동하기 위한 게시글 아이디
 			.commentUserId(commentUserId) // 댓글 작성자
 			.commentId(commentId)
 			.userId(userId) // 원 글 작성자
@@ -92,9 +93,10 @@ public class Notification {
 			.build();
 	}
 
-	public static Notification fromCreatingReply(Long groupId, Long replyUserId, Long replyId, Long userId, Date now) {
+	public static Notification fromCreatingReply(Long groupId, Long contentId, Long replyUserId, Long replyId, Long userId, Date now) {
 		return Notification.builder()
 			.groupId(groupId)
+			.contentId(contentId) // 원 글로 이동하기 위한 게시글 아이디
 			.replyUserId(replyUserId) // 답글 작성자
 			.replyId(replyId)
 			.userId(userId) // 원 댓글 작성자
@@ -103,9 +105,10 @@ public class Notification {
 			.build();
 	}
 
-	public static Notification fromCreatingEmoji(Long groupId, Long reactionUserId, Long reactionId, Long userId, Date now) {
+	public static Notification fromCreatingEmoji(Long groupId, Long contentId, Long reactionUserId, Long reactionId, Long userId, Date now) {
 		return Notification.builder()
 			.groupId(groupId)
+			.contentId(contentId)
 			.reactionUserId(reactionUserId) // 반응 작성자
 			.reactionId(reactionId)
 			.userId(userId) // 원 글 작성자
