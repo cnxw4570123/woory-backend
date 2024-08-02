@@ -145,6 +145,7 @@ public class ContentService {
 
 	}
 
+
 	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr) {
 		Long currentUserId = SecurityUtil.getCurrentUserId();
 		checkUserGroup(groupId, currentUserId);
