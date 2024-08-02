@@ -15,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -143,45 +145,35 @@ public class ContentService {
 
 	}
 
+
 	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr) {
-		List<Content> contents = contentRepository.findByDateWithImgPath(groupId, dateStr + "%");
 		Long currentUserId = SecurityUtil.getCurrentUserId();
 		checkUserGroup(groupId, currentUserId);
+		List<ContentMonthDto> contents = contentRepository.findByDateWithImgPath(groupId, currentUserId, dateStr + "%");
 
-		// 날짜별로 그룹화합니다.
-		Map<String, List<Content>> groupedByDate = contents.stream()
+		Map<String, List<ContentMonthDto>> groupedByDate = contents.stream()
 			.collect(Collectors.groupingBy(t -> t.getContentRegDate().toString()));
 
-		// ContentDto 리스트로 변환합니다.
-		List<Content> contentsToAdd = new ArrayList<>();
-		for (Map.Entry<String, List<Content>> entry : groupedByDate.entrySet()) {
-			String date = entry.getKey();
-			List<Content> contentList = entry.getValue();
+		List<ContentDto> result = new ArrayList<>();
+		for (Map.Entry<String, List<ContentMonthDto>> entry : groupedByDate.entrySet()) {
+			List<ContentMonthDto> contentList = entry.getValue();
 
-			Content firstContentWithImage = null;
-			Content firstContent = null;
+			Optional<ContentMonthDto> first = contentList.stream()
+				.filter(c -> !TextUtils.isEmpty(c.getContentImgPath()))
+				.findFirst();
 
-			for (Content content : contentList) {
-				// 날짜별로 첫 번째 콘텐츠를 저장
-				if (firstContent == null) {
-					firstContent = content;
-				}
+			// 키 값이 있다면 최소 하나의 원소는 있음
+			ContentMonthDto contentMonthDto = first.orElseGet(() -> contentList.get(0));
 
-				// 사진이 있는 경우
-				if (content.getContentImgPath() != null && !content.getContentImgPath().isEmpty()) {
-					if (firstContentWithImage == null) {
-						firstContentWithImage = content;
-					}
-				}
+			try {
+				result.add(new ContentDto(contentMonthDto.getContentImgPath(),
+					new SimpleDateFormat("yyyy-MM-dd").parse(contentMonthDto.getContentRegDate()),
+					contentMonthDto.getIsFavorite()));
+			} catch (ParseException e) {
+				throw new RuntimeException(e);
 			}
-			// 사진이 있는 콘텐츠가 있는 경우 그것을 사용하고, 그렇지 않으면 첫 번째 콘텐츠를 사용합니다.
-			Content finalContentToAdd = (firstContentWithImage != null) ? firstContentWithImage : firstContent;
-			contentsToAdd.add(finalContentToAdd);
-
 		}
-		return contentsToAdd.stream()
-			.map(this::convertToDTO1)
-			.collect(Collectors.toList());
+		return result;
 	}
 
 	public ContentWithUserAndTopicDto getContent(Long contentId) {
@@ -263,20 +255,10 @@ public class ContentService {
 		contentRepository.save(content);
 	}
 
-	private ContentDto convertToDTO1(Content content) {
-		return new ContentDto(
-			content.getContentId(),
-			content.getContentText(),
-			content.getContentImgPath(),
-			content.getContentRegDate()
-			// Map other fields if necessary
-		);
-	}
-
 	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {
 		log.info("date = {}", date.toString());
 		Long currentUserId = SecurityUtil.getCurrentUserId();
-		checkUserGroup(groupId, currentUserId);
+		GroupUser groupUser = checkUserGroup(groupId, currentUserId);
 		Group group = groupRepository.findByGroupId(groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		// 그룹 생성일 이전이라면
@@ -294,12 +276,13 @@ public class ContentService {
 		boolean hasPrevDay = topicRepository.existsByGroupRegDate(groupId, date);
 		boolean hasNextDay
 			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.plusDays(1L));
-
-		return TopicDto.fromTopicWithContents(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay);
+		boolean isFavorite = favoriteRepository.existsByTopicAndGroupUser(topic, groupUser);
+		return TopicDto.fromTopicWithContents(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay,
+			isFavorite);
 	}
 
-	private void checkUserGroup(Long groupId, Long currentUserId) {
-		groupUserRepository.findByUser_UserIdAndGroup_GroupId(currentUserId, groupId)
+	private GroupUser checkUserGroup(Long groupId, Long currentUserId) {
+		return groupUserRepository.findByUser_UserIdAndGroup_GroupId(currentUserId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
 	}
 
@@ -339,7 +322,7 @@ public class ContentService {
 		}
 
 		return result;
-  }
+	}
 
 	public void addOrDeleteHeart(Long groupId, Long topicId) {
 		Long userId = SecurityUtil.getCurrentUserId();
