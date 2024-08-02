@@ -10,8 +10,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
 public class Notification {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,6 +55,63 @@ public class Notification {
 	@Enumerated(EnumType.STRING)
 	private NotificationType notificationType;
 
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date issueDate;
+
+	// 토픽 생성 시
+	public static Notification fromCreatingTopic(Long groupId, Long topicId, Date topicDate, String topicTitle, Date now) {
+		return Notification.builder()
+			.groupId(groupId)
+			.topicId(topicId)
+			.topicTitle(topicTitle)
+			.topicDate(topicDate)
+			.notificationType(NotificationType.TOPIC)
+			.issueDate(now)
+			.build();
+	}
+
+	// 새 글 생성 시
+	public static Notification fromCreatingContent(Long groupId, Long contentUserId, Long contentId, Date now) {
+		return Notification.builder()
+			.groupId(groupId)
+			.contentUserId(contentUserId)
+			.contentId(contentId)
+			.notificationType(NotificationType.CONTENT)
+			.issueDate(now)
+			.build();
+	}
+
+	public static Notification fromCreatingComment(Long groupId, Long commentUserId, Long commentId, Long userId, Date now) {
+		return Notification.builder()
+			.groupId(groupId)
+			.commentUserId(commentUserId) // 댓글 작성자
+			.commentId(commentId)
+			.userId(userId) // 원 글 작성자
+			.notificationType(NotificationType.REACTION_COMMENT)
+			.issueDate(new Date())
+			.build();
+	}
+
+	public static Notification fromCreatingReply(Long groupId, Long replyUserId, Long replyId, Long userId, Date now) {
+		return Notification.builder()
+			.groupId(groupId)
+			.replyUserId(replyUserId) // 답글 작성자
+			.replyId(replyId)
+			.userId(userId) // 원 댓글 작성자
+			.notificationType(NotificationType.REACTION_REPLY)
+			.issueDate(now)
+			.build();
+	}
+
+	public static Notification fromCreatingEmoji(Long groupId, Long reactionUserId, Long reactionId, Long userId, Date now) {
+		return Notification.builder()
+			.groupId(groupId)
+			.reactionUserId(reactionUserId) // 반응 작성자
+			.reactionId(reactionId)
+			.userId(userId) // 원 글 작성자
+			.notificationType(NotificationType.REACTION_EMOJI)
+			.issueDate(now)
+			.build();
+	}
+
 }
