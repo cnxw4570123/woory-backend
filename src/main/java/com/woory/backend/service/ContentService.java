@@ -145,7 +145,8 @@ public class ContentService {
 
 	}
 
-	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr){
+
+	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr) {
 		Long currentUserId = SecurityUtil.getCurrentUserId();
 		checkUserGroup(groupId, currentUserId);
 		List<ContentMonthDto> contents = contentRepository.findByDateWithImgPath(groupId, currentUserId, dateStr + "%");
@@ -165,7 +166,8 @@ public class ContentService {
 			ContentMonthDto contentMonthDto = first.orElseGet(() -> contentList.get(0));
 
 			try {
-				result.add(new ContentDto(contentMonthDto.getContentImgPath(), new SimpleDateFormat("yyyy-MM-dd").parse(contentMonthDto.getContentRegDate()),
+				result.add(new ContentDto(contentMonthDto.getContentImgPath(),
+					new SimpleDateFormat("yyyy-MM-dd").parse(contentMonthDto.getContentRegDate()),
 					contentMonthDto.getIsFavorite()));
 			} catch (ParseException e) {
 				throw new RuntimeException(e);
@@ -256,7 +258,7 @@ public class ContentService {
 	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {
 		log.info("date = {}", date.toString());
 		Long currentUserId = SecurityUtil.getCurrentUserId();
-		checkUserGroup(groupId, currentUserId);
+		GroupUser groupUser = checkUserGroup(groupId, currentUserId);
 		Group group = groupRepository.findByGroupId(groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GROUP_NOT_FOUND));
 		// 그룹 생성일 이전이라면
@@ -274,12 +276,13 @@ public class ContentService {
 		boolean hasPrevDay = topicRepository.existsByGroupRegDate(groupId, date);
 		boolean hasNextDay
 			= topicRepository.existsByGroup_GroupIdAndAndIssueDate(groupId, date.plusDays(1L));
-
-		return TopicDto.fromTopicWithContents(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay);
+		boolean isFavorite = favoriteRepository.existsByTopicAndGroupUser(topic, groupUser);
+		return TopicDto.fromTopicWithContents(SecurityUtil.getCurrentUserId(), topic, hasPrevDay, hasNextDay,
+			isFavorite);
 	}
 
-	private void checkUserGroup(Long groupId, Long currentUserId) {
-		groupUserRepository.findByUser_UserIdAndGroup_GroupId(currentUserId, groupId)
+	private GroupUser checkUserGroup(Long groupId, Long currentUserId) {
+		return groupUserRepository.findByUser_UserIdAndGroup_GroupId(currentUserId, groupId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND_IN_GROUP));
 	}
 
