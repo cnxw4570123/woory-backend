@@ -14,12 +14,12 @@ import com.woory.backend.entity.Notification;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 	@Query(
 		value = "select *, "
-			+ "case when content_user_id is not null then (select u.nickname from User u where u.user_id = n.content_user_id)"
-			+ "when comment_user_id is not null then (select u.nickname from User u where u.user_id = n.comment_user_id) "
-			+ "when reply_user_id is not null then (select u.nickname from User u where u.user_id = n.reply_user_id) "
-			+ "when reaction_user_id is not null then (select u.nickname from User u where u.user_id = n.reaction_user_id) "
+			+ "case when content_user_id is not null then (select u.nickname from user u where u.user_id = n.content_user_id)"
+			+ "when comment_user_id is not null then (select u.nickname from user u where u.user_id = n.comment_user_id) "
+			+ "when reply_user_id is not null then (select u.nickname from user u where u.user_id = n.reply_user_id) "
+			+ "when reaction_user_id is not null then (select u.nickname from user u where u.user_id = n.reaction_user_id) "
 			+ "end as author "
-			+ "from Notification n "
+			+ "from notification n "
 			+ "where (notification_type in ('CONTENT', 'TOPIC') and group_id = :groupId) "
 			+ "or n.user_id = :userId "
 			+ "order by issue_date desc, notification_id desc "
