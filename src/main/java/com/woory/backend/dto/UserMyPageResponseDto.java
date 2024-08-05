@@ -19,21 +19,13 @@ public class UserMyPageResponseDto {
     private boolean IsHouseholder;
     private boolean IsLastMember;
 
-    public static com.woory.backend.dto.UserMyPageResponseDto fromUserWithCurrentGroup(User user, GroupUser groupUser , boolean check) {
-        return com.woory.backend.dto.UserMyPageResponseDto.builder()
+    public static UserMyPageResponseDto fromUserWithCurrentGroup(User user, GroupUser groupUser , boolean check) {
+        return UserMyPageResponseDto.builder()
                 .userId(user.getUserId())
                 .nickname(user.getNickname())
                 .profileImgLink(user.getProfileImage())
                 .IsHouseholder(groupUser.getStatus().equals(GroupStatus.GROUP_LEADER))
                 .IsLastMember(check)
-                .build();
-    }
-
-    public static com.woory.backend.dto.UserMyPageResponseDto fromUser(User user) {
-        return com.woory.backend.dto.UserMyPageResponseDto.builder()
-                .userId(user.getUserId())
-                .nickname(user.getNickname())
-                .profileImgLink(user.getProfileImage())
                 .build();
     }
 
