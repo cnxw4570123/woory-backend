@@ -92,7 +92,7 @@ public class Notification {
 			.commentId(commentId)
 			.userId(userId) // 원 글 작성자
 			.notificationType(NotificationType.REACTION_COMMENT)
-			.issueDate(new Date())
+			.issueDate(now)
 			.build();
 	}
 
