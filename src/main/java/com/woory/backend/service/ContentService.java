@@ -224,9 +224,12 @@ public class ContentService {
 			ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
 			ContentReaction save = contentReactionRepository.save(contentReaction);
 
-			Notification notification = Notification.fromCreatingEmoji(groupId, contentId, userId, save.getId(),
-				content.getUsers().getUserId(), new Date());
-			notificationService.storeNotification(notification);
+			// 본인 게시글이 아닌 경우에만
+			if (!userId.equals(content.getUsers().getUserId())) {
+				Notification notification = Notification.fromCreatingEmoji(groupId, contentId, userId, save.getId(),
+					content.getUsers().getUserId(), new Date());
+				notificationService.storeNotification(notification);
+			}
 
 			return ContentReactionDto.toContentReactionDto(contentReaction);
 		}

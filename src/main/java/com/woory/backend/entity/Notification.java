@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 public class Notification {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-  
+
 	@Column(name = "notification_id")
 	private Long id;
 
@@ -92,7 +92,7 @@ public class Notification {
 			.commentId(commentId)
 			.userId(userId) // 원 글 작성자
 			.notificationType(NotificationType.REACTION_COMMENT)
-			.issueDate(new Date())
+			.issueDate(now)
 			.build();
 	}
 

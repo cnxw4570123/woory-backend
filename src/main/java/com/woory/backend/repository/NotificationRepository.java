@@ -13,17 +13,16 @@ import com.woory.backend.entity.Notification;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 	@Query(
-		"select n, "
-			+ "case when n.contentUserId is not null then (select u.username from User u where u.userId = n.contentUserId)"
-			+ "when n.commentUserId is not null then (select u.username from User u where u.userId = n.commentUserId) "
-			+ "when n.replyUserId is not null then (select u.username from User u where u.userId = n.replyUserId) "
-			+ "when n.reactionUserId is not null then (select u.username from User u where u.userId = n.reactionUserId) "
-			+ "else null "
+		value = "select *, "
+			+ "case when content_user_id is not null then (select u.nickname from User u where u.user_id = n.content_user_id)"
+			+ "when comment_user_id is not null then (select u.nickname from User u where u.user_id = n.comment_user_id) "
+			+ "when reply_user_id is not null then (select u.nickname from User u where u.user_id = n.reply_user_id) "
+			+ "when reaction_user_id is not null then (select u.nickname from User u where u.user_id = n.reaction_user_id) "
 			+ "end as author "
 			+ "from Notification n "
-			+ "where (n.notificationType in (com.woory.backend.entity.NotificationType.CONTENT, com.woory.backend.entity.NotificationType.TOPIC) and n.groupId = :groupId) "
-			+ "or n.userId = :userId "
-			+ "order by n.issueDate desc "
-			+ "limit 10")
+			+ "where (notification_type in ('CONTENT', 'TOPIC') and group_id = :groupId) "
+			+ "or n.user_id = :userId "
+			+ "order by issue_date desc, notification_id desc "
+			+ "limit 10" , nativeQuery = true)
 	List<NotificationDto> findAllByUserId(@Param("groupId") Long groupId, @Param("userId") Long userId);
 }

@@ -71,10 +71,13 @@ public class CommentService {
 
 		Comment save = commentRepository.save(Comment.toComment(commentRequestDto, parentComment, content, user));
 
-		Notification notification = Notification.fromCreatingComment(groupId, content.getContentId(), userId,
-			save.getCommentId(), content.getUsers().getUserId(), new Date());
+		// 본인 게시글에 댓글단 경우에는 제외
+		if (!userId.equals(content.getUsers().getUserId())) {
+			Notification notification = Notification.fromCreatingComment(groupId, content.getContentId(), userId,
+				save.getCommentId(), content.getUsers().getUserId(), new Date());
 
-		notificationRepository.save(notification);
+			notificationRepository.save(notification);
+		}
 
 		return CommentMapper.toDTO(save, userId);
 
@@ -106,12 +109,19 @@ public class CommentService {
 		List<Notification> notifications = new ArrayList<>();
 
 		Date now = new Date();
-		// 원 글 작성자에 대한 알림
-		notifications.add(Notification.fromCreatingComment(groupId, content.getContentId(), userId, save.getCommentId(),
-			content.getUsers().getUserId(), now));
-		// 원 댓글 작성자에 대한 알림
-		notifications.add(Notification.fromCreatingReply(groupId, content.getContentId(), userId,
-			save.getCommentId(), parentComment.getUsers().getUserId(), now));
+
+		// 본인 게시글이 아닌 경우에만
+		if (!userId.equals(content.getUsers().getUserId())) {
+			// 원 글 작성자에 대한 알림
+			notifications.add(Notification.fromCreatingComment(groupId, content.getContentId(), userId,
+				save.getCommentId(), content.getUsers().getUserId(), now));
+		}
+		// 본인 댓글이 아닌 경우에만
+		if (!userId.equals(parentComment.getUsers().getUserId())) {
+			// 원 댓글 작성자에 대한 알림
+			notifications.add(Notification.fromCreatingReply(groupId, content.getContentId(), userId,
+				save.getCommentId(), parentComment.getUsers().getUserId(), now));
+		}
 		notificationRepository.saveAll(notifications);
 
 		return CommentMapper.toReplyDTO(save, user.getUserId());
