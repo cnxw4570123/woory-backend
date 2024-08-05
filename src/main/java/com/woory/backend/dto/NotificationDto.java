@@ -1,42 +1,47 @@
 package com.woory.backend.dto;
 
 import java.util.Date;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.woory.backend.entity.NotificationType;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public interface NotificationDto {
+	Long getNotificationId();
+
 	Long getGroupId();
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-	Date getTopicDate();
+	Optional<Date> getTopicDate();
 
-	String getTopicTitle();
+	Optional<Long> getTopicId();
 
-	Long getContentUserId();
+	Optional<String> getTopicTitle();
 
-	Long getContentId();
+	Optional<Long> getContentUserId();
 
-	Long getCommentUserId();
+	Optional<Long> getContentId();
 
-	Long getCommentId();
+	Optional<Long> getCommentUserId();
 
-	Long getReplyUserId();
+	Optional<Long> getCommentId();
 
-	Long getReplyId();
+	Optional<Long> getReplyUserId();
 
-	Long getReactionUserId();
+	Optional<Long> getReplyId();
 
-	Long getReactionId();
+	Optional<Long> getReactionUserId();
 
-	Long getUserId();
+	Optional<Long> getReactionId();
+
+	Optional<Long> getUserId();
 
 	NotificationType getNotificationType();
 
-	String getAuthor();
+	Optional<Date> getIssueDate();
 
-
+	Optional<String> getAuthor();
 
 }
