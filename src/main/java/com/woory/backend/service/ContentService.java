@@ -38,6 +38,7 @@ public class ContentService {
 	private final ContentReactionRepository contentReactionRepository;
 	private final AwsService awsService;
 	private final FavoriteRepository favoriteRepository;
+	private final NotificationService notificationService;
 
 	public ContentDto getContentById(Long contentId) {
 		Content content = contentRepository.findByContentId(contentId)
@@ -81,11 +82,18 @@ public class ContentService {
 			content.setContentImgPath(newPhotoPath);
 		}
 
+		Date now = new Date();
 		content.setUsers(user);
 		content.setTopic(topic);
-		content.setContentRegDate(new Date());
+		content.setContentRegDate(now);
 
-		return contentRepository.save(content);
+		Content save = contentRepository.save(content);
+
+		Notification notification = Notification.fromCreatingContent(groupId, user.getUserId(), save.getContentId(),
+			now);
+		notificationService.storeNotification(notification);
+
+		return save;
 	}
 
 	@Transactional
@@ -144,7 +152,6 @@ public class ContentService {
 		return save;
 
 	}
-
 
 	public List<ContentDto> getContentsByRegDateMonthLike(Long groupId, String dateStr) {
 		Long currentUserId = SecurityUtil.getCurrentUserId();
@@ -215,14 +222,22 @@ public class ContentService {
 		// 리액션을 한 번도 누르지 않았다면
 		if (reaction.isEmpty()) {
 			ContentReaction contentReaction = new ContentReaction(content, user, newReaction);
-			contentReactionRepository.save(contentReaction);
+			ContentReaction save = contentReactionRepository.save(contentReaction);
+
+			// 본인 게시글이 아닌 경우에만
+			if (!userId.equals(content.getUsers().getUserId())) {
+				Notification notification = Notification.fromCreatingEmoji(groupId, contentId, userId, save.getId(),
+					content.getUsers().getUserId(), new Date());
+				notificationService.storeNotification(notification);
+			}
+
 			return ContentReactionDto.toContentReactionDto(contentReaction);
 		}
 		// 이미 누른 것
 		ContentReaction contentReaction = reaction.get();
 		// 같은 리액션 또 누르면 -> 삭제
 		if (contentReaction.getReaction().equals(newReaction)) {
-			removeReaction(contentReaction);
+			contentReactionRepository.delete(contentReaction);
 			return null;
 		}
 
@@ -244,15 +259,6 @@ public class ContentService {
 
 		// Convert List<ContentReaction> to List<ContentReactionDto>
 		return ContentReactionDto.toReactionForStatistics(SecurityUtil.getCurrentUserId(), reactions);
-	}
-
-	private void removeReaction(ContentReaction contentReaction) {
-		Content content = contentReaction.getContent();
-
-		contentReactionRepository.delete(contentReaction);
-
-		// Save the content
-		contentRepository.save(content);
 	}
 
 	public TopicDto getTopicWithContents(LocalDate date, Long groupId) {

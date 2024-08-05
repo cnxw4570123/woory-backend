@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,4 +35,7 @@ public interface TopicRepository extends JpaRepository<Topic, Long>, BatchTopicR
 
 	@Query("select t from Topic t left join fetch t.content where t in :topics order by t.issueDate desc")
 	List<Topic> findAllWithContentsByTopics(@Param("topics") List<Topic> topics);
+
+	@Query("select t from Topic t join fetch t.group where t.issueDate = :date")
+	List<Topic> findAllWithGroupsByIssueDate(@Param("date")Date date);
 }
