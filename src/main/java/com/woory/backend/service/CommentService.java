@@ -17,7 +17,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,14 +31,17 @@ public class CommentService {
 	private ContentRepository contentRepository;
 	private UserRepository userRepository;
 	private GroupUserRepository groupUserRepository;
+	private NotificationRepository notificationRepository;
 
 	@Autowired
 	public CommentService(CommentRepository commentRepository, ContentRepository contentRepository,
-		UserRepository userRepository, GroupUserRepository groupUserRepository) {
+		UserRepository userRepository, GroupUserRepository groupUserRepository,
+		NotificationRepository notificationRepository) {
 		this.commentRepository = commentRepository;
 		this.contentRepository = contentRepository;
 		this.userRepository = userRepository;
 		this.groupUserRepository = groupUserRepository;
+		this.notificationRepository = notificationRepository;
 	}
 
 	@Transactional
@@ -65,6 +70,12 @@ public class CommentService {
 		}
 
 		Comment save = commentRepository.save(Comment.toComment(commentRequestDto, parentComment, content, user));
+
+		Notification notification = Notification.fromCreatingComment(groupId, content.getContentId(), userId,
+			save.getCommentId(), content.getUsers().getUserId(), new Date());
+
+		notificationRepository.save(notification);
+
 		return CommentMapper.toDTO(save, userId);
 
 	}
@@ -74,7 +85,8 @@ public class CommentService {
 			.orElseThrow(() -> new CustomException(ErrorCode.CONTENT_NOT_FOUND));
 		Long groupId = content.getTopic().getGroup().getGroupId();
 
-		User user = userRepository.findByUserIdWithGroupUsers(SecurityUtil.getCurrentUserId())
+		Long userId = SecurityUtil.getCurrentUserId();
+		User user = userRepository.findByUserIdWithGroupUsers(userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
 		groupUserRepository.findByUser_UserIdAndGroup_GroupId(user.getUserId(), groupId)
@@ -90,6 +102,18 @@ public class CommentService {
 		}
 
 		Comment save = commentRepository.save(Comment.toComment(commentDto, parentComment, content, user));
+
+		List<Notification> notifications = new ArrayList<>();
+
+		Date now = new Date();
+		// 원 글 작성자에 대한 알림
+		notifications.add(Notification.fromCreatingComment(groupId, content.getContentId(), userId, save.getCommentId(),
+			content.getUsers().getUserId(), now));
+		// 원 댓글 작성자에 대한 알림
+		notifications.add(Notification.fromCreatingReply(groupId, content.getContentId(), userId,
+			save.getCommentId(), parentComment.getUsers().getUserId(), now));
+		notificationRepository.saveAll(notifications);
+
 		return CommentMapper.toReplyDTO(save, user.getUserId());
 	}
 
