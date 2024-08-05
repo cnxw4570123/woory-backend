@@ -13,7 +13,7 @@ import com.woory.backend.entity.Notification;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 	@Query(
-		"select n.groupId, n.topicDate, n.topicTitle, n.contentUserId, n.contentId, n.commentUserId, n.commentId, n.replyUserId, n.replyId, n.reactionUserId, n.reactionId, n.userId, n.notificationType,"
+		"select n, "
 			+ "case when n.contentUserId is not null then (select u.username from User u where u.userId = n.contentUserId)"
 			+ "when n.commentUserId is not null then (select u.username from User u where u.userId = n.commentUserId) "
 			+ "when n.replyUserId is not null then (select u.username from User u where u.userId = n.replyUserId) "
