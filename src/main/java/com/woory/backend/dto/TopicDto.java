@@ -1,6 +1,5 @@
 package com.woory.backend.dto;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -29,16 +28,6 @@ public class TopicDto {
 	private boolean hasNextDay;
 	private boolean IsPosted;
 	private List<ContentWithUserDto> contents;
-
-	public static TopicDto fromTopicOnly(Topic topic) {
-		return TopicDto.builder()
-			.topicContent(topic.getTopicContent())
-			.topicByte(topic.getTopicByte())
-			.topicId(topic.getTopicId())
-			.issueDate(topic.getIssueDate())
-			.contents(Collections.emptyList())
-			.build();
-	}
 
 	public static TopicDto fromTopicSetWithGroupIdAndDate(TopicSet topicSet, Date date, long groupId) {
 		return TopicDto.builder()

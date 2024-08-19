@@ -1,4 +1,4 @@
-package com.woory.backend.entity;
+package com.woory.backend.dto;
 
 import java.text.ParseException;
 import java.time.LocalDate;
