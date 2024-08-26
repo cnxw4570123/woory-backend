@@ -15,11 +15,12 @@ JAR_PATH=$REPOSITORY/build/libs/$JAR_NAME
 CURRENT_PID=$(pgrep -f $APP_NAME)
 
 # 서비스 종료
-if [ -z "$CURRENT_PID"]
+if [ -z "$CURRENT_PID" ]
 then
   echo "실행중인 woory서비스 없음." | sudo tee -a $LOG_FILE
 else
-  echo "sudo kill -9 $CURRENT_PID" | sudo tee -a $LOG_FILE
+  echo "sudo kill -9 $CURRENT_PID" | sudo tee -a $LOG_FILE # 로그파일에 기록
+  sudo kill -9 "$CURRENT_PID" # 실제 프로세스 종료
   sleep 5
 fi
 
@@ -28,7 +29,7 @@ nohup sudo java -jar -Dspring.profiles.active=dev -Dapp.name=$APP_NAME "$JAR_PAT
 
 # 실행된 프로세스ID 확인
 RUNNING_PROCESS=$(ps aux | grep java | grep "$JAR_NAME")
-if [ -z "$RUNNING_PROCESS"]
+if [ -z "$RUNNING_PROCESS" ]
 then
   echo "애플리케이션 프로세스 실행 X" | sudo tee -a $LOG_FILE
 else
