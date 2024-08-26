@@ -1,28 +1,24 @@
 package com.woory.backend.service;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
 import com.woory.backend.entity.Notification;
-import com.woory.backend.entity.Topic;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.woory.backend.dto.TopicDto;
-import com.woory.backend.entity.TopicManager;
 import com.woory.backend.entity.TopicSet;
 import com.woory.backend.repository.GroupRepository;
 import com.woory.backend.repository.NotificationRepository;
 import com.woory.backend.repository.TopicRepository;
 import com.woory.backend.repository.TopicSetRepository;
+import com.woory.backend.utils.TopicManager;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
