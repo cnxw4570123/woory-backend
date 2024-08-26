@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
@@ -51,49 +50,47 @@ public class ContentController {
 
 	@Operation(summary = "content 생성")
 	@PostMapping("/create")
-	public ResponseEntity<Map<String, Object>> createContent(@RequestBody ContentRequestDto requestDto) {
+	public Map<String, Object> createContent(@RequestBody ContentRequestDto requestDto) {
 		contentService.createContent(requestDto.getGroupId(), requestDto.getTopicId(),
 			requestDto.getContentText(), requestDto.getImages());
-		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다: ");
 		//		response.put("data", content);
-		return ResponseEntity.ok(response);
+		return StatusUtil.getStatusMessage("컨텐츠가 생성되었습니다.");
 	}
 
 	@Operation(summary = "content 수정")
 	@PutMapping("/{groupId}/{contentId}")
-	public ResponseEntity<Map<String, Object>> updateContent(
+	public Map<String, Object> updateContent(
 		@PathVariable("groupId") Long groupId,
 		@PathVariable("contentId") Long contentId,
 		@RequestBody ContentRequestDto requestDto) {
 		contentService.updateContent(groupId, contentId, requestDto.getContentText(),
 			requestDto.getImages());
-		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
 		//		response.put("data", updatedContent);
-		return ResponseEntity.ok(response);
+		return StatusUtil.getStatusMessage("컨텐츠가 수정되었습니다.");
 	}
 
 	@Operation(summary = "content 수정할 데이터 가져오기")
 	@GetMapping("/modify/{contentId}")
-	public ResponseEntity<Map<String, Object>> modifyContent(
+	public Map<String, Object> modifyContent(
 		@PathVariable("contentId") Long contentId) {
 		ContentUpdateDto modifyContentInf = contentService.getModifyContentInf(contentId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠의 정보입니다.");
 		response.put("data", modifyContentInf);
-		return ResponseEntity.ok(response);
+		return response;
 	}
 
 	@Operation(summary = "단독 content 조회")
 	@GetMapping("/get/{contentId}")
-	public ResponseEntity<Map<String, Object>> getContents(@PathVariable("contentId") Long contentId) {
+	public Map<String, Object> getContents(@PathVariable("contentId") Long contentId) {
 		ContentWithUserAndTopicDto content = contentService.getContent(contentId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", content);
-		return ResponseEntity.ok(response);
+		return response;
 	}
 
 	@Operation(summary = "그룹 내 일간 컨텐츠 모두 조회")
 	@GetMapping("/{groupId}/get")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDate(
+	public Map<String, Object> getContentsByRegDate(
 		@PathVariable("groupId") Long groupId,
 		@RequestParam("day") String day) {
 		LocalDate searchDate;
@@ -115,12 +112,12 @@ public class ContentController {
 		TopicDto topic = contentService.getTopicWithContents(searchDate, groupId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", topic);
-		return ResponseEntity.ok(response);
+		return response;
 	}
 
 	@Operation(summary = "content 월 조회")
 	@GetMapping("/get/month")
-	public ResponseEntity<Map<String, Object>> getContentsByRegDateMonth(
+	public Map<String, Object> getContentsByRegDateMonth(
 		@RequestParam("groupId") Long groupId,
 		@RequestParam("param") String param) {
 		if (param == null || !param.matches("\\d{4}-\\d{2}")) {
@@ -129,46 +126,45 @@ public class ContentController {
 		List<ContentDto> contents = contentService.getContentsByRegDateMonthLike(groupId, param);
 		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 조회되었습니다");
 		response.put("data", contents);
-		return ResponseEntity.ok(response);
+		return response;
 	}
 
 	@Operation(summary = "컨텐츠 삭제")
 	@DeleteMapping("/delete/{groupId}/{contentId}")
-	public ResponseEntity<Map<String, Object>> deleteContent(
+	public Map<String, Object> deleteContent(
 		@PathVariable("groupId") Long groupId,
 		@PathVariable("contentId") Long contentId) {
 		contentService.deleteContent(groupId, contentId);
-		Map<String, Object> response = StatusUtil.getStatusMessage("컨텐츠가 삭제되었습니다");
-		return ResponseEntity.ok(response);
+		return StatusUtil.getStatusMessage("컨텐츠가 삭제되었습니다");
 	}
 
 	@PostMapping("/reaction")
-	public ResponseEntity<Map<String, Object>> addOrUpdateReaction(@RequestBody ReactionReqDto reactionDto) {
+	public Map<String, Object> addOrUpdateReaction(@RequestBody ReactionReqDto reactionDto) {
 		ReactionType reactionType = ReactionType.valueOf(reactionDto.getReaction().toUpperCase());
 		ContentReactionDto updatedReaction = contentService.addOrUpdateReaction(reactionDto.getContentId(),
 			SecurityUtil.getCurrentUserId(), reactionType);
 		if (updatedReaction == null) {
-			return ResponseEntity.ok(StatusUtil.getStatusMessage("표현이 삭제되었습니다"));
+			return StatusUtil.getStatusMessage("표현이 삭제되었습니다");
 		}
-		return ResponseEntity.ok(StatusUtil.getStatusMessage("표현이 추가되었습니다."));
+		return StatusUtil.getStatusMessage("표현이 추가되었습니다.");
 	}
 
 	@GetMapping("/reaction")
-	public ResponseEntity<Map<String, Object>> getReactions(@RequestParam("contentId") Long contentId) {
+	public Map<String, Object> getReactions(@RequestParam("contentId") Long contentId) {
 		List<ContentReactionDto.ForStatistics> reactionsByContentId = contentService.getReactionsByContentId(contentId);
 		Map<String, Object> response = StatusUtil.getStatusMessage("반응 조회가 완료되었습니다.");
 		response.put("data", reactionsByContentId);
-		return ResponseEntity.ok(response);
+		return response;
 	}
 
 	@GetMapping("/topic")
-	public ResponseEntity<Map<String, Object>> getTodaysTopic(@RequestParam("groupId") Long groupId,
+	public Map<String, Object> getTodaysTopic(@RequestParam("groupId") Long groupId,
 		@RequestParam("day") LocalDate day) {
 		TopicDto topic = contentService.getTopicOnly(day, groupId);
 		Map<String, Object> statusMessage = StatusUtil.getStatusMessage("토픽 조회에 성공했습니다.");
 		statusMessage.put("data", topic);
 
-		return ResponseEntity.ok(statusMessage);
+		return statusMessage;
 	}
 
 	@PostMapping("/{groupId}/favorites/{topicId}")
