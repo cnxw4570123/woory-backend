@@ -48,7 +48,8 @@ public class SecurityConfig {
 				.userInfoEndpoint(userInfoEndpointConfig ->
 					userInfoEndpointConfig.userService(oAuth2UserService))
 				.successHandler(successHandler) // 로그인 성공 시에 응답에 토큰 넣어줌
-			) //서버전달체계만들어줌
+				.failureUrl("https://woory.vercel.app")
+			)
 			.exceptionHandling(handler ->
 				// 인증 없이 이용하려면 401
 				handler.defaultAuthenticationEntryPointFor(
