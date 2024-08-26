@@ -20,7 +20,7 @@ then
   echo "실행중인 woory서비스 없음." | sudo tee -a $LOG_FILE
 else
   echo "sudo kill -9 $CURRENT_PID" | sudo tee -a $LOG_FILE # 로그파일에 기록
-  sudo kill -9 "$CURRENT_PID" # 실제 프로세스 종료
+  echo "$CURRENT_PID" | xargs sudo kill -9 # 실제 프로세스 종료
   sleep 5
 fi
 
