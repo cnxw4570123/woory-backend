@@ -9,6 +9,7 @@ import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
 import com.woory.backend.repository.*;
 import com.woory.backend.utils.SecurityUtil;
+import com.woory.backend.utils.TopicManager;
 
 import jakarta.transaction.Transactional;
 

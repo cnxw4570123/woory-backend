@@ -1,4 +1,4 @@
-package com.woory.backend.entity;
+package com.woory.backend.utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,6 +17,8 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
+
+import com.woory.backend.dto.TopicByDate;
 
 import lombok.extern.slf4j.Slf4j;
 
