@@ -19,7 +19,7 @@ public class SendHttpRedirectConfig {
 				SecurityConstraint securityConstraint = new SecurityConstraint();
 				securityConstraint.setUserConstraint("CONFIDENTIAL");
 				SecurityCollection collection = new SecurityCollection();
-				collection.addPattern("/*");
+				collection.addPattern("/v*/**");
 				securityConstraint.addCollection(collection);
 				context.addConstraint(securityConstraint);
 			}
@@ -29,7 +29,7 @@ public class SendHttpRedirectConfig {
 	}
 
 	private Connector createStandardConnector() {
-		Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+		Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
 		connector.setScheme("http");
 		connector.setSecure(false);
 		connector.setPort(80);
