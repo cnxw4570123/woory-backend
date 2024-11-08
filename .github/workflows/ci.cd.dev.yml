@@ -45,14 +45,6 @@ jobs:
           echo "${{ secrets.APPLICATION_SECRET_YML }}" >> ./application-secret.yml
           echo "${{ secrets.APPLICATION_TEST_YML }}" >> ./application-test.yml
 
-      - name: keystore 파일 생성
-        shell: bash
-        run: |
-          cd src/main/resources
-          touch ./keystore.b64
-          echo "${{ secrets.KEYSTORE }}" >> ./keystore.b64
-          base64 -d -i ./keystore.b64 > ./keystore.p12
-
       - name: 테스트용 DB 설정
         uses: mirromutth/mysql-action@v1.1
         with:
