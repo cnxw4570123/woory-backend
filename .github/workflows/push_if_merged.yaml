@@ -2,7 +2,7 @@ name : push feat to dev
 
 on:
   pull_request:
-    branches: [ dev ]
+    branches: [ feat ]
     types: [ closed ]
 jobs:
   if_merged:
