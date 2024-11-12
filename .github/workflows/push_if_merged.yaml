@@ -13,7 +13,7 @@ jobs:
       - name: Checkout to feat
         uses: actions/checkout@v4.2.2
         with:
-          ref: feat
+          ref: upstream/feat
           persist-credentials: false
           fetch-depth: 0
       # feat -> dev 브랜치로 push
