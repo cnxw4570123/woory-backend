@@ -1,4 +1,4 @@
-name : push feat to dev
+name: push feat to dev
 
 on:
   pull_request:
@@ -11,8 +11,7 @@ jobs:
     steps:
       # feat 변경사항 dev로 이동
       - uses: actions/checkout@v4.2.2
-      - name: push feat to dev
         with:
           persist-credentials: false
           fetch-depth: 0
-        run: git push origin feat:dev
+      - run: git push origin feat:dev
