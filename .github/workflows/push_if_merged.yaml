@@ -10,11 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # feat 변경사항 dev로 이동
-      - name: fetching changes
-        uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v4.2.2
         with:
           persist-credentials: false
           fetch-depth: 0
-
-      - name: push feat to dev
-        run: git push origin feat:dev
+      - run: git push origin feat:dev
