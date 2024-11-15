@@ -58,7 +58,8 @@ public class SecurityConfig {
 				))
 			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests((auth) -> auth
-				.requestMatchers("/", "/error", "swagger-ui/**", "swagger/docs/**").permitAll()  //에러 페이지 허용
+				// certbot webroot 경로에 대해 접근 허용
+				.requestMatchers("/", "/.well-known/**", "/error", "swagger-ui/**", "swagger/docs/**").permitAll()
 				.anyRequest().authenticated());
 
 		return http.build();
