@@ -16,7 +16,6 @@ jobs:
       # feat 변경사항 dev로 이동
       - uses: actions/checkout@v4.2.2
         with:
-          persist-credentials: false
           fetch-depth: 0
       - name: push feat to dev
         env:
@@ -29,12 +28,8 @@ jobs:
           # remote url 변경
           echo "setting remote origin address"
           git remote set-url origin "https://x-access-token:$TOKEN@github.com/$REPOSITORY.git"
-
           echo "setting address to: 'https://x-access-token:$TOKEN@github.com/$REPOSITORY.git'"
-
-          git remote -v
           
           # 실제 push 작업 수행
           echo "pushing feat to dev"
           git push origin feat:dev
-
