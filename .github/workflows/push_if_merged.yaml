@@ -20,14 +20,15 @@ jobs:
           fetch-depth: 0
       - name: push feat to dev
         env:
-          TOKEN: x-access-token:${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: SWYP-Woory/woory-backend
+          
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@users.noreply.github.com"
           
           # remote url 변경
-          git config remote.origin.url "https://$TOKEN@github.com/$REPOSITORY.git"
+          git config remote.origin.url "https://x-access-token:$TOKEN@github.com/$REPOSITORY.git"
           
           # 실제 push 작업 수행
           git push origin feat:dev
