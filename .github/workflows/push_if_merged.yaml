@@ -1,0 +1,31 @@
+name: push feat to dev
+
+on:
+  pull_request:
+    branches: [ feat ]
+    types: [ closed ]
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      # feat 변경사항 dev로 이동
+      - uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - run: |
+          # 전역 설정 추가
+          git config --global user.name "woory-actions"
+          git config --global user.email "woory-actions@users.noreply.github.com"
+          
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$REPOSITORY.git"
+          
+          git checkout dev
+          
+          git merge feat --no-edit
+          
+          # 실제 push 작업 수행
+          git push origin dev
+        env:
+          REPOSITORY: SWYP-Woory/woory-backend
