@@ -1,8 +1,5 @@
 name: push feat to dev
 
-permissions:
-  contents: write
-
 on:
   pull_request:
     branches: [ feat ]
@@ -11,7 +8,6 @@ jobs:
   if_merged:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-
     steps:
       # feat 변경사항 dev로 이동
       - uses: actions/checkout@v4.2.2
@@ -23,7 +19,7 @@ jobs:
           git config --global user.name "woory-actions"
           git config --global user.email "woory-actions@users.noreply.github.com"
           
-          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$REPOSITORY.git
+          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$REPOSITORY.git"
           
           git checkout dev
           
