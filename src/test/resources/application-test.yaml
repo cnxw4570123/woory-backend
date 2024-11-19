@@ -1,7 +1,7 @@
 cloud:
   aws:
     s3:
-      bucket: test
+      bucket: test-bucket/test
     region:
       static: ap-northeast-2
       auto: false
