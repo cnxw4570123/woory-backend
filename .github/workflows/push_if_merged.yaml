@@ -1,25 +1,42 @@
 name: push feat to dev
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [ feat ]
     types: [ closed ]
+
 jobs:
   if_merged:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
+      # PR 작성자가 org에 속해있는지 확인
+      - name: Check access
+        if: ${{ github.event.pull_request.author_association != 'COLLABORATOR' && github.event.pull_request.author_association != 'MEMBER' && github.event.pull_request.author_association != 'CONTRIBUTOR'}}
+        run: |
+          echo "Event not triggered by a collaborator."
+          exit 1
+
       # feat 변경사항 dev로 이동
       - uses: actions/checkout@v4.2.2
         with:
-          persist-credentials: false
           fetch-depth: 0
-      - run: |
+          ssh-key: ${{ secrets.PUSH_KEY }} # 기존 GITHUB_TOKEN 대신 사용
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PUSH_KEY }}" >> ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: merge and push
+        run: |
           # 전역 설정 추가
           git config --global user.name "woory-actions"
           git config --global user.email "woory-actions@users.noreply.github.com"
           
-          git remote set-url origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$REPOSITORY.git"
+          git remote set-url origin "git@github.com:$REPOSITORY.git"
           
           git checkout dev
           
