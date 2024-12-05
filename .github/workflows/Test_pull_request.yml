@@ -1,0 +1,44 @@
+name: Test_pull_request
+
+on:
+  push:
+    branches:
+      - feat
+  pull_request_target:
+    branches:
+      - feat
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check access
+        if: ${{ github.event.pull_request.author_association != 'COLLABORATOR' && github.event.pull_request.author_association != 'MEMBER' && github.event.pull_request.author_association != 'CONTRIBUTOR'}}
+        run: |
+          echo "Event not triggered by a collaborator."
+          exit 1
+
+      - name: Fetching updates
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4.5.0
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Database
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          mysql version: '8.0'
+          mysql database: 'woory-test'
+          mysql root password: 'root'
+          mysql password: 'root'
+
+      - name: Grant execution permission to gradle
+        run: chmod +x gradlew
+
+      - name: Start test
+        run: ./gradlew test
