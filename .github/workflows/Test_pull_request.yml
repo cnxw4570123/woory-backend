@@ -32,9 +32,9 @@ jobs:
         uses: mirromutth/mysql-action@v1.1
         with:
           mysql version: '8.0'
-          mysql database: 'woory-test'
-          mysql root password: 'root'
-          mysql password: 'root'
+          mysql database: 'test'
+          mysql root password: 'test'
+          mysql password: 'test'
 
       - name: Grant execution permission to gradle
         run: chmod +x gradlew
