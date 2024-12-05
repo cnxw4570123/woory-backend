@@ -33,7 +33,7 @@ jobs:
         with:
           mysql version: '8.0'
           mysql database: 'test'
-          mysql root password: 'test'
+          mysql user: 'test'
           mysql password: 'test'
 
       - name: Grant execution permission to gradle
