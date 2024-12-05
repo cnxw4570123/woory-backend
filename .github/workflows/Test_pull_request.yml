@@ -1,19 +1,18 @@
 name: Test_pull_request
 
 on:
-  push:
-    branches:
-      - feat
   pull_request_target:
     branches:
       - feat
+    paths:
+      - src/**
 
 jobs:
   Test:
     runs-on: ubuntu-latest
     steps:
       - name: Check access
-        if: ${{ github.event.pull_request.author_association != 'COLLABORATOR' && github.event.pull_request.author_association != 'MEMBER' && github.event.pull_request.author_association != 'CONTRIBUTOR'}}
+        if: ${{ github.event.pull_request.author_association != 'COLLABORATOR' && github.event.pull_request.author_association != 'MEMBER' && github.event.pull_request.author_association != 'CONTRIBUTOR' }}
         run: |
           echo "Event not triggered by a collaborator."
           exit 1
