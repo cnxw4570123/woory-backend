@@ -4,8 +4,8 @@ on:
   pull_request_target:
     branches:
       - feat
-    paths:
-      - src/**
+#    paths:
+#      - src/**
 
 jobs:
   Test:
@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
+          ref: $GITHUB_REF
 
       - name: Check log
         run: git log --oneline
