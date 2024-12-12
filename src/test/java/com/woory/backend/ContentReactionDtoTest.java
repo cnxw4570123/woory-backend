@@ -38,7 +38,7 @@ public class ContentReactionDtoTest {
 			ContentReactionDto.toSeparatedReactions(contentReactions);
 
 		// then
-		Assertions.assertEquals(separatedReactions.get(ReactionType.LIKE).size(), 2);
-		Assertions.assertEquals(separatedReactions.get(ReactionType.SAD).size(), 1);
+		Assertions.assertEquals(2, separatedReactions.get(ReactionType.LIKE).size());
+		Assertions.assertEquals(1, separatedReactions.get(ReactionType.SAD).size());
 	}
 }
