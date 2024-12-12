@@ -17,11 +17,14 @@ jobs:
           echo "Event not triggered by a collaborator."
           exit 1
 
+      - name: PRINT GITHUB_REF
+        run: echo "GITHUB_REF = $GITHUB_REF"
+
       - name: Fetching updates
         uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
-          ref: ${{ GITHUB_REF }}
+          ref: ${{ github.ref }}
 
       - name: Check log
         run: git log --oneline
