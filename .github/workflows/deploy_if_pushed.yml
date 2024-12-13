@@ -49,7 +49,7 @@ jobs:
         uses: mirromutth/mysql-action@v1.1
         with:
           mysql version: '8.0'
-          mysql database: 'woory'
+          mysql database: 'test'
           mysql password: ${{ secrets.TEST_DB_PW }}
           mysql user: 'test'
 
@@ -58,7 +58,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew clean build
+        run: ./gradlew clean build -i
 
       - name: Zip project files
         run: zip -r ./$GITHUB_SHA.zip . # 프로젝트 전체 파일 압축
