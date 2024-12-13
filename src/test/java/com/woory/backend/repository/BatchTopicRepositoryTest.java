@@ -24,7 +24,7 @@ import com.woory.backend.entity.TopicSet;
 
 import jakarta.transaction.Transactional;
 
-@DataJpaTest
+@DataJpaTest(showSql = false)
 @ActiveProfiles("test")
 @Transactional
 @TestInstance(Lifecycle.PER_CLASS)
