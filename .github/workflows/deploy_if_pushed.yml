@@ -50,8 +50,8 @@ jobs:
         with:
           mysql version: '8.0'
           mysql database: 'woory'
-          mysql root password: ${{ secrets.TEST_DB_PW }}
-          mysql user: 'root'
+          mysql password: ${{ secrets.TEST_DB_PW }}
+          mysql user: 'test'
 
       - name: Grant execute permission for gradlew
         # 경로 확인 후 권한 부여
