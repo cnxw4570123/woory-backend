@@ -10,7 +10,7 @@ cloud:
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/test?profileSQL=true
+    url: jdbc:mysql://localhost:3306/test
     username: test
     password: testtest
     driver-class-name: com.mysql.cj.jdbc.Driver
