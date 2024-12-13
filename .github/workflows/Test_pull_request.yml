@@ -9,6 +9,10 @@ on:
 
 jobs:
   Test:
+    permissions:
+      checks: write
+      pull-requests: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Check access
@@ -17,9 +21,6 @@ jobs:
           echo "Event not triggered by a collaborator."
           exit 1
 
-      - name: PRINT GITHUB_REF
-        run: echo "GITHUB_REF = $GITHUB_REF"
-
       - name: Fetching updates
         uses: actions/checkout@v4.2.2
         with:
@@ -27,7 +28,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Check log
-        run: git log --oneline
+        run: git log --oneline -10 # 10개만 체크
 
       - name: Set up Java
         uses: actions/setup-java@v4.5.0
