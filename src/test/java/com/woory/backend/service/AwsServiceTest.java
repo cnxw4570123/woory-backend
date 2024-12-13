@@ -17,9 +17,8 @@ import com.woory.backend.error.ErrorCode;
 
 import io.findify.s3mock.S3Mock;
 
-@Import(S3MockConfig.class)
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(classes = {AwsService.class, S3MockConfig.class})
 public class AwsServiceTest {
 	@Autowired
 	private AmazonS3 amazonS3;
