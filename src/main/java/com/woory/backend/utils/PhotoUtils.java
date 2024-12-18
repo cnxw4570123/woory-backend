@@ -15,11 +15,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
+import org.apache.http.entity.ContentType;
 import org.apache.http.util.TextUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.webp.WebpWriter;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
 
@@ -29,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PhotoUtils {
 
 	private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
+	public static final String IMAGE_WEBP = "webp";
 	private static Set<String> allowedImageForm = Set.of("image/png", "image/jpeg", "image/jpg");
 
 	private static String validateFileExtension(String images, Function<String, String> extractFileExtension) {
@@ -69,12 +73,19 @@ public class PhotoUtils {
 		if (bytes.length > MAX_FILE_SIZE) {
 			throw new CustomException(ErrorCode.FILE_SIZE_EXCEED);
 		}
+		// webp로 변환
+		validateFileExtension(base64File, PhotoUtils::getFileExtensionFromBase64);
 
-		String extension = validateFileExtension(base64File, PhotoUtils::getFileExtensionFromBase64);
+		String name = generateRandomFilename(IMAGE_WEBP);
+		try {
+			bytes = ImmutableImage.loader()
+				.fromBytes(bytes)
+				.bytes(WebpWriter.MAX_LOSSLESS_COMPRESSION);
+		} catch (IOException e) {
+			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
+		}
 
-		String name = generateRandomFilename(extension);
-
-		return new MockMultipartFile(name, name, extension, bytes);
+		return new MockMultipartFile(name, name, IMAGE_WEBP, bytes);
 	}
 
 	private static String generateRandomFilename(String extension) {
@@ -86,10 +97,14 @@ public class PhotoUtils {
 			return null;
 		}
 
-		String ext = validateFileExtension(image, PhotoUtils::getFileExtensionFromURL);
-		String fileName = generateRandomFilename(ext);
+		validateFileExtension(image, PhotoUtils::getFileExtensionFromURL);
+		// webp 파일로 변환
+		String fileName = generateRandomFilename(IMAGE_WEBP);
 		try (InputStream is = new URL(image).openStream()) {
-			return new MockMultipartFile(fileName, fileName, ext, is);
+			byte[] bytes = ImmutableImage.loader()
+				.fromStream(is)
+				.bytes(WebpWriter.MAX_LOSSLESS_COMPRESSION);
+			return new MockMultipartFile(fileName, fileName, IMAGE_WEBP, bytes);
 
 		} catch (IOException e) {
 			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
