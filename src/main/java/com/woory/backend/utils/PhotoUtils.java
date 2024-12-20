@@ -1,5 +1,6 @@
 package com.woory.backend.utils;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.format.FormatDetector;
 import com.sksamuel.scrimage.webp.WebpWriter;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
@@ -78,9 +80,10 @@ public class PhotoUtils {
 
 		String name = generateRandomFilename(IMAGE_WEBP);
 		try {
-			bytes = ImmutableImage.loader()
-				.fromBytes(bytes)
-				.bytes(WebpWriter.MAX_LOSSLESS_COMPRESSION);
+			ImmutableImage immutableImage = ImmutableImage.loader().type(BufferedImage.TYPE_4BYTE_ABGR)
+				.fromBytes(bytes);
+			bytes = immutableImage
+				.bytes(WebpWriter.DEFAULT);
 		} catch (IOException e) {
 			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
 		}
@@ -101,9 +104,9 @@ public class PhotoUtils {
 		// webp 파일로 변환
 		String fileName = generateRandomFilename(IMAGE_WEBP);
 		try (InputStream is = new URL(image).openStream()) {
-			byte[] bytes = ImmutableImage.loader()
-				.fromStream(is)
-				.bytes(WebpWriter.MAX_LOSSLESS_COMPRESSION);
+			byte[] bytes = is.readAllBytes();
+			ImmutableImage immutableImage = ImmutableImage.loader().type(BufferedImage.TYPE_4BYTE_ABGR).fromBytes(bytes);
+			bytes = immutableImage.bytes(WebpWriter.DEFAULT);
 			return new MockMultipartFile(fileName, fileName, IMAGE_WEBP, bytes);
 
 		} catch (IOException e) {
