@@ -69,7 +69,7 @@ public class PhotoUtilsTest {
 
 	@ParameterizedTest(name = "확장자 : {0}")
 	@CsvSource(value = {
-		"JPG https://pixabay.com/get/g8364aef53a5a2cff97a293c97590e710f3f0bd0b53d1af32aebcb3203d5442d5a5b26c85820272c38a986022fb3c1f0b.jpg",
+		"JPG https://cdn.pixabay.com/photo/2023/02/18/11/22/cactus-7797750_1280.jpg",
 		"PNG https://cdn.pixabay.com/photo/2015/10/01/17/17/car-967387_1280.png",
 		"PNG https://freepngimg.com/thumb/christmas_tree/3-2-christmas-tree-png-file.png"
 	}, delimiter = ' ')
