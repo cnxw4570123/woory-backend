@@ -23,6 +23,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.sksamuel.scrimage.ImmutableImage;
+import com.sksamuel.scrimage.ScaleMethod;
 import com.sksamuel.scrimage.format.FormatDetector;
 import com.sksamuel.scrimage.webp.WebpWriter;
 import com.woory.backend.error.CustomException;
@@ -35,6 +36,7 @@ public class PhotoUtils {
 
 	private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 	public static final String IMAGE_WEBP = "webp";
+	public static final int MAX_PIXEL = 375;
 	private static Set<String> allowedImageForm = Set.of("image/png", "image/jpeg", "image/jpg");
 
 	private static String validateFileExtension(String images, Function<String, String> extractFileExtension) {
@@ -82,7 +84,7 @@ public class PhotoUtils {
 		try {
 			ImmutableImage immutableImage = ImmutableImage.loader().type(BufferedImage.TYPE_4BYTE_ABGR)
 				.fromBytes(bytes);
-			bytes = immutableImage
+			bytes = immutableImage.bound(MAX_PIXEL, MAX_PIXEL, ScaleMethod.FastScale)
 				.bytes(WebpWriter.DEFAULT);
 		} catch (IOException e) {
 			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
@@ -106,7 +108,7 @@ public class PhotoUtils {
 		try (InputStream is = new URL(image).openStream()) {
 			byte[] bytes = is.readAllBytes();
 			ImmutableImage immutableImage = ImmutableImage.loader().type(BufferedImage.TYPE_4BYTE_ABGR).fromBytes(bytes);
-			bytes = immutableImage.bytes(WebpWriter.DEFAULT);
+			bytes = immutableImage.bound(MAX_PIXEL, MAX_PIXEL, ScaleMethod.FastScale).bytes(WebpWriter.DEFAULT);
 			return new MockMultipartFile(fileName, fileName, IMAGE_WEBP, bytes);
 
 		} catch (IOException e) {
