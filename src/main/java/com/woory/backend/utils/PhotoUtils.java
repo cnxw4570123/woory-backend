@@ -84,7 +84,7 @@ public class PhotoUtils {
 		try {
 			ImmutableImage immutableImage = ImmutableImage.loader().type(BufferedImage.TYPE_4BYTE_ABGR)
 				.fromBytes(bytes);
-			bytes = immutableImage.bound(MAX_PIXEL, MAX_PIXEL, ScaleMethod.FastScale)
+			bytes = immutableImage.bound(MAX_PIXEL, MAX_PIXEL, ScaleMethod.Lanczos3)
 				.bytes(WebpWriter.DEFAULT);
 		} catch (IOException e) {
 			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
@@ -108,7 +108,7 @@ public class PhotoUtils {
 		try (InputStream is = new URL(image).openStream()) {
 			byte[] bytes = is.readAllBytes();
 			ImmutableImage immutableImage = ImmutableImage.loader().type(BufferedImage.TYPE_4BYTE_ABGR).fromBytes(bytes);
-			bytes = immutableImage.bound(MAX_PIXEL, MAX_PIXEL, ScaleMethod.FastScale).bytes(WebpWriter.DEFAULT);
+			bytes = immutableImage.bound(MAX_PIXEL, MAX_PIXEL, ScaleMethod.Lanczos3).bytes(WebpWriter.DEFAULT);
 			return new MockMultipartFile(fileName, fileName, IMAGE_WEBP, bytes);
 
 		} catch (IOException e) {
