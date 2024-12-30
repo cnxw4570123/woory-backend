@@ -66,7 +66,7 @@ public class UserController {
 	// 프로필 수정
 	@PutMapping("/update")
 	public Map<String, String> updateGroupUserProfile(@RequestBody UserRequestDto requestDto) {
-		String photoPath = awsService.saveFile(requestDto.getImages());
+		String photoPath = awsService.saveImage(requestDto.getImages());
 		userService.updateProfile(photoPath, requestDto.getNickname());
 		Map<String, String> response = new HashMap<>();
 		response.put("message", "수정이 완료되었습니다.");

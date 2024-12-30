@@ -78,7 +78,7 @@ public class GroupController {
 	@PostMapping("/create")
 	public Map<String, Object> createGroup(
 		@RequestBody GroupRequestDto requestDto) {
-		String photoPath = awsService.saveFile(requestDto.getImages());
+		String photoPath = awsService.saveImage(requestDto.getImages());
 		if (photoPath == null) {
 			photoPath = defaultImage;
 		}
@@ -93,7 +93,7 @@ public class GroupController {
 	public Map<String, Object> updateGroup(
 		@PathVariable("groupId") Long groupId,
 		@RequestBody GroupRequestDto requestDto) {
-		String photoPath = awsService.saveFile(requestDto.getImages());
+		String photoPath = awsService.saveImage(requestDto.getImages());
 		Group updatedGroup = groupService.updateGroup(groupId, requestDto.getGroupName(), photoPath);
 		//        response.put("data", updatedGroup);
 		return StatusUtil.getStatusMessage("가족이 수정되었습니다");

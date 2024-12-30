@@ -78,7 +78,7 @@ public class ContentService {
 		content.setContentText(contentText);
 		// 사진을 보넀을 경우
 		if (!TextUtils.isEmpty(images)) {
-			String newPhotoPath = awsService.saveFile(images);
+			String newPhotoPath = awsService.saveImage(images);
 			content.setContentImgPath(newPhotoPath);
 		}
 
@@ -144,7 +144,7 @@ public class ContentService {
 
 		// images가 base64 파일로 오는 경우 -> 기존 사진을 수정
 		// 혹시 모를 오류가 발생하더라도
-		String newPhotoPath = awsService.saveFile(newPhoto);
+		String newPhotoPath = awsService.saveImage(newPhoto);
 		content.setContentImgPath(newPhotoPath); // 사진 경로 수정
 		Content save = contentRepository.save(content);
 		awsService.deleteImage(contentImgPath);

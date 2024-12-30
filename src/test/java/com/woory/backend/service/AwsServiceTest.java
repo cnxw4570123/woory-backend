@@ -3,14 +3,27 @@ package com.woory.backend.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.UUID;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.BDDMockito;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.woory.backend.error.CustomException;
 import com.woory.backend.error.ErrorCode;
 
@@ -42,29 +55,20 @@ public class AwsServiceTest {
 		s3Mock.stop();
 	}
 
-	@Test
-	void 이미지_저장_base64_테스트() {
-		String image =
-			"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADMElEQVR4nOzVwQnAIBQFQYXff81RUkQCOyDj1YOPnbXWPmeTRef+/3O/OyBjzh3CD95BfqICMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMO0TAAD//2Anhf4QtqobAAAAAElFTkSuQmCC";
-
-		assertThat(awsService.saveFile(image)).contains(
+	@ParameterizedTest(name = "타입 : {0}")
+	@CsvSource(value = {
+		"Base64 data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAADMElEQVR4nOzVwQnAIBQFQYXff81RUkQCOyDj1YOPnbXWPmeTRef+/3O/OyBjzh3CD95BfqICMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMK0CMO0TAAD//2Anhf4QtqobAAAAAElFTkSuQmCC",
+		"URL https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Font_Awesome_5_brands_github.svg/220px-Font_Awesome_5_brands_github.svg.png"
+	}, delimiter = ' ')
+	void 이미지_저장_base64_테스트(String type, String image) {
+		assertThat(awsService.saveImage(image)).contains(
 			"http://127.0.0.1:8081/" + BUCKET_NAME);
 	}
 
-	@Test
-	void 이미지_저장_url_테스트() {
-		String url = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Font_Awesome_5_brands_github.svg/220px-Font_Awesome_5_brands_github.svg.png";
-		assertThat(awsService.saveFileFromUrl(url)).contains(
-			"http://127.0.0.1:8081/" + BUCKET_NAME);
-	}
-
-	@Test
-	void 빈_문자열로_이미지_저장시_null() {
-		String url = "";
-		String base64Image = "";
-
-		assertAll(() -> assertThat(awsService.saveFileFromUrl(url)).isNull(),
-			() -> assertThat(awsService.saveFile(base64Image)).isNull());
+	@ParameterizedTest(name = "빈문자열")
+	@ValueSource(strings = {"", ""})
+	void 빈_문자열로_이미지_저장시_null(String image) {
+		assertThat(awsService.saveImage(image)).isNull();
 	}
 
 	@Test
@@ -77,9 +81,37 @@ public class AwsServiceTest {
 
 	@Test
 	void 이미지_업로드_후_삭제_테스트() {
-		String url = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Font_Awesome_5_brands_github.svg/220px-Font_Awesome_5_brands_github.svg.png";
+		UUID filename = UUID.randomUUID();
+		try (MockedStatic<UUID> uuid = Mockito.mockStatic(UUID.class)) {
+			BDDMockito.given(UUID.randomUUID()).willReturn(filename);
+			String url = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Font_Awesome_5_brands_github.svg/220px-Font_Awesome_5_brands_github.svg.png";
 
-		String filePath = awsService.saveFileFromUrl(url);
-		assertDoesNotThrow(() -> awsService.deleteImage(filePath));
+			String filePath = awsService.saveImage(url);
+			String bucketPath = BUCKET_NAME + "/test", key = filename + ".webp";
+			assertThat(amazonS3.getObject(bucketPath, key)).isNotNull();
+
+			awsService.deleteImage(filePath);
+			assertThatThrownBy(
+				() -> amazonS3.getObject(bucketPath, key)
+			)
+				.isInstanceOf(AmazonS3Exception.class)
+				.hasMessageContaining("The resource you requested does not exist");
+		}
+
+	}
+
+	@Test
+	void 큰_이미지_업로드_시_FILE_SIZE_EXCEPTION_발생() {
+		assertThatThrownBy(
+			() -> {
+				try (FileInputStream fileInputStream = new FileInputStream(
+					"src/test/resources/Base64_Encoded_Image_6.3MB.txt")) {
+					String image = new String(fileInputStream.readAllBytes());
+					awsService.saveImage(image);
+				} catch (IOException e) {
+				}
+			}
+		).isInstanceOf(CustomException.class)
+			.hasMessage(ErrorCode.FILE_SIZE_EXCEED.getMessage());
 	}
 }
