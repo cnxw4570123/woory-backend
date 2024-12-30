@@ -27,45 +27,13 @@ public class AwsService {
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
 
-	public String saveFile(String base64File) {
+	public String saveImage(String base64File) {
 		if (base64File == null || base64File.isEmpty()) {
 			log.info("요청에 파일 없음 -> 이름만 수정");
 			return null;
 		}
 
 		MultipartFile file = PhotoUtils.convertImage(base64File);
-		String filename = file.getOriginalFilename();
-
-		log.info("File upload started : {}", filename);
-
-		ObjectMetadata metadata = new ObjectMetadata();
-		metadata.setContentLength(file.getSize());
-		metadata.setContentType(file.getContentType());
-
-		try {
-			amazonS3.putObject(bucket, filename, file.getInputStream(), metadata);
-		} catch (AmazonS3Exception e) {
-			log.error("파일 업로드 중 아마존 S3 오류 발생: {}", e.getMessage());
-			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
-		} catch (SdkClientException e) {
-			log.error("파일 업로드 중 AWS SDK 클라이언트 오류 발생: {}", e.getMessage());
-			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
-		} catch (IOException e) {
-			log.error("파일 업로드 중 IO 오류 발생");
-			throw new CustomException(ErrorCode.ERROR_SAVING_FILE);
-		}
-
-		log.info("파일 업로드 성공: {}", filename);
-		return amazonS3.getUrl(bucket, filename).toString();
-	}
-
-	public String saveFileFromUrl(String url) {
-		if (url == null || url.isEmpty()) {
-			log.info("요청에 파일 없음 -> 이름만 수정");
-			return null;
-		}
-
-		MultipartFile file = PhotoUtils.convertImage(url);
 		String filename = file.getOriginalFilename();
 
 		log.info("File upload started : {}", filename);
