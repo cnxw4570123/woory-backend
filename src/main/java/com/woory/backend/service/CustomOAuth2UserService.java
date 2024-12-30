@@ -70,7 +70,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 				user.setUsername(username);
 				// user.setEmail(oAuth2Response.getEmail());
 				user.setProfileImage(oAuth2Response.getProfileImage().isEmpty() ? userDefaultImg :
-					awsService.saveFileFromUrl(oAuth2Response.getProfileImage()));
+					awsService.saveImage(oAuth2Response.getProfileImage()));
 				user.setRole("ROLE_USER");
 				user.setNickname(oAuth2Response.getName());
 				return user;
