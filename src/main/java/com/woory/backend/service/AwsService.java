@@ -2,11 +2,9 @@ package com.woory.backend.service;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.UUID;
 
 import org.apache.http.util.TextUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,7 +33,7 @@ public class AwsService {
 			return null;
 		}
 
-		MultipartFile file = PhotoUtils.base64ToMultipartFile(base64File);
+		MultipartFile file = PhotoUtils.convertImage(base64File);
 		String filename = file.getOriginalFilename();
 
 		log.info("File upload started : {}", filename);
@@ -67,7 +65,7 @@ public class AwsService {
 			return null;
 		}
 
-		MultipartFile file = PhotoUtils.urlToFile(url);
+		MultipartFile file = PhotoUtils.convertImage(url);
 		String filename = file.getOriginalFilename();
 
 		log.info("File upload started : {}", filename);
