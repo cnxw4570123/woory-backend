@@ -2,7 +2,7 @@ package com.woory.backend.error;
 
 public enum ErrorCode {
 	// Common
-
+	SOCIAL_LOGIN_ERROR(400, "COMMON_009", "소셜 로그인 중 문제가 발생했습니다."),
 	INTERNAL_SERVER_ERROR(500, "COMMON_001", "예기치 못한 에러가 발생하였습니다."),
 	FILE_SIZE_EXCEED(400, "COMMON_002", "파일 크기는 5MB를 초과할 수 없습니다."),
 	FILE_IS_NOT_IMAGE(400, "COMMON_003", "파일 확장자는 png 또는 jpg만 가능합니다."),

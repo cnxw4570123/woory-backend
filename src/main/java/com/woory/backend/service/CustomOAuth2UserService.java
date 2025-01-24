@@ -1,17 +1,23 @@
 package com.woory.backend.service;
 
+import java.net.URI;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.woory.backend.dto.CustomOAuth2User;
 import com.woory.backend.dto.KakaoResponse;
 import com.woory.backend.dto.NaverResponse;
 import com.woory.backend.dto.OAuth2Response;
 import com.woory.backend.dto.UserDto;
 import com.woory.backend.entity.User;
+import com.woory.backend.error.CustomException;
+import com.woory.backend.error.ErrorCode;
 import com.woory.backend.repository.UserRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -19,11 +25,11 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -32,11 +38,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 	private final UserRepository userRepository;
 	private final String userDefaultImg;
 	private final AwsService awsService;
+	private final RestClient restClient;
 
 	@Autowired
 	public CustomOAuth2UserService(UserRepository userRepository,
 		AwsService awsService,
-		@Value("${service.default.profileImg}") String profileImg) {
+		RestClient restClient,
+		@Value("${service.default.profileImg}") String profileImg
+	) {
+		this.restClient = restClient;
 		this.userRepository = userRepository;
 		this.userDefaultImg = profileImg;
 		this.awsService = awsService;
@@ -82,43 +92,51 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 	}
 
 	private void oAuth2LogoutImmediately(String accessToken, ClientRegistration registration) {
-		WebClient webClient = WebClient.builder()
-			.build();
-
 		if (registration.getRegistrationId().equals("naver")) {
 			MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 			params.add("grant_type", "delete"); // 토큰 삭제 시 delete
 			params.add("client_id", registration.getClientId());
 			params.add("client_secret", registration.getClientSecret());
 			params.add("access_token", accessToken);
-			String response = webClient.post()
-				.uri(uriBuilder -> uriBuilder.scheme("https")
-					.host("nid.naver.com")
-					.path("oauth2.0/token")
-					.build()
-				)
-				.body(BodyInserters.fromFormData(params))
-				.header("Content-type", MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			URI uri = UriComponentsBuilder.fromUriString("https://nid.naver.com")
+				.path("/oauth2.0/token")
+				.encode()
+				.build()
+				.toUri();
+
+			String response = restClient.post()
+				.uri(uri)
+				.body(params)
+				.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+				.exchange((req, res) -> {
+					if (res.getStatusCode().isError()) {
+						throw new CustomException(ErrorCode.SOCIAL_LOGIN_ERROR);
+					}
+					return new ObjectMapper().readTree(res.getBody()).toString();
+				});
 
 			log.info("response = {}", response);
 			return;
 		}
 
 		if (registration.getRegistrationId().equals("kakao")) {
-			String response = webClient.post()
-				.uri(uriBuilder -> uriBuilder.scheme("https")
-					.host("kapi.kakao.com")
-					.path("v1/user/logout")
-					.build()
-				)
-				.header("Authorization", "Bearer " + accessToken)
-				.header("Content-type", MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-				.retrieve()
-				.bodyToMono(String.class)
-				.block();
+			URI uri = UriComponentsBuilder.fromUriString("https://kapi.kakao.com")
+				.path("/v1/user/logout")
+				.encode()
+				.build()
+				.toUri();
+
+			String response = restClient.post()
+				.uri(uri)
+				.headers(httpHeaders -> {
+					httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+					httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+				}).exchange((req, res) -> {
+					if (res.getStatusCode().isError()) {
+						throw new CustomException(ErrorCode.SOCIAL_LOGIN_ERROR);
+					}
+					return new ObjectMapper().readTree(res.getBody()).toString();
+				});
 
 			log.info("response = {}", response);
 		}
