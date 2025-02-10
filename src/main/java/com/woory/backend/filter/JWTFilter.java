@@ -8,12 +8,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.boot.autoconfigure.security.StaticResourceLocation;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -42,40 +45,15 @@ public class JWTFilter extends OncePerRequestFilter {
 	}
 
 	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+		String requestURI = request.getRequestURI();
+		log.info("path = {}", requestURI);
+		return !requestURI.matches("^v1/.*");
+	}
+
+	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
 		FilterChain filterChain) throws ServletException, IOException {
-
-		String requestURI = request.getRequestURI();
-		if (requestURI.startsWith("/auth/naver") || requestURI.startsWith("/auth/kakao")) {
-			String code = request.getParameter("code");
-			CustomOAuth2User userByCode = SecurityUtil.getUserByCode(code);
-
-			if (userByCode == null) {
-				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				Map<String, String> error = new HashMap<>();
-				response.setHeader("Content-Type", "application/json;charset=UTF-8");
-				error.put("message", "유효하지 않은 코드입니다.");
-				response.getWriter().write(JsonUtil.toJson(error));
-				return;
-			}
-			Long userId = Long.valueOf(userByCode.getName());
-			String authorities = userByCode.getAuthorities().stream()
-				.map(GrantedAuthority::getAuthority)
-				.collect(Collectors.joining(","));
-
-			String token = jwtUtil.generateAccessToken(userId, authorities);
-			Map<String, String> tokenResponse = new HashMap<>();
-
-			tokenResponse.put("accessToken", token);
-			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-			response.getWriter().write(JsonUtil.toJson(tokenResponse));
-
-			response.setStatus(HttpServletResponse.SC_OK);
-
-			// filterChain.doFilter(request, response);
-			return;
-		}
-
 		String accessToken = request.getHeader("Authorization");
 
 		// AccessToken이 없으면 기존 로그인 로직 수행
