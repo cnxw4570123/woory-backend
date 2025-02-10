@@ -1,5 +1,6 @@
 package com.woory.backend.service;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.woory.backend.dto.UserResponseDto;
 import com.woory.backend.entity.User;
@@ -37,17 +41,20 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final GroupUserRepository groupUserRepository;
 	private final GroupRepository groupRepository;
+	private final RestClient restClient;
 
 	@Autowired
 	public UserService(
 		@Value("${reg_info.kakao.admin-key}") String kakaoKey,
 		UserRepository userRepository,
 		GroupUserRepository groupUserRepository,
-		GroupRepository groupRepository) {
+		GroupRepository groupRepository,
+		RestClient restClient) {
 		this.KAKAO_KEY = kakaoKey;
 		this.userRepository = userRepository;
 		this.groupUserRepository = groupUserRepository;
 		this.groupRepository = groupRepository;
+		this.restClient = restClient;
 	}
 
 	public UserResponseDto getMyInfo() {
@@ -137,21 +144,20 @@ public class UserService {
 
 
 	private void unlinkKakao(String kakaoId) {
-		WebClient kakaoClient = WebClient.builder()
-			.baseUrl("https://kapi.kakao.com/v1/user/unlink")
-			.build();
+		URI uri = UriComponentsBuilder.fromHttpUrl("https://kapi.kakao.com/v1/user/unlink")
+			.build()
+			.toUri();
 
 		MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
 		body.add("target_id_type", "user_id");
 		body.add("target_id", kakaoId);
 
-		String authorization = kakaoClient.post()
-			.header("Authorization", "KakaoAK " + KAKAO_KEY)
-			.contentType(MediaType.APPLICATION_FORM_URLENCODED)
-			.body(BodyInserters.fromFormData(body))
+		String authorization = restClient.post()
+			.uri(uri)
+			.header(HttpHeaders.AUTHORIZATION, "KakaoAK " + KAKAO_KEY)
+			.body(body)
 			.retrieve()
-			.bodyToMono(String.class)
-			.block();
+			.body(String.class);
 	}
 
 	public void updateProfile(String filePath, String nickname) {
